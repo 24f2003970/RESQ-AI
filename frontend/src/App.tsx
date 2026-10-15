@@ -16,9 +16,11 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { useCity } from "./api/useCity";
+import { useScenario } from "./api/useScenario";
 import { Badge } from "./components/ui";
 import CityWorkspace from "./components/CityWorkspace";
 import Development from "./components/Development";
+import ScenarioLab from "./components/ScenarioLab";
 
 const nav = [
   { path: "/", name: "Command Center", icon: LayoutDashboard },
@@ -29,12 +31,13 @@ const nav = [
 ];
 
 export default function App() {
+  const location = useLocation();
   const { city, status, error, retry } = useCity();
+  const simulation = useScenario(location.pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(
     () => window.matchMedia("(max-width: 550px)").matches,
   );
-  const location = useLocation();
   const reducedMotion = useReducedMotion();
   useEffect(() => {
     setMenuOpen(false);
@@ -133,7 +136,7 @@ export default function App() {
             <span>Emergency operations</span>
             <span className="header-divider" />
             <span className="header-scenario">
-              {city?.scenario.name ?? "Riverside / Baseline"}
+              {simulation.scenario?.name ?? city?.scenario.name ?? "Riverside / Baseline"}
             </span>
           </div>
           <div className="header-right">
@@ -153,7 +156,7 @@ export default function App() {
             >
               <RefreshCw size={16} />
             </button>
-            <span className="part-label">PART 02</span>
+            <span className="part-label">PART 03</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -199,6 +202,8 @@ export default function App() {
                   element={
                     <CityWorkspace
                       city={city}
+                      scenario={simulation.scenario}
+                      events={simulation.envelope?.events ?? []}
                       studio={false}
                       status={status}
                       retry={retry}
@@ -210,6 +215,8 @@ export default function App() {
                   element={
                     <CityWorkspace
                       city={city}
+                      scenario={simulation.scenario}
+                      events={simulation.envelope?.events ?? []}
                       studio
                       status={status}
                       retry={retry}
@@ -218,7 +225,7 @@ export default function App() {
                 />
                 <Route
                   path="/scenarios"
-                  element={<Development kind="scenarios" />}
+                  element={<ScenarioLab envelope={simulation.envelope} scenario={simulation.scenario} error={simulation.error} onChange={simulation.accept} onRetry={simulation.retry} />}
                 />
                 <Route
                   path="/decisions"

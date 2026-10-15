@@ -1,5 +1,7 @@
 # Digital Twin Data Model
 
+> **Part 3 implementation status:** The tables below describe the target model. The current implemented mutable entities and persisted columns are summarized in [PART_03_IMPLEMENTATION.md](PART_03_IMPLEMENTATION.md); unimplemented agent, mission, and prediction records are future work.
+
 ## Identity and units
 
 IDs are stable within a generated city and prefixed by entity type. A `city_id` derives from generator version and seed. Scenario state references a specific city snapshot, simulation version, model artifact ID, and monotonically increasing `state_version`. Coordinates use a local Cartesian meter grid with a declared origin; elevation and flood depth are meters; speed is meters/second; rainfall is mm/hour; simulation time is an integer number of seconds from scenario start. These are fictional local coordinates, not georeferenced coordinates.
@@ -51,3 +53,5 @@ Risk prediction consumes a scenario snapshot, not an independent map. Every pred
 ## Storage and replay
 
 SQLite stores scenario metadata, append-only event records, proposal/review records, model metadata, and periodic state snapshots. Replay loads the nearest snapshot and applies ordered events using the matching engine version. If historical engine code is unavailable, the UI labels playback as stored events/snapshots, not a recomputation.
+
+Part 3 persists only scenario-specific dynamic data; generated city geometry remains deterministic seed data. Flood grid coordinates are cell centers in the city frame (east X, north Y); `terrain_m` and `depth_m` are 25 rows × 33 columns at 20 m resolution. The per-scenario database records an `epoch` increment on reset so old history remains stored but is excluded from current-epoch replay. Checkpoints are made every 12 ticks. The present implementation has no engine-version migration or multi-process coordination guarantee.

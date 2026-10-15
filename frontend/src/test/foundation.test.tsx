@@ -6,6 +6,7 @@ import { parseCity } from "../api/client";
 import { toScene } from "../scene/coordinates";
 import App from "../App";
 import fixture from "./fixtures/city.json";
+import scenarioFixture from "./fixtures/scenario.json";
 
 vi.mock("../scene/CityScene", () => ({
   default: ({
@@ -31,11 +32,12 @@ function connectedFetch() {
       value = {
         status: "ok",
         mode: "local",
-        version: "0.2.0",
+        version: "0.3.0",
         service: "resq-ai",
       };
     else if (input.includes("/buildings/"))
       value = city.buildings.find((b) => input.endsWith(b.id));
+    else if (input.endsWith("/scenarios/active")) value = scenarioFixture;
     return new Response(JSON.stringify(value), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -99,11 +101,10 @@ describe("connected application", () => {
     const checkbox = screen.getByRole("checkbox", { name: "greenery" });
     fireEvent.click(checkbox);
     expect(checkbox).not.toBeChecked();
-    fireEvent.click(screen.getByRole("link", { name: "Scenario Lab" }));
-    await screen.findByRole("heading", {
-      name: "Every response starts with a scenario.",
-    });
-    expect(screen.getByText(/Under development/)).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole("link", { name: "Scenario Lab" })[0]);
+    await screen.findByRole("heading", { name: "Scenario Lab" });
+    expect(screen.getByRole("slider", { name: "Rainfall intensity" })).toBeInTheDocument();
+    expect(screen.getByText("Water depth")).toBeInTheDocument();
     fireEvent.click(
       screen.getByRole("link", { name: "Model Intelligence Lab" }),
     );

@@ -1,0 +1,460 @@
+{
+  "$defs": {
+    "ImpactAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "buildings": {
+          "items": {
+            "$ref": "#/$defs/ImpactItem"
+          },
+          "title": "Buildings",
+          "type": "array"
+        },
+        "roads": {
+          "items": {
+            "$ref": "#/$defs/ImpactItem"
+          },
+          "title": "Roads",
+          "type": "array"
+        },
+        "bridges": {
+          "items": {
+            "$ref": "#/$defs/ImpactItem"
+          },
+          "title": "Bridges",
+          "type": "array"
+        }
+      },
+      "required": [
+        "buildings",
+        "roads",
+        "bridges"
+      ],
+      "title": "ImpactAssessment",
+      "type": "object"
+    },
+    "ImpactItem": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "max_depth_m": {
+          "title": "Max Depth M",
+          "type": "number"
+        },
+        "mean_depth_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mean Depth M"
+        },
+        "exposed_fraction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exposed Fraction"
+        },
+        "category": {
+          "anyOf": [
+            {
+              "enum": [
+                "none",
+                "watch",
+                "moderate",
+                "severe"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "water_reaches_building": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Water Reaches Building"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "open",
+                "caution",
+                "flooded",
+                "closed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "deck_elevation_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deck Elevation M"
+        },
+        "water_surface_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Water Surface M"
+        }
+      },
+      "required": [
+        "entity_id",
+        "max_depth_m"
+      ],
+      "title": "ImpactItem",
+      "type": "object"
+    },
+    "MassBalance": {
+      "additionalProperties": false,
+      "properties": {
+        "initial_m3": {
+          "title": "Initial M3",
+          "type": "number"
+        },
+        "rainfall_m3": {
+          "title": "Rainfall M3",
+          "type": "number"
+        },
+        "river_in_m3": {
+          "title": "River In M3",
+          "type": "number"
+        },
+        "river_out_m3": {
+          "title": "River Out M3",
+          "type": "number"
+        },
+        "drainage_m3": {
+          "title": "Drainage M3",
+          "type": "number"
+        },
+        "stored_m3": {
+          "title": "Stored M3",
+          "type": "number"
+        },
+        "balance_error_m3": {
+          "title": "Balance Error M3",
+          "type": "number"
+        }
+      },
+      "required": [
+        "initial_m3",
+        "rainfall_m3",
+        "river_in_m3",
+        "river_out_m3",
+        "drainage_m3",
+        "stored_m3",
+        "balance_error_m3"
+      ],
+      "title": "MassBalance",
+      "type": "object"
+    },
+    "ScenarioState": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "city_id": {
+          "title": "City Id",
+          "type": "string"
+        },
+        "preset": {
+          "enum": [
+            "mild",
+            "heavy",
+            "extreme"
+          ],
+          "title": "Preset",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "paused",
+            "running"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "tick": {
+          "title": "Tick",
+          "type": "integer"
+        },
+        "epoch": {
+          "title": "Epoch",
+          "type": "integer"
+        },
+        "state_version": {
+          "title": "State Version",
+          "type": "integer"
+        },
+        "simulated_seconds": {
+          "title": "Simulated Seconds",
+          "type": "integer"
+        },
+        "grid_width": {
+          "title": "Grid Width",
+          "type": "integer"
+        },
+        "grid_height": {
+          "title": "Grid Height",
+          "type": "integer"
+        },
+        "cell_size_m": {
+          "title": "Cell Size M",
+          "type": "number"
+        },
+        "x_centers_m": {
+          "items": {
+            "type": "number"
+          },
+          "title": "X Centers M",
+          "type": "array"
+        },
+        "y_centers_m": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Y Centers M",
+          "type": "array"
+        },
+        "terrain_m": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Terrain M",
+          "type": "array"
+        },
+        "depth_m": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Depth M",
+          "type": "array"
+        },
+        "parameters": {
+          "$ref": "#/$defs/SimulationParameters"
+        },
+        "impacts": {
+          "$ref": "#/$defs/ImpactAssessment"
+        },
+        "mass_balance": {
+          "$ref": "#/$defs/MassBalance"
+        },
+        "maximum_depth_m": {
+          "title": "Maximum Depth M",
+          "type": "number"
+        },
+        "affected_buildings": {
+          "title": "Affected Buildings",
+          "type": "integer"
+        },
+        "exposed_roads": {
+          "title": "Exposed Roads",
+          "type": "integer"
+        },
+        "closed_bridges": {
+          "title": "Closed Bridges",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "seed",
+        "city_id",
+        "preset",
+        "status",
+        "tick",
+        "epoch",
+        "state_version",
+        "simulated_seconds",
+        "grid_width",
+        "grid_height",
+        "cell_size_m",
+        "x_centers_m",
+        "y_centers_m",
+        "terrain_m",
+        "depth_m",
+        "parameters",
+        "impacts",
+        "mass_balance",
+        "maximum_depth_m",
+        "affected_buildings",
+        "exposed_roads",
+        "closed_bridges"
+      ],
+      "title": "ScenarioState",
+      "type": "object"
+    },
+    "SimulationEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "tick": {
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "simulated_seconds": {
+          "minimum": 0,
+          "title": "Simulated Seconds",
+          "type": "integer"
+        },
+        "state_version": {
+          "minimum": 1,
+          "title": "State Version",
+          "type": "integer"
+        },
+        "event_type": {
+          "title": "Event Type",
+          "type": "string"
+        },
+        "entity_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Entity Ids",
+          "type": "array"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "title": "Payload",
+          "type": "object"
+        }
+      },
+      "required": [
+        "event_id",
+        "scenario_id",
+        "tick",
+        "simulated_seconds",
+        "state_version",
+        "event_type",
+        "entity_ids",
+        "payload"
+      ],
+      "title": "SimulationEvent",
+      "type": "object"
+    },
+    "SimulationParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "rainfall_mm_h": {
+          "maximum": 300,
+          "minimum": 0,
+          "title": "Rainfall Mm H",
+          "type": "number"
+        },
+        "river_level_m": {
+          "maximum": 5,
+          "minimum": -2,
+          "title": "River Level M",
+          "type": "number"
+        },
+        "drainage_effectiveness": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Drainage Effectiveness",
+          "type": "number"
+        },
+        "speed": {
+          "maximum": 8,
+          "minimum": 0.25,
+          "title": "Speed",
+          "type": "number"
+        }
+      },
+      "required": [
+        "rainfall_mm_h",
+        "river_level_m",
+        "drainage_effectiveness",
+        "speed"
+      ],
+      "title": "SimulationParameters",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "state": {
+      "$ref": "#/$defs/ScenarioState"
+    },
+    "events": {
+      "items": {
+        "$ref": "#/$defs/SimulationEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    }
+  },
+  "required": [
+    "state",
+    "events"
+  ],
+  "title": "ScenarioEnvelope",
+  "type": "object"
+}

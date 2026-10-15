@@ -1,5 +1,7 @@
 # System Architecture
 
+> **Part 3 implementation status:** The local FastAPI service is authoritative for flood scenario state. The implementation described in the Part 3 section below supersedes future-state components in this planning document. No classifier, agent coordinator, WebSocket stream, route planner, or rescue assignment service is implemented yet.
+
 ## Design principles
 
 1. Build a modular monolith that starts with one local command.
@@ -90,3 +92,9 @@ A seed-based generator creates a bounded fictional terrain grid, river, district
 ## Deployment shape
 
 For the hackathon, run a local FastAPI process and Vite-built frontend on one laptop. A desktop wrapper, containers, remote database, and multi-service deployment are deferred unless a concrete integration need arises.
+
+## Part 3 live scenario path
+
+The browser requests the generated city and active scenario over versioned local REST endpoints. `ScenarioStore` serializes mutations with a process lock and SQLite `BEGIN IMMEDIATE`, checks `expected_version`, applies a fixed flood tick in Python/NumPy, updates derived impacts, records compact transition events, and commits state and events together. The frontend renders returned terrain/depth/impact values; it does not implement hydraulic calculations. Each scenario persists its own seed, parameters, compressed depth array, tick, epoch, version, accounting totals, events, and periodic depth checkpoints. Replay is read-only and reconstructs from the nearest checkpoint plus deterministic tick events.
+
+See [PART_03_IMPLEMENTATION.md](PART_03_IMPLEMENTATION.md) for REST contracts and [FLOOD_SIMULATION_METHOD.md](FLOOD_SIMULATION_METHOD.md) for numerical details.

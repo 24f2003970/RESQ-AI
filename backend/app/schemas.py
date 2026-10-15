@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -108,10 +108,19 @@ class ScenarioMetadata(Entity):
     description: str
 
 
+class TerrainGrid(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
+    cell_size_m: float = Field(gt=0)
+    x_centers_m: list[float]
+    y_centers_m: list[float]
+    elevation_m: list[list[float]]
+
+
 class CityState(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     city: City
     scenario: ScenarioMetadata
+    terrain: TerrainGrid
     districts: list[District]
     buildings: list[Building]
     roads: list[Road]
@@ -152,3 +161,115 @@ class Health(BaseModel):
     service: str
     version: str
     mode: Literal["local"]
+
+
+class SimulationParameters(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
+    rainfall_mm_h: float = Field(ge=0, le=300)
+    river_level_m: float = Field(ge=-2, le=5)
+    drainage_effectiveness: float = Field(ge=0, le=1)
+    speed: float = Field(ge=0.25, le=8)
+
+
+class ScenarioCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    name: str = Field(min_length=1, max_length=80)
+    seed: int = Field(ge=0, le=2_147_483_647, default=2026)
+    preset: Literal["mild", "heavy", "extreme"] = "mild"
+
+
+class ParameterUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    rainfall_mm_h: float | None = Field(default=None, ge=0, le=300)
+    river_level_m: float | None = Field(default=None, ge=-2, le=5)
+    drainage_effectiveness: float | None = Field(default=None, ge=0, le=1)
+    speed: float | None = Field(default=None, ge=0.25, le=8)
+    expected_version: int = Field(ge=1)
+
+
+class AdvanceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    steps: int = Field(ge=1, le=120)
+    expected_version: int = Field(ge=1)
+    single_step: bool = False
+
+
+class VersionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_version: int = Field(ge=1)
+
+
+class ImpactItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    entity_id: str
+    max_depth_m: float
+    mean_depth_m: float | None = None
+    exposed_fraction: float | None = None
+    category: Literal["none", "watch", "moderate", "severe"] | None = None
+    water_reaches_building: bool | None = None
+    status: Literal["open", "caution", "flooded", "closed"] | None = None
+    deck_elevation_m: float | None = None
+    water_surface_m: float | None = None
+
+
+class ImpactAssessment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    buildings: list[ImpactItem]
+    roads: list[ImpactItem]
+    bridges: list[ImpactItem]
+
+
+class MassBalance(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    initial_m3: float
+    rainfall_m3: float
+    river_in_m3: float
+    river_out_m3: float
+    drainage_m3: float
+    stored_m3: float
+    balance_error_m3: float
+
+
+class SimulationEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    event_id: str
+    scenario_id: str
+    tick: int = Field(ge=0)
+    simulated_seconds: int = Field(ge=0)
+    state_version: int = Field(ge=1)
+    event_type: str
+    entity_ids: list[str]
+    payload: dict[str, Any]
+
+
+class ScenarioState(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str
+    name: str
+    seed: int
+    city_id: str
+    preset: Literal["mild", "heavy", "extreme"]
+    status: Literal["paused", "running"]
+    tick: int
+    epoch: int
+    state_version: int
+    simulated_seconds: int
+    grid_width: int
+    grid_height: int
+    cell_size_m: float
+    x_centers_m: list[float]
+    y_centers_m: list[float]
+    terrain_m: list[list[float]]
+    depth_m: list[list[float]]
+    parameters: SimulationParameters
+    impacts: ImpactAssessment
+    mass_balance: MassBalance
+    maximum_depth_m: float
+    affected_buildings: int
+    exposed_roads: int
+    closed_bridges: int
+
+
+class ScenarioEnvelope(BaseModel):
+    state: ScenarioState
+    events: list[SimulationEvent]

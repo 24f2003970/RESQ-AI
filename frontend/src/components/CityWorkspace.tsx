@@ -8,9 +8,11 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowDownToLine,
+  ArrowRight,
   Bot,
   Building2,
   ChevronRight,
+  Clock3,
   Hospital,
   Layers3,
   RefreshCw,
@@ -19,12 +21,12 @@ import {
   ShieldCheck,
   Trees,
   Truck,
-  Users,
   Waves,
   X,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { Layers } from "../scene/CityScene";
-import { fetchBuilding, type Building, type CityState } from "../api/client";
+import { fetchBuilding, type Building, type CityState, type ScenarioState, type SimulationEvent } from "../api/client";
 import { Badge, Help, Panel, Row } from "./ui";
 import Inspector from "./Inspector";
 
@@ -43,11 +45,15 @@ function CityScene(props: ComponentProps<typeof LazyCityScene>) {
 
 export default function CityWorkspace({
   city,
+  scenario,
+  events,
   studio,
   status,
   retry,
 }: {
   city: CityState;
+  scenario: ScenarioState | null;
+  events: SimulationEvent[];
   studio: boolean;
   status: string;
   retry: () => void;
@@ -64,6 +70,8 @@ export default function CityWorkspace({
     facilities: true,
     districts: false,
     units: true,
+    flood: true,
+    infrastructure: true,
   });
   useEffect(() => {
     setSelected(null);
@@ -91,10 +99,6 @@ export default function CityWorkspace({
       });
     return () => controller.abort();
   }, [selectedId, city]);
-  const totalOccupants = city.buildings.reduce(
-    (total, b) => total + b.occupants,
-    0,
-  );
   function downloadSnapshot() {
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(city, null, 2)], { type: "application/json" }),
@@ -123,9 +127,12 @@ export default function CityWorkspace({
               : "A clear picture. A prepared response."}
           </p>
         </div>
-        <button className="secondary-button" onClick={downloadSnapshot}>
-          <ArrowDownToLine size={15} /> Export snapshot
-        </button>
+        <div className="workspace-actions">
+          <Link className="secondary-button" to="/scenarios">Scenario Lab <ArrowRight size={14}/></Link>
+          <button className="secondary-button" onClick={downloadSnapshot}>
+            <ArrowDownToLine size={15} /> Export snapshot
+          </button>
+        </div>
       </div>
       {status === "offline" && (
         <div className="connection-banner" role="alert">
@@ -140,28 +147,32 @@ export default function CityWorkspace({
         <div className="stats-grid">
           {[
             {
-              label: "City buildings",
-              value: city.buildings.length,
+              label: "Rainfall intensity",
+              value: scenario?.parameters.rainfall_mm_h.toFixed(0) ?? "—",
+              unit: "mm/h",
+              icon: Waves,
+              note: scenario?.preset ? `${scenario.preset} synthetic scenario` : "Loading simulation state",
+            },
+            {
+              label: "Simulated elapsed time",
+              value: scenario ? `${String(Math.floor(scenario.simulated_seconds / 3600)).padStart(2, "0")}:${String(Math.floor((scenario.simulated_seconds % 3600) / 60)).padStart(2, "0")}` : "00:00",
+              unit: "",
+              icon: Clock3,
+              note: scenario?.status === "running" ? "Advancing in Scenario Lab" : "Simulation paused",
+            },
+            {
+              label: "Maximum flood depth",
+              value: scenario?.maximum_depth_m.toFixed(2) ?? "0.00",
+              unit: "m",
+              icon: Waves,
+              note: "Peak backend-computed cell depth",
+            },
+            {
+              label: "Buildings reached",
+              value: scenario?.affected_buildings ?? 0,
+              unit: "",
               icon: Building2,
-              note: `${city.districts.length} districts mapped`,
-            },
-            {
-              label: "Seeded occupants",
-              value: totalOccupants.toLocaleString(),
-              icon: Users,
-              note: "Fictional population inventory",
-            },
-            {
-              label: "Emergency facilities",
-              value: city.hospitals.length + city.shelters.length,
-              icon: Hospital,
-              note: `${city.hospitals.length} hospital · ${city.shelters.length} shelter`,
-            },
-            {
-              label: "Response units",
-              value: city.rescue_units.length,
-              icon: Truck,
-              note: "All units on standby",
+              note: "Footprint samples at ≥0.05 m",
             },
           ].map((s) => (
             <div className="stat-card" key={s.label}>
@@ -169,7 +180,7 @@ export default function CityWorkspace({
                 <span>{s.label}</span>
                 <s.icon size={17} />
               </div>
-              <strong>{s.value}</strong>
+              <strong>{s.value}<small className="stat-unit">{s.unit}</small></strong>
               <small>
                 <i />
                 {s.note}
@@ -209,6 +220,7 @@ export default function CityWorkspace({
             <div className="viewport-wrap">
               <CityScene
                 city={city}
+                scenario={scenario}
                 selected={selected}
                 onSelect={setSelectedId}
                 layers={layers}
@@ -243,9 +255,7 @@ export default function CityWorkspace({
                         />
                       </label>
                     ))}
-                    <p>
-                      Flood, risk and rescue route layers arrive in later parts.
-                    </p>
+                    <p>Flood depth and infrastructure status come from the local simulation API. Risk and rescue routing are not implemented in Part 3.</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -263,8 +273,15 @@ export default function CityWorkspace({
                 <i className="legend-facility" />
                 Facilities
               </span>
+              <span className="mini-depth-legend" aria-label="Flood depth legend">
+                <i className="depth-shallow" title="Shallow: 0.05–0.30 m"/>
+                <i className="depth-moderate" title="Moderate: 0.30–1.00 m"/>
+                <i className="depth-deep" title="Deep: 1.00–2.00 m"/>
+                <i className="depth-extreme" title="Very deep: over 2.00 m"/>
+                <span>Water depth</span>
+              </span>
               <span className="viewport-state">
-                BASELINE · NO DISASTER ACTIVE
+                {scenario ? `${scenario.status.toUpperCase()} · T+${String(Math.floor(scenario.simulated_seconds / 3600)).padStart(2, "0")}:${String(Math.floor((scenario.simulated_seconds % 3600) / 60)).padStart(2, "0")} · V${scenario.state_version}` : "LOADING SCENARIO"}
               </span>
             </div>
           </section>
@@ -284,16 +301,15 @@ export default function CityWorkspace({
                   {city.bridges.length}
                   <small>bridges</small>
                 </strong>
-                <Badge>Baseline open</Badge>
+                  <Badge tone={scenario?.exposed_roads ? "amber" : undefined}>{scenario?.exposed_roads ?? 0} exposed</Badge>
               </div>
               <div className="infrastructure-track">
                 {city.roads.map((r) => (
-                  <span key={r.id} title={`${r.name} · ${r.status}`} />
+                  <span key={r.id} className={`road-${scenario?.impacts.roads.find((road) => road.entity_id === r.id)?.status ?? "open"}`} title={`${r.name} · ${scenario?.impacts.roads.find((road) => road.entity_id === r.id)?.status ?? r.status}`} />
                 ))}
               </div>
               <p className="muted">
-                Connected seed inventory. Closures and flood impacts are not
-                active yet.
+                Water depth determines caution and flooded status. {scenario?.closed_bridges ?? 0} bridges currently closed by the modeled river stage.
               </p>
             </Panel>
             <Panel
@@ -324,24 +340,22 @@ export default function CityWorkspace({
           <Panel
             title="Workspace activity"
             eyebrow="STATE RECORD"
-            action={<Badge>Version {city.scenario.state_version}</Badge>}
+            action={<Badge>Version {scenario?.state_version ?? city.scenario.state_version}</Badge>}
           >
-            <div className="timeline-entry">
-              <span className="timeline-point" />
-              <span className="mono">T+00:00</span>
-              <div>
-                <strong>Baseline city loaded</strong>
-                <p>
-                  {city.buildings.length} buildings, {city.roads.length} roads
-                  and {city.rescue_units.length} response units from the local
-                  service.
-                </p>
-              </div>
-              <Badge>Seed {city.city.seed}</Badge>
+            <div className="command-events">
+              {events.filter((event) => event.event_type !== "simulation_tick").slice(-4).reverse().map((event) => (
+                <div className="timeline-entry" key={event.event_id}>
+                  <span className="timeline-point" />
+                  <span className="mono">T+{String(Math.floor(event.simulated_seconds / 3600)).padStart(2, "0")}:{String(Math.floor((event.simulated_seconds % 3600) / 60)).padStart(2, "0")}</span>
+                  <div><strong>{event.event_type.replaceAll("_", " ")}</strong><p>{event.entity_ids.length ? `${event.entity_ids.slice(0, 2).join(", ")}${event.entity_ids.length > 2 ? ` +${event.entity_ids.length - 2}` : ""}` : `Simulation tick ${event.tick} · state version ${event.state_version}`}</p></div>
+                  <Badge>v{event.state_version}</Badge>
+                </div>
+              ))}
+              {!events.length && <p className="muted">No scenario events are available yet.</p>}
             </div>
+            <p className="activity-note">{city.buildings.length} buildings · {scenario?.affected_buildings ?? 0} reached · {scenario?.exposed_roads ?? 0} roads at caution or flooded. These rules describe physical exposure and accessibility, not rescue priority.</p>
             <p className="activity-note">
-              Scenario metadata only. A persistent disaster event timeline will
-              be added with simulation.
+              Local SQLite stores scenario state, checkpoints, and deterministic event history.
             </p>
           </Panel>
         </div>
@@ -396,7 +410,7 @@ export default function CityWorkspace({
                 Agent recommendations will appear here once the risk and
                 planning pipeline is implemented.
               </p>
-              <Badge tone="amber">Not active in Part 2</Badge>
+              <Badge tone="amber">Unavailable · no agents implemented</Badge>
             </div>
           </section>
           <div className="provenance">
