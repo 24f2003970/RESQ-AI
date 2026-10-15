@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 from .city_service import generate_city
+from .agent_contracts import ensure_agent_event_table, persist_agent_event
 from .flood import STEP_SECONDS, channel_mask, impact_assessment, initial_depth, step
 from .schemas import (
     AdvanceRequest, ImpactAssessment, MassBalance, ParameterUpdate, ScenarioCreate,
@@ -43,6 +44,14 @@ def _params(row) -> SimulationParameters:
 
 def _balance(row) -> MassBalance:
     return MassBalance.model_validate(json.loads(row["mass_json"]))
+
+
+def _infra_revision(db,scenario_id,epoch):
+    try:
+        row=db.execute("SELECT revision FROM scenario_infrastructure WHERE scenario_id=? AND epoch=?",(scenario_id,epoch)).fetchone()
+        return row[0] if row else 0
+    except sqlite3.OperationalError:
+        return 0
 
 
 class ScenarioStore:
@@ -79,6 +88,7 @@ class ScenarioStore:
                     scenario_id TEXT NOT NULL REFERENCES scenarios(id)
                 );
             """)
+            ensure_agent_event_table(db)
             if db.execute("SELECT 1 FROM scenarios LIMIT 1").fetchone() is None:
                 self._create_row(db, ScenarioCreate(name="Riverside / Mild rainfall", seed=2026, preset="mild"), "scenario-riverside-2026")
 
@@ -118,6 +128,9 @@ class ScenarioStore:
         row = db.execute("SELECT * FROM scenarios WHERE id=?", (sid,)).fetchone()
         self._event(db, row, "scenario_created", {"name": request.name, "preset": request.preset, "seed": request.seed}, version=1)
         self._event(db, row, "simulation_paused", {"reason": "new scenario starts paused"}, version=1)
+        persist_agent_event(db,event_type="scenario_created",scenario_id=sid,scenario_epoch=row["epoch"],
+            simulation_tick=row["tick"],state_version=row["state_version"],source_module="scenario_store",
+            payload={"name":request.name,"preset":request.preset,"seed":request.seed},infrastructure_revision=0)
         return sid
 
     def create(self, request: ScenarioCreate, idempotency_key: str) -> ScenarioEnvelope:
@@ -224,6 +237,9 @@ class ScenarioStore:
                 event_type = {"rainfall_mm_h": "rainfall_changed", "river_level_m": "river_level_changed",
                               "drainage_effectiveness": "drainage_changed", "speed": "simulation_speed_changed"}[key]
                 self._event(db, newrow, event_type, {"parameter": key, "value": value}, version=version)
+            persist_agent_event(db,event_type="parameters_changed",scenario_id=scenario_id,scenario_epoch=row["epoch"],
+                simulation_tick=newrow["tick"],state_version=version,source_module="scenario_store",infrastructure_revision=_infra_revision(db,scenario_id,row["epoch"]),
+                payload={"changes":changes,"parameters":updated.model_dump()})
             db.commit()
             return self._envelope(db, newrow)
 
@@ -269,6 +285,7 @@ class ScenarioStore:
             version = row["state_version"]
             start_tick = row["tick"]
             city = generate_city(row["seed"])
+            initial_impacts = impact_assessment(city, depth, row["seed"], params.river_level_m)
             for offset in range(1, request.steps + 1):
                 previous_impacts = impact_assessment(city, depth, row["seed"], params.river_level_m)
                 depth, delta = step(depth, row["seed"], params)
@@ -292,6 +309,16 @@ class ScenarioStore:
                     db.execute("INSERT OR REPLACE INTO checkpoints VALUES(?,?,?,?,?,?)",
                         (scenario_id, row["epoch"], tick, zlib.compress(depth.tobytes()), _json(balance), version))
             newrow = db.execute("SELECT * FROM scenarios WHERE id=?", (scenario_id,)).fetchone()
+            changed_ids=[]
+            for key in ("buildings","roads","bridges"):
+                field="category" if key=="buildings" else "status"
+                before={item["entity_id"]:item for item in initial_impacts[key]}
+                changed_ids.extend(item["entity_id"] for item in current_impacts[key] if item[field]!=before[item["entity_id"]][field])
+            persist_agent_event(db,event_type="simulation_advanced",scenario_id=scenario_id,scenario_epoch=row["epoch"],
+                simulation_tick=newrow["tick"],state_version=newrow["state_version"],source_module="scenario_store",infrastructure_revision=_infra_revision(db,scenario_id,row["epoch"]),
+                affected_entity_ids=sorted(changed_ids),payload={"from_tick":start_tick,"to_tick":newrow["tick"],
+                "from_state_version":row["state_version"],"to_state_version":newrow["state_version"],
+                "changed_exposure_or_access_ids":sorted(changed_ids),"parameters":params.model_dump()})
             result = self._envelope(db, newrow)
             db.commit()
             return result
@@ -309,6 +336,9 @@ class ScenarioStore:
                        (epoch, version, _json(params.model_dump()), zlib.compress(depth.tobytes()), _json(balance.model_dump()), scenario_id))
             newrow = db.execute("SELECT * FROM scenarios WHERE id=?", (scenario_id,)).fetchone()
             self._event(db, newrow, "simulation_reset", {"seed": row["seed"], "parameters": params.model_dump()}, version=version)
+            persist_agent_event(db,event_type="scenario_reset",scenario_id=scenario_id,scenario_epoch=epoch,
+                simulation_tick=0,state_version=version,source_module="scenario_store",infrastructure_revision=_infra_revision(db,scenario_id,epoch),
+                payload={"previous_epoch":row["epoch"],"new_epoch":epoch})
             result = self._envelope(db, newrow)
             db.commit()
             return result

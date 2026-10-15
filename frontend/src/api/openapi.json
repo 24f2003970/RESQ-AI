@@ -1066,6 +1066,337 @@
           }
         }
       }
+    },
+    "/api/v1/agents/registry": {
+      "get": {
+        "summary": "Agent Registry",
+        "operationId": "agent_registry_api_v1_agents_registry_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AgentDefinition"
+                  },
+                  "type": "array",
+                  "title": "Response Agent Registry Api V1 Agents Registry Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/agent-status": {
+      "get": {
+        "summary": "Agent Status",
+        "operationId": "agent_status_api_v1_scenarios__scenario_id__agent_status_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentDashboard"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/recommendations/latest": {
+      "get": {
+        "summary": "Latest Agent Recommendation",
+        "operationId": "latest_agent_recommendation_api_v1_scenarios__scenario_id__recommendations_latest_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/RescuePlan"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Latest Agent Recommendation Api V1 Scenarios  Scenario Id  Recommendations Latest Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/agent-events": {
+      "get": {
+        "summary": "Agent Events",
+        "operationId": "agent_events_api_v1_scenarios__scenario_id__agent_events_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgentEventEnvelope"
+                  },
+                  "title": "Response Agent Events Api V1 Scenarios  Scenario Id  Agent Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/agent-runs": {
+      "get": {
+        "summary": "Agent Runs",
+        "operationId": "agent_runs_api_v1_scenarios__scenario_id__agent_runs_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgentRunRecord"
+                  },
+                  "title": "Response Agent Runs Api V1 Scenarios  Scenario Id  Agent Runs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent-traces/{event_id}": {
+      "get": {
+        "summary": "Agent Trace",
+        "operationId": "agent_trace_api_v1_agent_traces__event_id__get",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTraceDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/intelligence-assessments": {
+      "post": {
+        "summary": "Run Intelligence Assessment",
+        "operationId": "run_intelligence_assessment_api_v1_scenarios__scenario_id__intelligence_assessments_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentEventAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent-events/{event_id}/retry": {
+      "post": {
+        "summary": "Retry Agent Event",
+        "operationId": "retry_agent_event_api_v1_agent_events__event_id__retry_post",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentEventAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1096,6 +1427,571 @@
           "expected_version"
         ],
         "title": "AdvanceRequest"
+      },
+      "AgentDashboard": {
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "scenario_epoch": {
+            "type": "integer",
+            "title": "Scenario Epoch"
+          },
+          "simulation_state_version": {
+            "type": "integer",
+            "title": "Simulation State Version"
+          },
+          "infrastructure_revision": {
+            "type": "integer",
+            "title": "Infrastructure Revision"
+          },
+          "definitions": {
+            "items": {
+              "$ref": "#/components/schemas/AgentDefinition"
+            },
+            "type": "array",
+            "title": "Definitions"
+          },
+          "latest_runs": {
+            "items": {
+              "$ref": "#/components/schemas/AgentRunRecord"
+            },
+            "type": "array",
+            "title": "Latest Runs"
+          },
+          "latest_trace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentTrace"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pending_events": {
+            "type": "integer",
+            "title": "Pending Events",
+            "default": 0
+          },
+          "available_ground_units": {
+            "type": "integer",
+            "title": "Available Ground Units",
+            "default": 0
+          },
+          "reserved_ground_units": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reserved Ground Units"
+          },
+          "commander_action_required": {
+            "type": "boolean",
+            "title": "Commander Action Required",
+            "default": false
+          },
+          "approved_route_review_required": {
+            "type": "boolean",
+            "title": "Approved Route Review Required",
+            "default": false
+          },
+          "approved_route_review_plan_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approved Route Review Plan Ids"
+          },
+          "manual_closure_road_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Manual Closure Road Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_id",
+          "scenario_epoch",
+          "simulation_state_version",
+          "infrastructure_revision",
+          "definitions",
+          "latest_runs"
+        ],
+        "title": "AgentDashboard"
+      },
+      "AgentDefinition": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "responsibility": {
+            "type": "string",
+            "title": "Responsibility"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "title",
+          "responsibility",
+          "position"
+        ],
+        "title": "AgentDefinition"
+      },
+      "AgentEventAccepted": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "scenario_epoch": {
+            "type": "integer",
+            "title": "Scenario Epoch"
+          },
+          "simulation_tick": {
+            "type": "integer",
+            "title": "Simulation Tick"
+          },
+          "simulation_state_version": {
+            "type": "integer",
+            "title": "Simulation State Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "status",
+          "scenario_id",
+          "scenario_epoch",
+          "simulation_tick",
+          "simulation_state_version"
+        ],
+        "title": "AgentEventAccepted"
+      },
+      "AgentEventEnvelope": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "scenario_epoch": {
+            "type": "integer",
+            "title": "Scenario Epoch"
+          },
+          "simulation_tick": {
+            "type": "integer",
+            "title": "Simulation Tick"
+          },
+          "simulation_state_version": {
+            "type": "integer",
+            "title": "Simulation State Version"
+          },
+          "infrastructure_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Infrastructure Revision"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At Utc"
+          },
+          "source_module": {
+            "type": "string",
+            "title": "Source Module"
+          },
+          "affected_entity_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Affected Entity Ids"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          },
+          "correlation_id": {
+            "type": "string",
+            "title": "Correlation Id"
+          },
+          "causation_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Causation Event Id"
+          },
+          "outbox_insert_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outbox Insert Ms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "event_type",
+          "scenario_id",
+          "scenario_epoch",
+          "simulation_tick",
+          "simulation_state_version",
+          "created_at_utc",
+          "source_module",
+          "correlation_id"
+        ],
+        "title": "AgentEventEnvelope"
+      },
+      "AgentRunRecord": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "correlation_id": {
+            "type": "string",
+            "title": "Correlation Id"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "scenario_epoch": {
+            "type": "integer",
+            "title": "Scenario Epoch"
+          },
+          "simulation_state_version": {
+            "type": "integer",
+            "title": "Simulation State Version"
+          },
+          "infrastructure_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Infrastructure Revision"
+          },
+          "agent_name": {
+            "type": "string",
+            "title": "Agent Name"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "running",
+              "completed",
+              "skipped",
+              "failed",
+              "superseded",
+              "degraded"
+            ],
+            "title": "Status"
+          },
+          "started_at_utc": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At Utc"
+          },
+          "completed_at_utc": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At Utc"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "input_hash": {
+            "type": "string",
+            "title": "Input Hash"
+          },
+          "input_snapshot_ref": {
+            "type": "string",
+            "title": "Input Snapshot Ref"
+          },
+          "output_summary": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Output Summary"
+          },
+          "numerical_evidence": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Numerical Evidence"
+          },
+          "proposed_action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Action"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "default": ""
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "attempt": {
+            "type": "integer",
+            "title": "Attempt",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "event_id",
+          "correlation_id",
+          "scenario_id",
+          "scenario_epoch",
+          "simulation_state_version",
+          "infrastructure_revision",
+          "agent_name",
+          "status",
+          "input_hash",
+          "input_snapshot_ref"
+        ],
+        "title": "AgentRunRecord"
+      },
+      "AgentTrace": {
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "title": "Trace Id"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "correlation_id": {
+            "type": "string",
+            "title": "Correlation Id"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "scenario_epoch": {
+            "type": "integer",
+            "title": "Scenario Epoch"
+          },
+          "simulation_state_version": {
+            "type": "integer",
+            "title": "Simulation State Version"
+          },
+          "infrastructure_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Infrastructure Revision"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "failed",
+              "superseded",
+              "degraded"
+            ],
+            "title": "Status"
+          },
+          "plan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Id"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "evidence": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Evidence"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At Utc"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trace_id",
+          "event_id",
+          "correlation_id",
+          "scenario_id",
+          "scenario_epoch",
+          "simulation_state_version",
+          "infrastructure_revision",
+          "status",
+          "summary",
+          "created_at_utc"
+        ],
+        "title": "AgentTrace"
+      },
+      "AgentTraceDetail": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/AgentEventEnvelope"
+          },
+          "event_status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "superseded",
+              "degraded"
+            ],
+            "title": "Event Status"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentRunRecord"
+            },
+            "type": "array",
+            "title": "Agents"
+          },
+          "trace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentTrace"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "related_plan": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Related Plan"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event",
+          "event_status",
+          "attempts",
+          "agents"
+        ],
+        "title": "AgentTraceDetail"
       },
       "Bridge": {
         "properties": {
@@ -2343,6 +3239,17 @@
             "type": "integer",
             "title": "Infrastructure Revision",
             "default": 0
+          },
+          "trigger_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trigger Event Id"
           },
           "simulation_tick": {
             "type": "integer",

@@ -1,0 +1,28 @@
+{
+  "properties": {
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "responsibility": {
+      "title": "Responsibility",
+      "type": "string"
+    },
+    "position": {
+      "title": "Position",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "name",
+    "title",
+    "responsibility",
+    "position"
+  ],
+  "title": "AgentDefinition",
+  "type": "object"
+}

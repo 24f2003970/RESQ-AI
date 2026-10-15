@@ -11,24 +11,26 @@ RESQ-AI is an offline-first disaster response command center for a deterministic
 3. Inspect backend-computed current exposure and event history; replay a selected tick.
 4. Compare current exposure with a separately labeled 30-minute synthetic ML estimate in the Model Intelligence Lab.
 5. Generate a flood-aware rescue plan, compare exact constrained assignment with a nearest-unit baseline, review ranked destinations, and explicitly approve or reject a proposal.
-6. Close a road from the Command Center and see pending proposals invalidated before generating a replacement.
+6. Observe six persisted algorithmic agents replan after measured flood/access changes or a manual road closure, review a replacement in the 3D command center, then make an explicit human decision.
 
 Every displayed metric must come from backend state or a recorded experiment. Simulated data, assumptions, and model results will be labeled as such. No hosted AI inference or external AI API key is part of the design. Once dependencies and any optional data are installed, the application must run locally without network access.
 
 ## Planned stack
 
 - **Web:** React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion, React Three Fiber, Three.js, Recharts.
-- **Service:** Python, FastAPI, Pydantic, SQLite, local REST and WebSocket endpoints.
+- **Service:** Python, FastAPI, Pydantic, SQLite, local REST endpoints with safe polling.
 - **Model and algorithms:** scikit-learn, NumPy, pandas, joblib, NetworkX; simple deterministic algorithms first. OR-Tools is optional and must justify its added setup cost.
 - **Verification:** pytest, TypeScript type checks and linting, component and integration checks, deterministic simulation scenarios.
 
 The backend owns scenario state, simulation steps, predictions, agent decisions, assignments, and event history. The 3D scene renders a read-only projection of that state and sends user commands back through the API.
 
-## Current implementation — Parts 3, 4 and 5
+## Current implementation — Parts 3–6
 
 The local full-stack foundation renders backend-generated city geometry and inventory. Command Center and Digital Twin Studio include building selection, an API-backed inspector, camera reset/focus/orbit/zoom/pan, map layers, snapshot export, and a building-inventory fallback. The other three routes explain their future scope. Connection status is based on successful local API requests, with retries and a stale-snapshot warning when the service disconnects.
 
 The seeded baseline contains 72 buildings, four districts, ten road corridors, six bridge crossings, one hospital, one shelter, two parks, and five response units. Part 3 adds a deterministic 20 m flood grid, SQLite scenarios/events/checkpoints, replay, and exposure modeling. Part 4 provides offline training/inference and a predicted exposure layer. Part 5 adds an intersection-connected NetworkX route graph, bridge segments, flood-aware ground routes, transparent destination priorities, constrained assignment with a baseline comparison, persistent plan proposals, commander approval/rejection, manual closure overlays, and 3D route display. All simulation and ML data are synthetic and are not validated for real disasters. Boat routing remains unsupported.
+
+Part 6 adds six deterministic local agents, a transaction-backed SQLite event outbox, durable run/decision traces, stale-state rejection, automatic route-aware proposal updates, and a polling AI Decision Explorer. It reuses the Part 5 ML, priority, route and SciPy assignment contracts. Recommendations remain subject to commander approval. There is no hosted AI, mission execution, or completion/release simulation. Details: `docs/PART_06_IMPLEMENTATION.md`, `docs/AGENT_ARCHITECTURE.md`, `docs/EVENT_ORCHESTRATION.md`, `docs/DECISION_TRACE_CONTRACT.md`, `docs/REPLANNING_POLICY.md`, and `docs/PART_06_VERIFICATION.md`.
 
 Part 5 assumptions and verification are documented in `docs/PART_05_IMPLEMENTATION.md`, `docs/PART_05_VERIFICATION.md`, `docs/ROUTING_MODEL.md`, `docs/RESOURCE_OPTIMIZATION.md`, and `docs/RESCUE_PLAN_CONTRACT.md`.
 
@@ -47,6 +49,13 @@ frontend/
   src/test/        # API/interaction tests; generated fixture is test-only
 docs/
   ARCHITECTURE.md
+  PART_06_IMPLEMENTATION.md
+  PART_06_VERIFICATION.md
+  AGENT_ARCHITECTURE.md
+  EVENT_ORCHESTRATION.md
+  DECISION_TRACE_CONTRACT.md
+  REPLANNING_POLICY.md
+  AGENT_DEMO_SCENARIO.md
   DATA_MODEL.md
   DEVELOPMENT_ROADMAP.md
   ML_STRATEGY.md
@@ -119,4 +128,4 @@ Regenerate and commit the OpenAPI schema, JSON Schemas, test fixture, and TypeSc
 
 Two student developers are planned: one owns the service, simulation, and model pipeline; the other owns the web interface and Digital Twin. Both review integration pull requests and jointly rehearse the demo. See [the roadmap](docs/DEVELOPMENT_ROADMAP.md) and [team workflow](docs/TEAM_WORKFLOW.md).
 
-**Status:** Part 3 flood simulation vertical slice. Risk ML, rescue agents, routing optimization, and earthquake scenarios remain future work.
+**Status:** Parts 3–6 implemented on the Part 6 feature branch. Earthquake scenarios, live-data integration, water rescue, and mission execution remain future work.

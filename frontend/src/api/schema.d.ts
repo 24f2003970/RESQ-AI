@@ -378,6 +378,244 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/scenarios/{scenario_id}/rescue-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Rescue Plan */
+        post: operations["create_rescue_plan_api_v1_scenarios__scenario_id__rescue_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rescue-plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Rescue Plan */
+        get: operations["get_rescue_plan_api_v1_rescue_plans__plan_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rescue-plans/{plan_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide Rescue Plan */
+        post: operations["decide_rescue_plan_api_v1_rescue_plans__plan_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rescue-plans/{plan_id}/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Modify Rescue Assignments */
+        patch: operations["modify_rescue_assignments_api_v1_rescue_plans__plan_id__assignments_patch"];
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/road-closures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close Road */
+        post: operations["close_road_api_v1_scenarios__scenario_id__road_closures_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/road-closures/{road_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Reopen Road */
+        delete: operations["reopen_road_api_v1_scenarios__scenario_id__road_closures__road_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agents/registry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Registry */
+        get: operations["agent_registry_api_v1_agents_registry_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/agent-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Status */
+        get: operations["agent_status_api_v1_scenarios__scenario_id__agent_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/recommendations/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Latest Agent Recommendation */
+        get: operations["latest_agent_recommendation_api_v1_scenarios__scenario_id__recommendations_latest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/agent-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Events */
+        get: operations["agent_events_api_v1_scenarios__scenario_id__agent_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/agent-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Runs */
+        get: operations["agent_runs_api_v1_scenarios__scenario_id__agent_runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent-traces/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Trace */
+        get: operations["agent_trace_api_v1_agent_traces__event_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/intelligence-assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Intelligence Assessment */
+        post: operations["run_intelligence_assessment_api_v1_scenarios__scenario_id__intelligence_assessments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent-events/{event_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Agent Event */
+        post: operations["retry_agent_event_api_v1_agent_events__event_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -393,6 +631,219 @@ export interface components {
              * @default false
              */
             single_step: boolean;
+        };
+        /** AgentDashboard */
+        AgentDashboard: {
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Epoch */
+            scenario_epoch: number;
+            /** Simulation State Version */
+            simulation_state_version: number;
+            /** Infrastructure Revision */
+            infrastructure_revision: number;
+            /** Definitions */
+            definitions: components["schemas"]["AgentDefinition"][];
+            /** Latest Runs */
+            latest_runs: components["schemas"]["AgentRunRecord"][];
+            latest_trace?: components["schemas"]["AgentTrace"] | null;
+            /**
+             * Pending Events
+             * @default 0
+             */
+            pending_events: number;
+            /**
+             * Available Ground Units
+             * @default 0
+             */
+            available_ground_units: number;
+            /** Reserved Ground Units */
+            reserved_ground_units?: string[];
+            /**
+             * Commander Action Required
+             * @default false
+             */
+            commander_action_required: boolean;
+            /**
+             * Approved Route Review Required
+             * @default false
+             */
+            approved_route_review_required: boolean;
+            /** Approved Route Review Plan Ids */
+            approved_route_review_plan_ids?: string[];
+            /** Manual Closure Road Ids */
+            manual_closure_road_ids?: string[];
+        };
+        /** AgentDefinition */
+        AgentDefinition: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Responsibility */
+            responsibility: string;
+            /** Position */
+            position: number;
+        };
+        /** AgentEventAccepted */
+        AgentEventAccepted: {
+            /** Event Id */
+            event_id: string;
+            /** Status */
+            status: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Epoch */
+            scenario_epoch: number;
+            /** Simulation Tick */
+            simulation_tick: number;
+            /** Simulation State Version */
+            simulation_state_version: number;
+        };
+        /** AgentEventEnvelope */
+        AgentEventEnvelope: {
+            /** Event Id */
+            event_id: string;
+            /** Event Type */
+            event_type: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Epoch */
+            scenario_epoch: number;
+            /** Simulation Tick */
+            simulation_tick: number;
+            /** Simulation State Version */
+            simulation_state_version: number;
+            /** Infrastructure Revision */
+            infrastructure_revision?: number | null;
+            /**
+             * Created At Utc
+             * Format: date-time
+             */
+            created_at_utc: string;
+            /** Source Module */
+            source_module: string;
+            /** Affected Entity Ids */
+            affected_entity_ids?: string[];
+            /** Payload */
+            payload?: {
+                [key: string]: unknown;
+            };
+            /** Correlation Id */
+            correlation_id: string;
+            /** Causation Event Id */
+            causation_event_id?: string | null;
+            /** Outbox Insert Ms */
+            outbox_insert_ms?: number | null;
+        };
+        /** AgentRunRecord */
+        AgentRunRecord: {
+            /** Run Id */
+            run_id: string;
+            /** Event Id */
+            event_id: string;
+            /** Correlation Id */
+            correlation_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Epoch */
+            scenario_epoch: number;
+            /** Simulation State Version */
+            simulation_state_version: number;
+            /** Infrastructure Revision */
+            infrastructure_revision: number | null;
+            /** Agent Name */
+            agent_name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "waiting" | "running" | "completed" | "skipped" | "failed" | "superseded" | "degraded";
+            /** Started At Utc */
+            started_at_utc?: string | null;
+            /** Completed At Utc */
+            completed_at_utc?: string | null;
+            /** Duration Ms */
+            duration_ms?: number | null;
+            /** Input Hash */
+            input_hash: string;
+            /** Input Snapshot Ref */
+            input_snapshot_ref: string;
+            /** Output Summary */
+            output_summary?: {
+                [key: string]: unknown;
+            };
+            /** Numerical Evidence */
+            numerical_evidence?: {
+                [key: string]: unknown;
+            };
+            /** Proposed Action */
+            proposed_action?: string | null;
+            /**
+             * Explanation
+             * @default
+             */
+            explanation: string;
+            /** Error */
+            error?: string | null;
+            /**
+             * Attempt
+             * @default 0
+             */
+            attempt: number;
+        };
+        /** AgentTrace */
+        AgentTrace: {
+            /** Trace Id */
+            trace_id: string;
+            /** Event Id */
+            event_id: string;
+            /** Correlation Id */
+            correlation_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Epoch */
+            scenario_epoch: number;
+            /** Simulation State Version */
+            simulation_state_version: number;
+            /** Infrastructure Revision */
+            infrastructure_revision: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "completed" | "failed" | "superseded" | "degraded";
+            /** Plan Id */
+            plan_id?: string | null;
+            /** Summary */
+            summary: string;
+            /** Evidence */
+            evidence?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Created At Utc
+             * Format: date-time
+             */
+            created_at_utc: string;
+        };
+        /** AgentTraceDetail */
+        AgentTraceDetail: {
+            event: components["schemas"]["AgentEventEnvelope"];
+            /**
+             * Event Status
+             * @enum {string}
+             */
+            event_status: "pending" | "processing" | "completed" | "failed" | "superseded" | "degraded";
+            /** Attempts */
+            attempts: number;
+            /** Agents */
+            agents: components["schemas"]["AgentRunRecord"][];
+            trace?: components["schemas"]["AgentTrace"] | null;
+            /** Related Plan */
+            related_plan?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** Bridge */
         Bridge: {
@@ -813,6 +1264,92 @@ export interface components {
              */
             elevation_m: number;
         };
+        /** RescueAssignmentEdit */
+        RescueAssignmentEdit: {
+            /** Unit Id */
+            unit_id: string;
+            /** Destination Id */
+            destination_id: string;
+        };
+        /** RescuePlan */
+        RescuePlan: {
+            /** Plan Id */
+            plan_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Version */
+            scenario_version: number;
+            /**
+             * Scenario Epoch
+             * @default 0
+             */
+            scenario_epoch: number;
+            /**
+             * Infrastructure Revision
+             * @default 0
+             */
+            infrastructure_revision: number;
+            /** Trigger Event Id */
+            trigger_event_id?: string | null;
+            /** Simulation Tick */
+            simulation_tick: number;
+            /** Generated At */
+            generated_at: string;
+            /**
+             * Status
+             * @default proposed
+             * @enum {string}
+             */
+            status: "proposed" | "approved" | "rejected" | "superseded";
+            /** Priorities */
+            priorities: {
+                [key: string]: unknown;
+            }[];
+            /** Missions */
+            missions: {
+                [key: string]: unknown;
+            }[];
+            /** Available Assignments */
+            available_assignments: {
+                [key: string]: unknown;
+            }[];
+            /** Unreachable */
+            unreachable: {
+                [key: string]: unknown;
+            }[];
+            /** Comparison */
+            comparison: {
+                [key: string]: unknown;
+            };
+            /** Solver Status */
+            solver_status: string;
+            /** Objective */
+            objective: string;
+            /** Explanation */
+            explanation: string;
+        };
+        /** RescuePlanDecision */
+        RescuePlanDecision: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "approved" | "rejected";
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
+        /** RescuePlanModification */
+        RescuePlanModification: {
+            /** Expected Version */
+            expected_version: number;
+            /** Assignments */
+            assignments: components["schemas"]["RescueAssignmentEdit"][];
+        };
         /** RescueUnit */
         RescueUnit: {
             /** Id */
@@ -869,6 +1406,16 @@ export interface components {
              * @constant
              */
             status: "open";
+        };
+        /** RoadClosureRequest */
+        RoadClosureRequest: {
+            /** Road Id */
+            road_id: string;
+            /**
+             * Reason
+             * @default Commander closure
+             */
+            reason: string;
         };
         /** RoadNode */
         RoadNode: {
@@ -1701,6 +2248,446 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScenarioPredictionSet"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_rescue_plan_api_v1_scenarios__scenario_id__rescue_plans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RescuePlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rescue_plan_api_v1_rescue_plans__plan_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RescuePlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_rescue_plan_api_v1_rescue_plans__plan_id__decision_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RescuePlanDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RescuePlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    modify_rescue_assignments_api_v1_rescue_plans__plan_id__assignments_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RescuePlanModification"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RescuePlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_road_api_v1_scenarios__scenario_id__road_closures_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoadClosureRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reopen_road_api_v1_scenarios__scenario_id__road_closures__road_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+                road_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_registry_api_v1_agents_registry_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentDefinition"][];
+                };
+            };
+        };
+    };
+    agent_status_api_v1_scenarios__scenario_id__agent_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentDashboard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    latest_agent_recommendation_api_v1_scenarios__scenario_id__recommendations_latest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RescuePlan"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_events_api_v1_scenarios__scenario_id__agent_events_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentEventEnvelope"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_runs_api_v1_scenarios__scenario_id__agent_runs_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentRunRecord"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_trace_api_v1_agent_traces__event_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTraceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_intelligence_assessment_api_v1_scenarios__scenario_id__intelligence_assessments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentEventAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_agent_event_api_v1_agent_events__event_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentEventAccepted"];
                 };
             };
             /** @description Validation Error */

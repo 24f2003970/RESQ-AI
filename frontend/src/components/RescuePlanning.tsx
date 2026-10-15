@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Panel, Badge } from "./ui";
-import type { CityState, ScenarioState } from "../api/client";
+import { fetchLatestRecommendation, type CityState, type ScenarioState } from "../api/client";
 
 export type Plan = {
   plan_id:string; scenario_id:string; scenario_version:number; simulation_tick:number; status:string;
@@ -13,6 +13,8 @@ export type Plan = {
 
 export default function RescuePlanning({city,scenario,onPlan}:{city:CityState;scenario:ScenarioState|null;onPlan:(plan:Plan|null)=>void}) {
   const [plan,setPlanLocal]=useState<Plan|null>(null); const [assignmentKeys,setAssignmentKeys]=useState<Record<number,string>>({}); const setPlan=useCallback((p:Plan|null)=>{setPlanLocal(p);onPlan(p);setAssignmentKeys(Object.fromEntries((p?.missions??[]).map((m,i)=>[i,`${m.unit_id}|${m.destination_id}`])));},[onPlan]); const [busy,setBusy]=useState(false); const [error,setError]=useState("");
+  const planRef=useRef<Plan|null>(null);planRef.current=plan;
+  const scenarioId=scenario?.id;
   const [road,setRoad]=useState(city.roads[0]?.id??"");
   const call=useCallback(async(path:string,init?:RequestInit) => {
     const response=await fetch(`/api/v1/${path}`,{...init,headers:{"Content-Type":"application/json",...init?.headers}});
@@ -28,6 +30,11 @@ export default function RescuePlanning({city,scenario,onPlan}:{city:CityState;sc
     call(`scenarios/${encodeURIComponent(scenario.id)}/rescue-plans`,{method:"POST"}).then(value=>{if(active)setPlan(value as Plan);}).catch(e=>{if(active)setError(e instanceof Error?e.message:"Could not refresh the stale proposal.");}).finally(()=>{if(active)setBusy(false);});
     return()=>{active=false;};
   },[scenario,plan,setPlan,call]);
+  useEffect(()=>{
+    if(!scenarioId)return;let live=true;let seq=0;
+    const refresh=async()=>{const requestId=++seq;try{const found=await fetchLatestRecommendation(scenarioId);if(!live||requestId!==seq)return;const current=planRef.current;if(found&&(!current||current.plan_id!==found.plan_id||current.status!==found.status))setPlan(found as unknown as Plan);else if(!found&&current?.status==="proposed"&&current.scenario_id===scenarioId)setPlan(null);}catch{/* The command workspace remains usable if the local recommendation endpoint is temporarily unavailable. */}};
+    void refresh();const timer=window.setInterval(()=>void refresh(),2500);return()=>{live=false;window.clearInterval(timer)};
+  },[scenarioId,setPlan]);
   return <Panel title="Rescue planning" eyebrow="COMMANDER REVIEW" action={<Badge>{plan?.status??"No proposal"}</Badge>}>
     <p className="muted">Plans are scenario-versioned recommendations. Boat routing is unsupported until water access and docking are modeled.</p>
     {scenario&&<p className="mono">Scenario v{scenario.state_version} · Tick {scenario.tick}</p>}

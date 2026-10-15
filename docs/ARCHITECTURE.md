@@ -1,6 +1,6 @@
 # System Architecture
 
-> **Implementation status through Part 5:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing, constrained plan proposals, and human review. Full autonomous agent coordination, WebSockets, boat navigation, and mission execution remain future work.
+> **Implementation status through Part 6:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing and assignment, human review, and six durable event-triggered algorithmic agents. Coordination uses a SQLite outbox and REST polling; there is no WebSocket/SSE dependency. Boat navigation and mission execution remain future work.
 
 ## Design principles
 
@@ -17,14 +17,14 @@
 React + TypeScript application
   ├─ Command Center / Studio / Scenario Lab / Decision Explorer / Model Lab
   ├─ React Three Fiber scene (projection of API state)
-  └─ REST commands + WebSocket state/event stream
+  └─ REST commands + safe polling of committed state/events
                  │ localhost only
 FastAPI modular monolith
   ├─ API and schema validation
   ├─ Scenario and city state service
   ├─ Deterministic flood simulation
   ├─ Risk model adapter + transparent baseline
-  ├─ Event bus / agent coordinator
+  ├─ SQLite outbox / ordered agent coordinator
   ├─ Prioritization, routing, assignment, and approval services
   └─ SQLite event and scenario persistence
                  │
@@ -37,20 +37,20 @@ React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion, React Three Fib
 
 ### Backend
 
-FastAPI modules live in one process. Pydantic models validate requests and responses. A deterministic simulation service updates state in explicit time steps. A coordinator subscribes to domain events and invokes only the agents affected by the change. SQLite stores scenarios, event records, plans, reviews, and model metadata. WebSockets publish committed state versions and events; reconnecting clients fetch a full snapshot before applying deltas.
+FastAPI modules live in one process. Pydantic models validate requests and responses. A deterministic simulation service updates state in explicit time steps. State-changing producers enqueue durable events in SQLite transactions; the ordered agent coordinator processes them independently of browser rendering. SQLite stores scenarios, outbox events, agent runs, traces, plans, reviews, and model metadata. The frontend polls committed versioned responses and ignores stale results.
 
 Initial API surface:
 
 - `GET /api/v1/health`
-- `GET /api/v1/city?seed=...`
+- `GET /api/v1/city/state`
 - `GET /api/v1/scenarios/{id}` and `POST /api/v1/scenarios`
 - `POST /api/v1/scenarios/{id}/advance`
-- `POST /api/v1/scenarios/{id}/roads/{road_id}/closure`
-- `POST /api/v1/scenarios/{id}/plans` (proposal only)
-- `POST /api/v1/scenarios/{id}/plans/{plan_id}/review`
+- `POST /api/v1/scenarios/{id}/road-closures` and `DELETE /api/v1/scenarios/{id}/road-closures/{road_id}`
+- `POST /api/v1/scenarios/{id}/rescue-plans` and `POST /api/v1/rescue-plans/{plan_id}/decision`
 - `GET /api/v1/scenarios/{id}/events`
-- `GET /api/v1/model/report`
-- `WS /api/v1/scenarios/{id}/stream`
+- `GET /api/v1/scenarios/{id}/agent-status`, `/agent-events`, `/agent-runs`, and `/recommendations/latest`
+- `GET /api/v1/agent-traces/{event_id}`
+- `POST /api/v1/scenarios/{id}/intelligence-assessments`
 
 Use request IDs and monotonically increasing state versions. Reject stale commands when a client submits a version that no longer matches the server state.
 
@@ -62,16 +62,16 @@ Flood progression is a deliberately small grid process: rainfall contributes run
 
 ## Agent coordination
 
-Agents are event-driven workers with explicit transitions (`idle → triggered → evaluating → proposed/failed → recorded`). The coordinator deduplicates events by scenario version and agent type, records dependencies and input hashes, and does not let parallel workers mutate shared state directly. It commits a complete proposal as one transaction. A failed agent yields a partial-plan status with the missing component visible; it never appears as a complete plan.
+Agents are local event-driven workers ordered as Hazard Intelligence → Impact Assessment → Rescue Priority → Routing → Resource Allocation → Commander / Strategy. The durable outbox is written atomically with scenario updates, manual infrastructure revisions, and rescue decisions. `AgentOrchestrator` claims events in SQLite, deduplicates by event/agent, persists hashes and compact traces, validates epoch/version/revision before each stage, and rechecks plan freshness and reservations when saving. A failed dependency remains visible and downstream stages are skipped until retry; the Commander can only create a proposal, never approve or execute one. The UI polls trace endpoints and does not trigger the backend pipeline.
 
 | Agent | Trigger and input | Output / method | Validation |
 |---|---|---|---|
-| Hazard & Risk Intelligence | rainfall, river stage, time step; grid and assets | flood step plus per-cell classifier and rule-baseline scores | seed replay, bounds, holdout scenario metrics |
-| Damage Assessment | flood-depth or shaking-state change; asset thresholds | simulated asset/access states and confidence/source labels | threshold boundary tests, event consistency |
-| Rescue Priority | risk/damage/access change; population, vulnerability, facilities | deterministic priority score and contributions | hand-calculated fixtures, monotonicity checks |
-| Routing | road closure, depth/access change, new assignment | NetworkX shortest safe path with hazard and distance costs | blocked-edge and disconnected-graph fixtures |
-| Resource Allocation | priorities, unit availability/capacity, reachable paths | feasible unit-to-mission proposal | capacity, uniqueness, cost comparison on small cases |
-| Command / Strategy | all upstream results for one state version | ordered draft plan, trade-offs, warnings | no side effects pre-approval; replay and schema checks |
+| Hazard Intelligence | committed flood state and local future exposure | new exposure/depth delta; synthetic classifier label | thresholds, missing-model degraded behavior |
+| Impact Assessment | previous same-epoch assessment plus physical impacts | changed building, road and bridge states; facility exposure | no inferred structural damage |
+| Rescue Priority | existing Part 5 score inputs | ranked eligible locations and significant score deltas | stable transparent formula |
+| Routing | current graph, flood status, manual closures | compatible ground routes, changed/invalidated pairs, unreachable sites | blocked-edge and actual reroute test |
+| Resource Allocation | route map, capacities, approved reservations | SciPy optimal assignment plus nearest-unit baseline | unit/destination uniqueness, reservations |
+| Commander / Strategy | validated upstream outputs and trigger policy | versioned proposal, suppression rationale, or no-plan trace | no side effects before explicit approval |
 
 Rules, scoring weights, model artifact version, and route costs are scenario metadata. Agents are cooperating algorithmic components; no language model is required or implied.
 
@@ -87,7 +87,7 @@ A seed-based generator creates a bounded fictional terrain grid, river, district
 - No hosted inference, tracking, telemetry, or automatic data downloads at runtime.
 - Data preparation is an explicit offline step. Raw and large derived data is gitignored.
 - Secrets stay in environment variables and `.env` remains ignored; provide `.env.example` only if configuration is later needed.
-- HTTP and WebSocket traffic remains local. Never use real personal or emergency incident data in the demo.
+- HTTP traffic remains local. Never use real personal or emergency incident data in the demo.
 
 ## Deployment shape
 

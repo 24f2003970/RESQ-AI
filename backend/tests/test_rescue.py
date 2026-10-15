@@ -93,7 +93,7 @@ def test_plan_is_persisted_and_stale_decision_is_rejected(tmp_path):
     assert plans.get(plan.plan_id).status == "superseded"
 
 
-def test_approval_conflict_is_rejected_transactionally(tmp_path):
+def test_already_reserved_unit_is_rejected_when_saving_a_second_proposal(tmp_path):
     import pytest
     path=tmp_path/"conflict.sqlite3"
     scenarios=ScenarioStore(path)
@@ -105,9 +105,8 @@ def test_approval_conflict_is_rejected_transactionally(tmp_path):
     first,second=make("approved-plan"),make("conflicting-plan")
     plans.save(first)
     plans.decision(first.plan_id,"approved",expected_version=state.state_version)
-    plans.save(second)
-    with pytest.raises(ValueError,match="conflicts"):
-        plans.decision(second.plan_id,"approved",expected_version=state.state_version)
+    with pytest.raises(ValueError,match="Resources became unavailable"):
+        plans.save(second)
 
 
 def test_plan_api_generation_closure_and_approval_controls(tmp_path, monkeypatch):

@@ -7,6 +7,9 @@ from app.schemas import (BuildingRiskPrediction, CityState, MLDatasetInfo, MLEva
                          MLFeatureInfo, MLModelInfo, ScenarioEnvelope, ScenarioPredictionSet,
                          RescuePlanDecision, RoadClosureRequest, RescuePlanModification)
 from app.rescue import RescuePlan
+from app.agent_contracts import (AgentDashboard, AgentDefinition, AgentEventAccepted,
+                                 AgentEventEnvelope, AgentRunRecord, AgentTrace,
+                                 AgentTraceDetail)
 from app.city_service import generate_city
 from app.scenarios import ScenarioStore
 
@@ -26,6 +29,13 @@ for name, model in {
     "rescue-plan-decision.schema.json": RescuePlanDecision,
     "road-closure.schema.json": RoadClosureRequest,
     "rescue-plan-modification.schema.json": RescuePlanModification,
+    "agent-dashboard.schema.json": AgentDashboard,
+    "agent-definition.schema.json": AgentDefinition,
+    "agent-event.schema.json": AgentEventEnvelope,
+    "agent-event-accepted.schema.json": AgentEventAccepted,
+    "agent-run.schema.json": AgentRunRecord,
+    "agent-trace.schema.json": AgentTrace,
+    "agent-trace-detail.schema.json": AgentTraceDetail,
 }.items():
     (target / name).write_text(json.dumps(model.model_json_schema(), indent=2) + "\n", encoding="utf-8")
 fixtures = target.parent / "test" / "fixtures"
