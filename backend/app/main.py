@@ -7,10 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .city_service import generate_city
 from .config import settings
+from .ml_service import ModelUnavailable, dataset_info, evaluation_info, feature_info, model_info, predictions
 from .scenarios import ScenarioError, store
 from .schemas import (
     AdvanceRequest, Building, CityState, Health, ParameterUpdate, ScenarioCreate,
-    ScenarioEnvelope, ScenarioMetadata, SimulationEvent, VersionRequest,
+    MLDatasetInfo, MLEvaluationReport, MLFeatureInfo, MLModelInfo, ScenarioEnvelope,
+    ScenarioMetadata, ScenarioPredictionSet, SimulationEvent, VersionRequest,
 )
 
 logger = logging.getLogger("resq")
@@ -18,7 +20,7 @@ logger.setLevel(logging.INFO)
 if not logger.handlers:
     logger.addHandler(logging.StreamHandler())
 
-app = FastAPI(title="RESQ-AI Local API", version="0.3.0", docs_url=None, redoc_url=None)
+app = FastAPI(title="RESQ-AI Local API", version="0.4.0", docs_url=None, redoc_url=None)
 app.add_middleware(CORSMiddleware, allow_origins=list(settings.allowed_origins),
                    allow_methods=["GET", "POST", "PATCH"], allow_headers=["Content-Type", "Idempotency-Key"])
 
@@ -49,7 +51,7 @@ async def http_error(request: Request, exc: HTTPException):
 
 @app.get("/api/v1/health", response_model=Health)
 def health():
-    return Health(status="ok", service="resq-ai", version="0.3.0", mode="local")
+    return Health(status="ok", service="resq-ai", version="0.4.0", mode="local")
 
 
 @app.get("/api/v1/city/state", response_model=CityState)
@@ -135,3 +137,45 @@ def replay_scenario(scenario_id: str, tick: int):
 @app.get("/api/v1/scenarios/{scenario_id}/snapshots", response_model=list[dict])
 def scenario_snapshots(scenario_id: str):
     return _scenario_call(lambda: store.snapshots(scenario_id))
+
+
+@app.get("/api/v1/ml/model", response_model=MLModelInfo)
+def ml_model_info():
+    return model_info()
+
+
+@app.get("/api/v1/ml/dataset", response_model=MLDatasetInfo)
+def ml_dataset_info():
+    try:
+        return dataset_info()
+    except ModelUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@app.get("/api/v1/ml/evaluation", response_model=MLEvaluationReport)
+def ml_evaluation_info():
+    try:
+        return evaluation_info()
+    except ModelUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@app.get("/api/v1/ml/features", response_model=list[MLFeatureInfo])
+def ml_feature_info():
+    return feature_info()
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/predictions", response_model=ScenarioPredictionSet)
+def scenario_predictions(scenario_id: str):
+    try:
+        return _scenario_call(lambda: predictions(scenario_id))
+    except ModelUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/predictions/{building_id}", response_model=ScenarioPredictionSet)
+def building_prediction(scenario_id: str, building_id: str):
+    try:
+        return _scenario_call(lambda: predictions(scenario_id, building_id))
+    except ModelUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc

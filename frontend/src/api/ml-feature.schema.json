@@ -1,0 +1,32 @@
+{
+  "properties": {
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "units": {
+      "title": "Units",
+      "type": "string"
+    },
+    "role": {
+      "enum": [
+        "numeric",
+        "indicator"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "units",
+    "role"
+  ],
+  "title": "MLFeatureInfo",
+  "type": "object"
+}

@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "BuildingRiskPrediction": {
+      "properties": {
+        "building_id": {
+          "title": "Building Id",
+          "type": "string"
+        },
+        "current_exposed": {
+          "title": "Current Exposed",
+          "type": "boolean"
+        },
+        "current_exposure_category": {
+          "enum": [
+            "none",
+            "watch",
+            "moderate",
+            "severe"
+          ],
+          "title": "Current Exposure Category",
+          "type": "string"
+        },
+        "current_max_depth_m": {
+          "title": "Current Max Depth M",
+          "type": "number"
+        },
+        "predicted_future_exposed": {
+          "title": "Predicted Future Exposed",
+          "type": "boolean"
+        },
+        "predicted_category": {
+          "enum": [
+            "predicted_exposed",
+            "predicted_not_exposed"
+          ],
+          "title": "Predicted Category",
+          "type": "string"
+        },
+        "uncalibrated_model_score": {
+          "title": "Uncalibrated Model Score",
+          "type": "number"
+        },
+        "influential_features": {
+          "items": {
+            "$ref": "#/$defs/MLFeatureContribution"
+          },
+          "title": "Influential Features",
+          "type": "array"
+        }
+      },
+      "required": [
+        "building_id",
+        "current_exposed",
+        "current_exposure_category",
+        "current_max_depth_m",
+        "predicted_future_exposed",
+        "predicted_category",
+        "uncalibrated_model_score",
+        "influential_features"
+      ],
+      "title": "BuildingRiskPrediction",
+      "type": "object"
+    },
+    "MLFeatureContribution": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "global_permutation_importance": {
+          "title": "Global Permutation Importance",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "global_permutation_importance"
+      ],
+      "title": "MLFeatureContribution",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "model_version": {
+      "title": "Model Version",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "scenario_state_version": {
+      "title": "Scenario State Version",
+      "type": "integer"
+    },
+    "scenario_tick": {
+      "title": "Scenario Tick",
+      "type": "integer"
+    },
+    "horizon_ticks": {
+      "title": "Horizon Ticks",
+      "type": "integer"
+    },
+    "horizon_minutes": {
+      "title": "Horizon Minutes",
+      "type": "integer"
+    },
+    "target_definition": {
+      "title": "Target Definition",
+      "type": "string"
+    },
+    "probabilities_calibrated": {
+      "default": false,
+      "title": "Probabilities Calibrated",
+      "type": "boolean"
+    },
+    "predictions": {
+      "items": {
+        "$ref": "#/$defs/BuildingRiskPrediction"
+      },
+      "title": "Predictions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "model_version",
+    "scenario_id",
+    "scenario_state_version",
+    "scenario_tick",
+    "horizon_ticks",
+    "horizon_minutes",
+    "target_definition",
+    "predictions"
+  ],
+  "title": "ScenarioPredictionSet",
+  "type": "object"
+}

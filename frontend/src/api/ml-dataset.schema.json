@@ -1,0 +1,82 @@
+{
+  "properties": {
+    "dataset_version": {
+      "title": "Dataset Version",
+      "type": "string"
+    },
+    "engine_version": {
+      "title": "Engine Version",
+      "type": "string"
+    },
+    "label_definition": {
+      "title": "Label Definition",
+      "type": "string"
+    },
+    "feature_names": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Feature Names",
+      "type": "array"
+    },
+    "target_name": {
+      "title": "Target Name",
+      "type": "string"
+    },
+    "scenario_count": {
+      "title": "Scenario Count",
+      "type": "integer"
+    },
+    "observation_count": {
+      "title": "Observation Count",
+      "type": "integer"
+    },
+    "positive_count": {
+      "title": "Positive Count",
+      "type": "integer"
+    },
+    "negative_count": {
+      "title": "Negative Count",
+      "type": "integer"
+    },
+    "positive_fraction": {
+      "title": "Positive Fraction",
+      "type": "number"
+    },
+    "duplicate_feature_target_rows": {
+      "title": "Duplicate Feature Target Rows",
+      "type": "integer"
+    },
+    "random_sampling_seed": {
+      "title": "Random Sampling Seed",
+      "type": "integer"
+    },
+    "configuration": {
+      "additionalProperties": true,
+      "title": "Configuration",
+      "type": "object"
+    },
+    "provenance": {
+      "title": "Provenance",
+      "type": "string"
+    }
+  },
+  "required": [
+    "dataset_version",
+    "engine_version",
+    "label_definition",
+    "feature_names",
+    "target_name",
+    "scenario_count",
+    "observation_count",
+    "positive_count",
+    "negative_count",
+    "positive_fraction",
+    "duplicate_feature_target_rows",
+    "random_sampling_seed",
+    "configuration",
+    "provenance"
+  ],
+  "title": "MLDatasetInfo",
+  "type": "object"
+}

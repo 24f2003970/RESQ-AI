@@ -48,6 +48,7 @@ temp/
 data/raw/
 data/external/
 data/processed/
+backend/data/ml/*.csv
 datasets/
 artifacts/
 checkpoints/
