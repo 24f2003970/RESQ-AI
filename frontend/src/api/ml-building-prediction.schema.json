@@ -1,0 +1,86 @@
+{
+  "$defs": {
+    "MLFeatureContribution": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "global_permutation_importance": {
+          "title": "Global Permutation Importance",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "global_permutation_importance"
+      ],
+      "title": "MLFeatureContribution",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "building_id": {
+      "title": "Building Id",
+      "type": "string"
+    },
+    "current_exposed": {
+      "title": "Current Exposed",
+      "type": "boolean"
+    },
+    "current_exposure_category": {
+      "enum": [
+        "none",
+        "watch",
+        "moderate",
+        "severe"
+      ],
+      "title": "Current Exposure Category",
+      "type": "string"
+    },
+    "current_max_depth_m": {
+      "title": "Current Max Depth M",
+      "type": "number"
+    },
+    "predicted_future_exposed": {
+      "title": "Predicted Future Exposed",
+      "type": "boolean"
+    },
+    "predicted_category": {
+      "enum": [
+        "predicted_exposed",
+        "predicted_not_exposed"
+      ],
+      "title": "Predicted Category",
+      "type": "string"
+    },
+    "uncalibrated_model_score": {
+      "title": "Uncalibrated Model Score",
+      "type": "number"
+    },
+    "influential_features": {
+      "items": {
+        "$ref": "#/$defs/MLFeatureContribution"
+      },
+      "title": "Influential Features",
+      "type": "array"
+    }
+  },
+  "required": [
+    "building_id",
+    "current_exposed",
+    "current_exposure_category",
+    "current_max_depth_m",
+    "predicted_future_exposed",
+    "predicted_category",
+    "uncalibrated_model_score",
+    "influential_features"
+  ],
+  "title": "BuildingRiskPrediction",
+  "type": "object"
+}

@@ -1,5 +1,6 @@
 import { ArrowRight, Box, Building2, CircleDot, X } from "lucide-react";
 import type { Building, CityState } from "../api/client";
+import type { ScenarioPredictionSet } from "../api/client";
 import { Badge, Panel } from "./ui";
 
 export default function Inspector({
@@ -9,6 +10,7 @@ export default function Inspector({
   error,
   close,
   choose,
+  predictions,
 }: {
   selected: Building | null;
   city: CityState;
@@ -16,6 +18,7 @@ export default function Inspector({
   error: string;
   close: () => void;
   choose: (id: string) => void;
+  predictions: ScenarioPredictionSet | null;
 }) {
   return (
     <Panel
@@ -92,6 +95,7 @@ export default function Inspector({
           <p className="inspector-note">
             <CircleDot size={12} /> Verified against building API
           </p>
+          {(() => { const prediction = predictions?.predictions.find((p) => p.building_id === selected.id); return prediction ? <div className="inspector-ml"><small>ML estimate · +{predictions?.horizon_minutes} min</small><strong>{prediction.predicted_future_exposed ? "Predicted exposed" : "Predicted not exposed"}</strong><span>Current: {prediction.current_exposed ? `${prediction.current_exposure_category} · ${prediction.current_max_depth_m.toFixed(2)} m` : "not exposed"}</span><span>Uncalibrated score: {prediction.uncalibrated_model_score.toFixed(3)}</span></div> : null; })()}
         </div>
       ) : (
         <div className="inspector-empty">

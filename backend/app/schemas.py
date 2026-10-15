@@ -273,3 +273,97 @@ class ScenarioState(BaseModel):
 class ScenarioEnvelope(BaseModel):
     state: ScenarioState
     events: list[SimulationEvent]
+
+
+class MLFeatureInfo(BaseModel):
+    name: str
+    description: str
+    units: str
+    role: Literal["numeric", "indicator"]
+
+
+class MLModelInfo(BaseModel):
+    status: Literal["ready", "unavailable"]
+    model_name: str
+    model_version: str | None = None
+    algorithm: str | None = None
+    trained_at_utc: str | None = None
+    training_scenarios: int | None = None
+    observation_count: int | None = None
+    horizon_ticks: int | None = None
+    horizon_minutes: int | None = None
+    target: str
+    artifact_sha256: str | None = None
+    sklearn_version: str | None = None
+    probabilities_calibrated: bool = False
+    unavailable_reason: str | None = None
+
+
+class MLDatasetInfo(BaseModel):
+    dataset_version: str
+    engine_version: str
+    label_definition: str
+    feature_names: list[str]
+    target_name: str
+    scenario_count: int
+    observation_count: int
+    positive_count: int
+    negative_count: int
+    positive_fraction: float
+    duplicate_feature_target_rows: int
+    random_sampling_seed: int
+    configuration: dict[str, Any]
+    provenance: str
+
+
+class MLFeatureContribution(BaseModel):
+    name: str
+    value: float
+    global_permutation_importance: float
+
+
+class BuildingRiskPrediction(BaseModel):
+    building_id: str
+    current_exposed: bool
+    current_exposure_category: Literal["none", "watch", "moderate", "severe"]
+    current_max_depth_m: float
+    predicted_future_exposed: bool
+    predicted_category: Literal["predicted_exposed", "predicted_not_exposed"]
+    uncalibrated_model_score: float
+    influential_features: list[MLFeatureContribution]
+
+
+class ScenarioPredictionSet(BaseModel):
+    model_version: str
+    scenario_id: str
+    scenario_state_version: int
+    scenario_tick: int
+    horizon_ticks: int
+    horizon_minutes: int
+    target_definition: str
+    probabilities_calibrated: bool = False
+    predictions: list[BuildingRiskPrediction]
+
+
+class MLEvaluationReport(BaseModel):
+    evaluation_version: str
+    created_at_utc: str
+    selected_model: str
+    selection_metric: str
+    validation_candidates: dict[str, Any]
+    test_set_label: str
+    test_scenario_count: int
+    test_observation_count: int
+    test_positive_count: int
+    test_negative_count: int
+    test_metrics: dict[str, Any]
+    test_baselines: dict[str, Any]
+    false_positive_examples: list[dict[str, Any]]
+    false_negative_examples: list[dict[str, Any]]
+    permutation_importance: list[dict[str, Any]]
+    probabilities_calibrated: bool
+    model_score_note: str
+    inference_latency_ms_per_observation: float
+    latency_batch_size: int
+    latency_repetitions: int
+    test_scenario_ids: list[str]

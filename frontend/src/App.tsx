@@ -21,6 +21,8 @@ import { Badge } from "./components/ui";
 import CityWorkspace from "./components/CityWorkspace";
 import Development from "./components/Development";
 import ScenarioLab from "./components/ScenarioLab";
+import ModelLab from "./components/ModelLab";
+import { useRisk } from "./api/useRisk";
 
 const nav = [
   { path: "/", name: "Command Center", icon: LayoutDashboard },
@@ -34,6 +36,7 @@ export default function App() {
   const location = useLocation();
   const { city, status, error, retry } = useCity();
   const simulation = useScenario(location.pathname);
+  const risk = useRisk(simulation.scenario);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(
     () => window.matchMedia("(max-width: 550px)").matches,
@@ -156,7 +159,7 @@ export default function App() {
             >
               <RefreshCw size={16} />
             </button>
-            <span className="part-label">PART 03</span>
+            <span className="part-label">PART 04</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -207,6 +210,8 @@ export default function App() {
                       studio={false}
                       status={status}
                       retry={retry}
+                      model={risk.model}
+                      predictions={risk.predictions}
                     />
                   }
                 />
@@ -220,6 +225,8 @@ export default function App() {
                       studio
                       status={status}
                       retry={retry}
+                      model={risk.model}
+                      predictions={risk.predictions}
                     />
                   }
                 />
@@ -231,7 +238,7 @@ export default function App() {
                   path="/decisions"
                   element={<Development kind="decisions" />}
                 />
-                <Route path="/model" element={<Development kind="model" />} />
+                <Route path="/model" element={<ModelLab scenario={simulation.scenario} />} />
                 <Route
                   path="*"
                   element={

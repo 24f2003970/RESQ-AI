@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CityState } from "../api/client";
+import type { Layers } from "../scene/CityScene";
 import { parseCity } from "../api/client";
 import { toScene } from "../scene/coordinates";
 import App from "../App";
@@ -12,11 +13,13 @@ vi.mock("../scene/CityScene", () => ({
   default: ({
     city,
     onSelect,
+    layers,
   }: {
     city: CityState;
     onSelect: (id: string) => void;
+    layers: Layers;
   }) => (
-    <div data-testid="mock-city">
+    <div data-testid="mock-city" data-predicted-risk={layers.predictedRisk}>
       <button onClick={() => onSelect(city.buildings[0].id)}>
         Select first building
       </button>
@@ -101,6 +104,10 @@ describe("connected application", () => {
     const checkbox = screen.getByRole("checkbox", { name: "greenery" });
     fireEvent.click(checkbox);
     expect(checkbox).not.toBeChecked();
+    const predictedLayer = screen.getByRole("checkbox", { name: "predictedRisk" });
+    expect(predictedLayer).not.toBeChecked();
+    fireEvent.click(predictedLayer);
+    expect(screen.getByTestId("mock-city")).toHaveAttribute("data-predicted-risk", "true");
     fireEvent.click(screen.getAllByRole("link", { name: "Scenario Lab" })[0]);
     await screen.findByRole("heading", { name: "Scenario Lab" });
     expect(screen.getByRole("slider", { name: "Rainfall intensity" })).toBeInTheDocument();
@@ -109,10 +116,10 @@ describe("connected application", () => {
       screen.getByRole("link", { name: "Model Intelligence Lab" }),
     );
     await screen.findByRole("heading", {
-      name: "Evidence before intelligence.",
+      name: "Model Intelligence Lab",
     });
     expect(
-      screen.getByText(/No model has been trained yet/),
+      screen.getByText(/not trained or validated on observed disaster outcomes/i),
     ).toBeInTheDocument();
   });
   it("shows a real connection failure and recovers on retry", async () => {

@@ -1,0 +1,445 @@
+{
+  "evaluation_version": "future-exposure-eval-v1",
+  "created_at_utc": "2026-10-15T09:07:59.449203+00:00",
+  "selected_model": "random_forest",
+  "selection_metric": "validation F1, then PR-AUC, then balanced accuracy",
+  "validation_candidates": {
+    "logistic_regression": {
+      "precision": 0.9808853118712274,
+      "recall": 0.9528463229904716,
+      "f1": 0.9666625356301897,
+      "balanced_accuracy": 0.9473489457339503,
+      "support": {
+        "negative": 1307,
+        "positive": 4093
+      },
+      "confusion_matrix": {
+        "true_negative": 1231,
+        "false_positive": 76,
+        "false_negative": 193,
+        "true_positive": 3900
+      },
+      "roc_auc": 0.991270856189613,
+      "pr_auc_average_precision": 0.9972077991808892,
+      "brier_score_uncalibrated": 0.034599907812502696
+    },
+    "decision_tree_depth_5": {
+      "precision": 0.9649334945586457,
+      "recall": 0.9748350842902517,
+      "f1": 0.9698590179873602,
+      "balanced_accuracy": 0.9319469989163577,
+      "support": {
+        "negative": 1307,
+        "positive": 4093
+      },
+      "confusion_matrix": {
+        "true_negative": 1162,
+        "false_positive": 145,
+        "false_negative": 103,
+        "true_positive": 3990
+      },
+      "roc_auc": 0.9834386100814816,
+      "pr_auc_average_precision": 0.9931350990605774,
+      "brier_score_uncalibrated": 0.03743022111716999
+    },
+    "decision_tree_depth_9": {
+      "precision": 0.9784838628971729,
+      "recall": 0.9555338382604447,
+      "f1": 0.9668726823238566,
+      "balanced_accuracy": 0.9448671486635047,
+      "support": {
+        "negative": 1307,
+        "positive": 4093
+      },
+      "confusion_matrix": {
+        "true_negative": 1221,
+        "false_positive": 86,
+        "false_negative": 182,
+        "true_positive": 3911
+      },
+      "roc_auc": 0.9755346757139056,
+      "pr_auc_average_precision": 0.986327978848461,
+      "brier_score_uncalibrated": 0.03604813455067985
+    },
+    "random_forest": {
+      "precision": 0.9813293502613891,
+      "recall": 0.9631077449303689,
+      "f1": 0.9721331689272503,
+      "balanced_accuracy": 0.9528622121744423,
+      "support": {
+        "negative": 1307,
+        "positive": 4093
+      },
+      "confusion_matrix": {
+        "true_negative": 1232,
+        "false_positive": 75,
+        "false_negative": 151,
+        "true_positive": 3942
+      },
+      "roc_auc": 0.9920688670880977,
+      "pr_auc_average_precision": 0.9975138450056261,
+      "brier_score_uncalibrated": 0.03227167726634632
+    }
+  },
+  "test_set_label": "Unseen scenario IDs and simulation seeds; held out until final evaluation.",
+  "test_scenario_count": 15,
+  "test_observation_count": 5400,
+  "test_positive_count": 3071,
+  "test_negative_count": 2329,
+  "test_metrics": {
+    "precision": 0.9782971619365609,
+    "recall": 0.9540866167372192,
+    "f1": 0.9660402242004615,
+    "balanced_accuracy": 0.9630888214643588,
+    "support": {
+      "negative": 2329,
+      "positive": 3071
+    },
+    "confusion_matrix": {
+      "true_negative": 2264,
+      "false_positive": 65,
+      "false_negative": 141,
+      "true_positive": 2930
+    },
+    "roc_auc": 0.9944937048042471,
+    "pr_auc_average_precision": 0.9959852666857474,
+    "brier_score_uncalibrated": 0.030526440868303036
+  },
+  "test_baselines": {
+    "dummy_prior": {
+      "precision": 0.5687037037037037,
+      "recall": 1.0,
+      "f1": 0.725061976153937,
+      "balanced_accuracy": 0.5,
+      "support": {
+        "negative": 2329,
+        "positive": 3071
+      },
+      "confusion_matrix": {
+        "true_negative": 0,
+        "false_positive": 2329,
+        "false_negative": 0,
+        "true_positive": 3071
+      },
+      "roc_auc": 0.5,
+      "pr_auc_average_precision": 0.5687037037037037,
+      "brier_score_uncalibrated": 0.25558903376165276
+    },
+    "transparent_local_forecast_heuristic": {
+      "precision": 0.9010228640192539,
+      "recall": 0.9752523607945295,
+      "f1": 0.9366692728694292,
+      "balanced_accuracy": 0.9169950082203648,
+      "support": {
+        "negative": 2329,
+        "positive": 3071
+      },
+      "confusion_matrix": {
+        "true_negative": 2000,
+        "false_positive": 329,
+        "false_negative": 76,
+        "true_positive": 2995
+      },
+      "roc_auc": 0.9766502212766446,
+      "pr_auc_average_precision": 0.9787431477051716,
+      "brier_score_uncalibrated": 0.3633966291635875
+    }
+  },
+  "false_positive_examples": [
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 12,
+      "building_id": "building-2-1-1",
+      "actual": 0,
+      "predicted": 1,
+      "model_score_uncalibrated": 0.6679980999468111
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 12,
+      "building_id": "building-2-2-3",
+      "actual": 0,
+      "predicted": 1,
+      "model_score_uncalibrated": 0.5234463003167402
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 12,
+      "building_id": "building-3-1-1",
+      "actual": 0,
+      "predicted": 1,
+      "model_score_uncalibrated": 0.5052385899339091
+    },
+    {
+      "scenario_id": "synthetic-73001",
+      "scenario_seed": 73001,
+      "tick": 6,
+      "building_id": "building-1-0-1",
+      "actual": 0,
+      "predicted": 1,
+      "model_score_uncalibrated": 0.7891601735352136
+    },
+    {
+      "scenario_id": "synthetic-73001",
+      "scenario_seed": 73001,
+      "tick": 9,
+      "building_id": "building-hospital",
+      "actual": 0,
+      "predicted": 1,
+      "model_score_uncalibrated": 0.8512528027171521
+    },
+    {
+      "scenario_id": "synthetic-73001",
+      "scenario_seed": 73001,
+      "tick": 12,
+      "building_id": "building-0-0-1",
+      "actual": 0,
+      "predicted": 1,
+      "model_score_uncalibrated": 0.8552787172670465
+    },
+    {
+      "scenario_id": "synthetic-73001",
+      "scenario_seed": 73001,
+      "tick": 12,
+      "building_id": "building-1-1-1",
+      "actual": 0,
+      "predicted": 1,
+      "model_score_uncalibrated": 0.5671975275453739
+    },
+    {
+      "scenario_id": "synthetic-73001",
+      "scenario_seed": 73001,
+      "tick": 12,
+      "building_id": "building-2-0-0",
+      "actual": 0,
+      "predicted": 1,
+      "model_score_uncalibrated": 0.5921241805120886
+    }
+  ],
+  "false_negative_examples": [
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 9,
+      "building_id": "building-hospital",
+      "actual": 1,
+      "predicted": 0,
+      "model_score_uncalibrated": 0.18776689535405788
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 9,
+      "building_id": "building-1-1-1",
+      "actual": 1,
+      "predicted": 0,
+      "model_score_uncalibrated": 0.10504232173179115
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 9,
+      "building_id": "building-1-2-2",
+      "actual": 1,
+      "predicted": 0,
+      "model_score_uncalibrated": 0.4071375284165099
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 9,
+      "building_id": "building-2-1-0",
+      "actual": 1,
+      "predicted": 0,
+      "model_score_uncalibrated": 0.20783542647274783
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 9,
+      "building_id": "building-4-1-0",
+      "actual": 1,
+      "predicted": 0,
+      "model_score_uncalibrated": 0.4044049324723193
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 9,
+      "building_id": "building-4-2-2",
+      "actual": 1,
+      "predicted": 0,
+      "model_score_uncalibrated": 0.08754481431536976
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 12,
+      "building_id": "building-0-1-0",
+      "actual": 1,
+      "predicted": 0,
+      "model_score_uncalibrated": 0.365403543605305
+    },
+    {
+      "scenario_id": "synthetic-73000",
+      "scenario_seed": 73000,
+      "tick": 12,
+      "building_id": "building-4-1-1",
+      "actual": 1,
+      "predicted": 0,
+      "model_score_uncalibrated": 0.3667839463755377
+    }
+  ],
+  "permutation_importance": [
+    {
+      "feature": "current_depth_max_m",
+      "importance_mean": 0.023412484639019533,
+      "importance_std": 0.0008899385287255908
+    },
+    {
+      "feature": "rainfall_mm_h",
+      "importance_mean": 0.02255855415676126,
+      "importance_std": 0.0004382435326097448
+    },
+    {
+      "feature": "current_depth_mean_m",
+      "importance_mean": 0.01265094143933924,
+      "importance_std": 0.0005958542831414023
+    },
+    {
+      "feature": "simulation_tick",
+      "importance_mean": 0.004389347666487242,
+      "importance_std": 0.00032527801187492446
+    },
+    {
+      "feature": "neighborhood_depth_max_m",
+      "importance_mean": 0.00118900984325306,
+      "importance_std": 7.864846420884955e-05
+    },
+    {
+      "feature": "neighborhood_depth_mean_m",
+      "importance_mean": 0.0011804835748575975,
+      "importance_std": 4.282915979064148e-05
+    },
+    {
+      "feature": "terrain_minus_river_m",
+      "importance_mean": 0.0009952915411292433,
+      "importance_std": 4.3100800291316835e-05
+    },
+    {
+      "feature": "terrain_elevation_m",
+      "importance_mean": 0.0007757091280451434,
+      "importance_std": 4.469170080182886e-05
+    },
+    {
+      "feature": "current_exposed_fraction",
+      "importance_mean": 0.0006731372426653411,
+      "importance_std": 0.00011154312186851123
+    },
+    {
+      "feature": "terrain_neighborhood_mean_m",
+      "importance_mean": 0.00023401845046722158,
+      "importance_std": 3.716659638311697e-05
+    },
+    {
+      "feature": "drainage_effectiveness",
+      "importance_mean": 0.00017983190233150648,
+      "importance_std": 5.6847798160195786e-05
+    },
+    {
+      "feature": "distance_to_canal_m",
+      "importance_mean": 0.00015729527906453247,
+      "importance_std": 4.4083390635184306e-05
+    },
+    {
+      "feature": "neighborhood_wet_fraction_005m",
+      "importance_mean": 0.0001539478656995552,
+      "importance_std": 7.190689077291065e-05
+    },
+    {
+      "feature": "neighborhood_wet_fraction_030m",
+      "importance_mean": 0.0001107216348957829,
+      "importance_std": 2.0805866903080555e-05
+    },
+    {
+      "feature": "y_m",
+      "importance_mean": 7.637028908939285e-05,
+      "importance_std": 2.8328914488417718e-05
+    },
+    {
+      "feature": "x_m",
+      "importance_mean": 7.298447586371697e-05,
+      "importance_std": 1.3367973816461701e-05
+    },
+    {
+      "feature": "building_width_m",
+      "importance_mean": 4.649855421208956e-05,
+      "importance_std": 1.002868881809335e-05
+    },
+    {
+      "feature": "river_level_m",
+      "importance_mean": 4.220198955447637e-05,
+      "importance_std": 2.5110128158356576e-05
+    },
+    {
+      "feature": "use_commercial",
+      "importance_mean": 1.2864931243380026e-05,
+      "importance_std": 7.635198630297118e-06
+    },
+    {
+      "feature": "building_depth_m",
+      "importance_mean": 9.635796567838048e-06,
+      "importance_std": 2.068477816471807e-05
+    },
+    {
+      "feature": "building_floors",
+      "importance_mean": 6.298928627579414e-06,
+      "importance_std": 1.974608141242018e-05
+    },
+    {
+      "feature": "use_hospital",
+      "importance_mean": 2.244967916675833e-06,
+      "importance_std": 9.56554038097059e-07
+    },
+    {
+      "feature": "use_shelter",
+      "importance_mean": 8.260504753184369e-07,
+      "importance_std": 5.528422531397507e-08
+    },
+    {
+      "feature": "building_height_m",
+      "importance_mean": -6.146778581683776e-07,
+      "importance_std": 8.689530594737303e-06
+    },
+    {
+      "feature": "use_residential",
+      "importance_mean": -1.816531978356591e-06,
+      "importance_std": 4.165585372136843e-06
+    }
+  ],
+  "probabilities_calibrated": false,
+  "model_score_note": "Classifier scores are uncalibrated; the product does not present them as probabilities or operational certainty.",
+  "inference_latency_ms_per_observation": 0.0022870740740740737,
+  "latency_batch_size": 5400,
+  "latency_repetitions": 25,
+  "test_scenario_ids": [
+    "synthetic-73000",
+    "synthetic-73001",
+    "synthetic-73008",
+    "synthetic-73009",
+    "synthetic-73010",
+    "synthetic-73011",
+    "synthetic-73012",
+    "synthetic-73019",
+    "synthetic-73028",
+    "synthetic-73031",
+    "synthetic-73033",
+    "synthetic-73040",
+    "synthetic-73048",
+    "synthetic-73050",
+    "synthetic-73068"
+  ]
+}

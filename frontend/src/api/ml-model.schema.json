@@ -1,0 +1,152 @@
+{
+  "properties": {
+    "status": {
+      "enum": [
+        "ready",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "model_name": {
+      "title": "Model Name",
+      "type": "string"
+    },
+    "model_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Version"
+    },
+    "algorithm": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Algorithm"
+    },
+    "trained_at_utc": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Trained At Utc"
+    },
+    "training_scenarios": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Training Scenarios"
+    },
+    "observation_count": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Observation Count"
+    },
+    "horizon_ticks": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Horizon Ticks"
+    },
+    "horizon_minutes": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Horizon Minutes"
+    },
+    "target": {
+      "title": "Target",
+      "type": "string"
+    },
+    "artifact_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Artifact Sha256"
+    },
+    "sklearn_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sklearn Version"
+    },
+    "probabilities_calibrated": {
+      "default": false,
+      "title": "Probabilities Calibrated",
+      "type": "boolean"
+    },
+    "unavailable_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unavailable Reason"
+    }
+  },
+  "required": [
+    "status",
+    "model_name",
+    "target"
+  ],
+  "title": "MLModelInfo",
+  "type": "object"
+}

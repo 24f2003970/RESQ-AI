@@ -1,0 +1,805 @@
+{
+  "dataset_version": "flood-exposure-synthetic-v1",
+  "engine_version": "flood-engine-v1",
+  "generator": "app.ml.dataset.generate_dataset",
+  "label_definition": "1 when the building footprint maximum water depth is at least 0.05 m after six fixed five-minute flood ticks (30 simulated minutes); otherwise 0.",
+  "feature_names": [
+    "current_depth_max_m",
+    "current_depth_mean_m",
+    "current_exposed_fraction",
+    "neighborhood_depth_max_m",
+    "neighborhood_depth_mean_m",
+    "neighborhood_wet_fraction_005m",
+    "neighborhood_wet_fraction_030m",
+    "terrain_elevation_m",
+    "terrain_neighborhood_mean_m",
+    "distance_to_canal_m",
+    "river_level_m",
+    "terrain_minus_river_m",
+    "rainfall_mm_h",
+    "drainage_effectiveness",
+    "simulation_tick",
+    "building_height_m",
+    "building_floors",
+    "building_width_m",
+    "building_depth_m",
+    "x_m",
+    "y_m",
+    "use_residential",
+    "use_commercial",
+    "use_hospital",
+    "use_shelter"
+  ],
+  "target_name": "future_exposed_30m",
+  "feature_units": {
+    "current_depth_max_m": "m",
+    "current_depth_mean_m": "m",
+    "current_exposed_fraction": "ratio",
+    "neighborhood_depth_max_m": "m",
+    "neighborhood_depth_mean_m": "m",
+    "neighborhood_wet_fraction_005m": "ratio",
+    "neighborhood_wet_fraction_030m": "ratio",
+    "terrain_elevation_m": "m",
+    "terrain_neighborhood_mean_m": "m",
+    "distance_to_canal_m": "m",
+    "river_level_m": "m",
+    "terrain_minus_river_m": "m",
+    "rainfall_mm_h": "mm/h",
+    "drainage_effectiveness": "ratio",
+    "simulation_tick": "ticks",
+    "building_height_m": "m",
+    "building_floors": "count",
+    "building_width_m": "m",
+    "building_depth_m": "m",
+    "x_m": "m",
+    "y_m": "m",
+    "use_residential": "ratio",
+    "use_commercial": "ratio",
+    "use_hospital": "ratio",
+    "use_shelter": "ratio"
+  },
+  "scenario_count": 72,
+  "observation_count": 25920,
+  "positive_count": 17298,
+  "negative_count": 8622,
+  "positive_fraction": 0.6673611111111111,
+  "duplicate_feature_target_rows": 0,
+  "random_sampling_seed": 44117,
+  "configuration": {
+    "scenario_count": 72,
+    "first_scenario_seed": 73000,
+    "sampling_seed": 44117,
+    "horizon_ticks": 6,
+    "observation_ticks": [
+      0,
+      3,
+      6,
+      9,
+      12
+    ]
+  },
+  "simulation_seeds": [
+    {
+      "scenario_id": "synthetic-73000",
+      "seed": 73000,
+      "parameters": {
+        "rainfall_mm_h": 33.353329090040695,
+        "river_level_m": 1.2217915057815274,
+        "drainage_effectiveness": 0.2973066228957111,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73001",
+      "seed": 73001,
+      "parameters": {
+        "rainfall_mm_h": 73.88772396296822,
+        "river_level_m": 0.6600873477723461,
+        "drainage_effectiveness": 0.2887728885392216,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "parameters": {
+        "rainfall_mm_h": 148.4301152817092,
+        "river_level_m": 0.24560747887526357,
+        "drainage_effectiveness": 0.7596014439369148,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73003",
+      "seed": 73003,
+      "parameters": {
+        "rainfall_mm_h": 177.39884449672024,
+        "river_level_m": -0.15258336004163175,
+        "drainage_effectiveness": 0.0890476172644072,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73004",
+      "seed": 73004,
+      "parameters": {
+        "rainfall_mm_h": 217.6791063082623,
+        "river_level_m": 1.74422181573968,
+        "drainage_effectiveness": 0.5298505399497538,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73005",
+      "seed": 73005,
+      "parameters": {
+        "rainfall_mm_h": 105.40716708795476,
+        "river_level_m": 1.5231091170216475,
+        "drainage_effectiveness": 0.47248727118953987,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73006",
+      "seed": 73006,
+      "parameters": {
+        "rainfall_mm_h": 74.92451938187544,
+        "river_level_m": 1.0013938699828226,
+        "drainage_effectiveness": 0.18445395601773196,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73007",
+      "seed": 73007,
+      "parameters": {
+        "rainfall_mm_h": 150.60015773361093,
+        "river_level_m": 1.6938036591697936,
+        "drainage_effectiveness": 0.3438669736166814,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73008",
+      "seed": 73008,
+      "parameters": {
+        "rainfall_mm_h": 101.813162904422,
+        "river_level_m": 1.2429323895841675,
+        "drainage_effectiveness": 0.2268890334014279,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73009",
+      "seed": 73009,
+      "parameters": {
+        "rainfall_mm_h": 256.7696337017503,
+        "river_level_m": 1.0571055162759353,
+        "drainage_effectiveness": 0.5661152735581833,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73010",
+      "seed": 73010,
+      "parameters": {
+        "rainfall_mm_h": 19.72226174223951,
+        "river_level_m": -0.5745156191612026,
+        "drainage_effectiveness": 0.38384876161405784,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73011",
+      "seed": 73011,
+      "parameters": {
+        "rainfall_mm_h": 158.64152516827693,
+        "river_level_m": 0.012844129008833693,
+        "drainage_effectiveness": 0.7003413271777816,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73012",
+      "seed": 73012,
+      "parameters": {
+        "rainfall_mm_h": 94.50267808729274,
+        "river_level_m": -0.4117791171227843,
+        "drainage_effectiveness": 0.6920080456417025,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "parameters": {
+        "rainfall_mm_h": 228.13772005085957,
+        "river_level_m": 1.6310980961614094,
+        "drainage_effectiveness": 0.7240053923110937,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73014",
+      "seed": 73014,
+      "parameters": {
+        "rainfall_mm_h": 101.48214849261205,
+        "river_level_m": 0.17492974425878027,
+        "drainage_effectiveness": 0.9545658179011776,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73015",
+      "seed": 73015,
+      "parameters": {
+        "rainfall_mm_h": 61.32106429484677,
+        "river_level_m": 1.357971132864513,
+        "drainage_effectiveness": 0.5238542766254773,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73016",
+      "seed": 73016,
+      "parameters": {
+        "rainfall_mm_h": 184.52634973866407,
+        "river_level_m": -0.21216071035653333,
+        "drainage_effectiveness": 0.8986008004433961,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73017",
+      "seed": 73017,
+      "parameters": {
+        "rainfall_mm_h": 34.69571626808586,
+        "river_level_m": -0.20944886057685258,
+        "drainage_effectiveness": 0.6534604566262187,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73018",
+      "seed": 73018,
+      "parameters": {
+        "rainfall_mm_h": 51.907131673869934,
+        "river_level_m": 1.038916481329851,
+        "drainage_effectiveness": 0.7513686444387035,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73019",
+      "seed": 73019,
+      "parameters": {
+        "rainfall_mm_h": 142.18083284913328,
+        "river_level_m": 0.7681636527285052,
+        "drainage_effectiveness": 0.9645855089243727,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73020",
+      "seed": 73020,
+      "parameters": {
+        "rainfall_mm_h": 122.8203524212504,
+        "river_level_m": 0.7726673898550487,
+        "drainage_effectiveness": 0.9572709628467151,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "parameters": {
+        "rainfall_mm_h": 246.21901683118105,
+        "river_level_m": 0.9346531592222578,
+        "drainage_effectiveness": 0.5004513195990037,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73022",
+      "seed": 73022,
+      "parameters": {
+        "rainfall_mm_h": 239.46010130932083,
+        "river_level_m": 0.7279483748832911,
+        "drainage_effectiveness": 0.6820710582405468,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73023",
+      "seed": 73023,
+      "parameters": {
+        "rainfall_mm_h": 22.054131411248903,
+        "river_level_m": 0.6177926819784503,
+        "drainage_effectiveness": 0.8527810694438227,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73024",
+      "seed": 73024,
+      "parameters": {
+        "rainfall_mm_h": 194.52661888692947,
+        "river_level_m": -0.6989539637732949,
+        "drainage_effectiveness": 0.26285938826507244,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73025",
+      "seed": 73025,
+      "parameters": {
+        "rainfall_mm_h": 15.22147551159647,
+        "river_level_m": 1.1340094826517364,
+        "drainage_effectiveness": 0.24587305062795672,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73026",
+      "seed": 73026,
+      "parameters": {
+        "rainfall_mm_h": 61.15118072418989,
+        "river_level_m": 0.6019211977866705,
+        "drainage_effectiveness": 0.5263288207930947,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73027",
+      "seed": 73027,
+      "parameters": {
+        "rainfall_mm_h": 123.62180036424066,
+        "river_level_m": 0.26777012251894783,
+        "drainage_effectiveness": 0.6084837338753653,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73028",
+      "seed": 73028,
+      "parameters": {
+        "rainfall_mm_h": 41.7683657338805,
+        "river_level_m": 1.099068670572299,
+        "drainage_effectiveness": 0.6033579667946206,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73029",
+      "seed": 73029,
+      "parameters": {
+        "rainfall_mm_h": 95.78642929299258,
+        "river_level_m": 0.15465639036889645,
+        "drainage_effectiveness": 0.2747955162732755,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73030",
+      "seed": 73030,
+      "parameters": {
+        "rainfall_mm_h": 152.94946736429233,
+        "river_level_m": 1.6618089584450855,
+        "drainage_effectiveness": 0.709887690608735,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73031",
+      "seed": 73031,
+      "parameters": {
+        "rainfall_mm_h": 175.66961713987067,
+        "river_level_m": 0.9573763351889759,
+        "drainage_effectiveness": 0.6163683722947287,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73032",
+      "seed": 73032,
+      "parameters": {
+        "rainfall_mm_h": 86.0406624487618,
+        "river_level_m": -0.03236850776896083,
+        "drainage_effectiveness": 0.9203820391243834,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73033",
+      "seed": 73033,
+      "parameters": {
+        "rainfall_mm_h": 27.269989583255033,
+        "river_level_m": 0.8941069251951983,
+        "drainage_effectiveness": 0.5279412357241593,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73034",
+      "seed": 73034,
+      "parameters": {
+        "rainfall_mm_h": 216.19520027129047,
+        "river_level_m": -0.31800679550660144,
+        "drainage_effectiveness": 0.4473110513839776,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73035",
+      "seed": 73035,
+      "parameters": {
+        "rainfall_mm_h": 124.55966855492352,
+        "river_level_m": 0.775483601134437,
+        "drainage_effectiveness": 0.765511011746767,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73036",
+      "seed": 73036,
+      "parameters": {
+        "rainfall_mm_h": 32.34335176001562,
+        "river_level_m": 1.6066592658073733,
+        "drainage_effectiveness": 0.8701419800209861,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73037",
+      "seed": 73037,
+      "parameters": {
+        "rainfall_mm_h": 31.89015884245756,
+        "river_level_m": 0.49193246269806234,
+        "drainage_effectiveness": 0.6700574982880038,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73038",
+      "seed": 73038,
+      "parameters": {
+        "rainfall_mm_h": 132.61676583123378,
+        "river_level_m": 0.37908132718562904,
+        "drainage_effectiveness": 0.1975525703752063,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73039",
+      "seed": 73039,
+      "parameters": {
+        "rainfall_mm_h": 121.19237807062754,
+        "river_level_m": -0.44619780259428715,
+        "drainage_effectiveness": 0.5406383974984961,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73040",
+      "seed": 73040,
+      "parameters": {
+        "rainfall_mm_h": 16.714241020334292,
+        "river_level_m": -0.028538414121225153,
+        "drainage_effectiveness": 0.5182789807791056,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73041",
+      "seed": 73041,
+      "parameters": {
+        "rainfall_mm_h": 165.074338091372,
+        "river_level_m": -0.061188416642218746,
+        "drainage_effectiveness": 0.07937120441051618,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73042",
+      "seed": 73042,
+      "parameters": {
+        "rainfall_mm_h": 88.64798089825142,
+        "river_level_m": -0.34482815356263424,
+        "drainage_effectiveness": 0.5696889932980774,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73043",
+      "seed": 73043,
+      "parameters": {
+        "rainfall_mm_h": 249.7099537921956,
+        "river_level_m": 1.1098486653338453,
+        "drainage_effectiveness": 0.48397711590423154,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73044",
+      "seed": 73044,
+      "parameters": {
+        "rainfall_mm_h": 43.57971429901487,
+        "river_level_m": 0.9011742439631063,
+        "drainage_effectiveness": 0.9637232656068487,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73045",
+      "seed": 73045,
+      "parameters": {
+        "rainfall_mm_h": 140.85149509518345,
+        "river_level_m": 0.5724659789723072,
+        "drainage_effectiveness": 0.49628451796409473,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73046",
+      "seed": 73046,
+      "parameters": {
+        "rainfall_mm_h": 103.08195936240054,
+        "river_level_m": 0.5446705079528407,
+        "drainage_effectiveness": 0.9877238365691107,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73047",
+      "seed": 73047,
+      "parameters": {
+        "rainfall_mm_h": 227.8293526422292,
+        "river_level_m": 1.3786662320643555,
+        "drainage_effectiveness": 0.8257379598916272,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73048",
+      "seed": 73048,
+      "parameters": {
+        "rainfall_mm_h": 111.69531157970796,
+        "river_level_m": 0.12304370218776328,
+        "drainage_effectiveness": 0.7681386322995387,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73049",
+      "seed": 73049,
+      "parameters": {
+        "rainfall_mm_h": 17.648938890731884,
+        "river_level_m": -0.6955268589933274,
+        "drainage_effectiveness": 0.8445043525545805,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73050",
+      "seed": 73050,
+      "parameters": {
+        "rainfall_mm_h": 62.640580751230274,
+        "river_level_m": 0.6094767915728376,
+        "drainage_effectiveness": 0.07675211934388419,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73051",
+      "seed": 73051,
+      "parameters": {
+        "rainfall_mm_h": 114.52571874389504,
+        "river_level_m": -0.12228950881995426,
+        "drainage_effectiveness": 0.3568734962982326,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73052",
+      "seed": 73052,
+      "parameters": {
+        "rainfall_mm_h": 115.39939892666547,
+        "river_level_m": 0.830658177251292,
+        "drainage_effectiveness": 0.23139158706034363,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73053",
+      "seed": 73053,
+      "parameters": {
+        "rainfall_mm_h": 209.13645395810585,
+        "river_level_m": 1.6335655693844562,
+        "drainage_effectiveness": 0.6218667542837393,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73054",
+      "seed": 73054,
+      "parameters": {
+        "rainfall_mm_h": 181.65587755602655,
+        "river_level_m": 1.5367747287742246,
+        "drainage_effectiveness": 0.26768397944422656,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73055",
+      "seed": 73055,
+      "parameters": {
+        "rainfall_mm_h": 118.77376536462191,
+        "river_level_m": 0.5867123350145473,
+        "drainage_effectiveness": 0.9748177073085813,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73056",
+      "seed": 73056,
+      "parameters": {
+        "rainfall_mm_h": 177.90163278303646,
+        "river_level_m": 1.683129634152756,
+        "drainage_effectiveness": 0.9101236119966456,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73057",
+      "seed": 73057,
+      "parameters": {
+        "rainfall_mm_h": 49.75765819346357,
+        "river_level_m": 0.7827570909358488,
+        "drainage_effectiveness": 0.8607126670325039,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73058",
+      "seed": 73058,
+      "parameters": {
+        "rainfall_mm_h": 112.37133442105764,
+        "river_level_m": -0.04718876658970883,
+        "drainage_effectiveness": 0.2888831878164003,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73059",
+      "seed": 73059,
+      "parameters": {
+        "rainfall_mm_h": 157.83078032803542,
+        "river_level_m": 0.6874979447057945,
+        "drainage_effectiveness": 0.7426227041904064,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73060",
+      "seed": 73060,
+      "parameters": {
+        "rainfall_mm_h": 124.54033587918603,
+        "river_level_m": 0.1542245916001681,
+        "drainage_effectiveness": 0.5602088375770776,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73061",
+      "seed": 73061,
+      "parameters": {
+        "rainfall_mm_h": 48.88769631731576,
+        "river_level_m": 0.06626144903436004,
+        "drainage_effectiveness": 0.1836983680280192,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73062",
+      "seed": 73062,
+      "parameters": {
+        "rainfall_mm_h": 77.08995143212464,
+        "river_level_m": 1.7940809769315804,
+        "drainage_effectiveness": 0.412388240761459,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73063",
+      "seed": 73063,
+      "parameters": {
+        "rainfall_mm_h": 89.80555608179208,
+        "river_level_m": 0.06740222368768933,
+        "drainage_effectiveness": 0.9023300799221586,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73064",
+      "seed": 73064,
+      "parameters": {
+        "rainfall_mm_h": 172.98063126341575,
+        "river_level_m": 0.6015458043819997,
+        "drainage_effectiveness": 0.778069201816624,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73065",
+      "seed": 73065,
+      "parameters": {
+        "rainfall_mm_h": 134.15963418814232,
+        "river_level_m": 1.111464965517227,
+        "drainage_effectiveness": 0.23357243892120194,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73066",
+      "seed": 73066,
+      "parameters": {
+        "rainfall_mm_h": 128.49138606409235,
+        "river_level_m": 0.9667271371682113,
+        "drainage_effectiveness": 0.8720118972468662,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73067",
+      "seed": 73067,
+      "parameters": {
+        "rainfall_mm_h": 41.97068690632785,
+        "river_level_m": 0.631043673214563,
+        "drainage_effectiveness": 0.2113930434347956,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73068",
+      "seed": 73068,
+      "parameters": {
+        "rainfall_mm_h": 134.2613638780996,
+        "river_level_m": -0.09757398556583907,
+        "drainage_effectiveness": 0.7899049322949323,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73069",
+      "seed": 73069,
+      "parameters": {
+        "rainfall_mm_h": 139.04971665703678,
+        "river_level_m": 0.6947813192455516,
+        "drainage_effectiveness": 0.26265066358852596,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73070",
+      "seed": 73070,
+      "parameters": {
+        "rainfall_mm_h": 19.42662050360375,
+        "river_level_m": 1.0469514821168258,
+        "drainage_effectiveness": 0.3263135793673714,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73071",
+      "seed": 73071,
+      "parameters": {
+        "rainfall_mm_h": 176.55390833926228,
+        "river_level_m": 0.9767920477070329,
+        "drainage_effectiveness": 0.6224395011311529,
+        "speed": 1.0
+      }
+    }
+  ],
+  "provenance": "Generated locally from the RESQ-AI synthetic city generator and deterministic Part 3 flood engine; not collected from real incidents or observations.",
+  "csv_file": "flood_exposure.csv"
+}

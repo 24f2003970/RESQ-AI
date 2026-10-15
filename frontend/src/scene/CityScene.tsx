@@ -24,6 +24,7 @@ import {
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { Compass, Focus, Minus, Plus, RotateCcw, View } from "lucide-react";
 import type { Building, CityState, ScenarioState } from "../api/client";
+import type { ScenarioPredictionSet } from "../api/client";
 import { toScene } from "./coordinates";
 
 export type Layers = {
@@ -34,6 +35,7 @@ export type Layers = {
   units: boolean;
   flood: boolean;
   infrastructure: boolean;
+  predictedRisk: boolean;
 };
 type Instance = {
   position: [number, number, number];
@@ -95,11 +97,15 @@ function BuildingBlocks({
   scenario,
   onSelect,
   selected,
+  predictions,
+  showPredictions,
 }: {
   city: CityState;
   scenario: ScenarioState | null;
   onSelect: (id: string) => void;
   selected: Building | null;
+  predictions: ScenarioPredictionSet | null;
+  showPredictions: boolean;
 }) {
   const batches = useMemo(() => {
     const walls: Instance[] = [],
@@ -109,8 +115,10 @@ function BuildingBlocks({
     for (const b of city.buildings) {
       const [x, y, z] = toScene(b.position);
       const exposure = scenario?.impacts.buildings.find((item) => item.entity_id === b.id);
-      const color =
-        exposure?.category === "severe"
+      const predicted = showPredictions && predictions?.predictions.some((p) => p.building_id === b.id && p.predicted_future_exposed);
+      const color = predicted
+        ? "#ef8a58"
+        : exposure?.category === "severe"
           ? "#b48b72"
           : exposure?.category === "moderate"
             ? "#b1a084"
@@ -185,7 +193,7 @@ function BuildingBlocks({
       }
     }
     return { walls, roofs, windows, equipment };
-  }, [city, scenario]);
+  }, [city, scenario, predictions, showPredictions]);
   return (
     <>
       <Batch items={batches.walls} onSelect={onSelect} shadows />
@@ -573,6 +581,7 @@ export default function CityScene({
   onSelect,
   layers,
   lowGraphics,
+  predictions,
 }: {
   city: CityState;
   scenario: ScenarioState | null;
@@ -580,6 +589,7 @@ export default function CityScene({
   onSelect: (id: string) => void;
   layers: Layers;
   lowGraphics: boolean;
+  predictions: ScenarioPredictionSet | null;
 }) {
   const [action, setAction] = useState({ type: "reset", key: 0 });
   const [mapMode, setMapMode] = useState(false);
@@ -654,6 +664,8 @@ export default function CityScene({
                   scenario={scenario}
                   selected={selected}
                   onSelect={onSelect}
+                  predictions={predictions}
+                  showPredictions={layers.predictedRisk}
                 />
               )}
               <Camera target={selected} action={action} />

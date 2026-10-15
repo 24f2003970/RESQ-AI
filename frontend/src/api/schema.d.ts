@@ -276,6 +276,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ml/model": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ml Model Info */
+        get: operations["ml_model_info_api_v1_ml_model_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ml/dataset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ml Dataset Info */
+        get: operations["ml_dataset_info_api_v1_ml_dataset_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ml/evaluation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ml Evaluation Info */
+        get: operations["ml_evaluation_info_api_v1_ml_evaluation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ml/features": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ml Feature Info */
+        get: operations["ml_feature_info_api_v1_ml_features_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/predictions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Scenario Predictions */
+        get: operations["scenario_predictions_api_v1_scenarios__scenario_id__predictions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/predictions/{building_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Building Prediction */
+        get: operations["building_prediction_api_v1_scenarios__scenario_id__predictions__building_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -344,6 +446,31 @@ export interface components {
              * @constant
              */
             condition: "baseline";
+        };
+        /** BuildingRiskPrediction */
+        BuildingRiskPrediction: {
+            /** Building Id */
+            building_id: string;
+            /** Current Exposed */
+            current_exposed: boolean;
+            /**
+             * Current Exposure Category
+             * @enum {string}
+             */
+            current_exposure_category: "none" | "watch" | "moderate" | "severe";
+            /** Current Max Depth M */
+            current_max_depth_m: number;
+            /** Predicted Future Exposed */
+            predicted_future_exposed: boolean;
+            /**
+             * Predicted Category
+             * @enum {string}
+             */
+            predicted_category: "predicted_exposed" | "predicted_not_exposed";
+            /** Uncalibrated Model Score */
+            uncalibrated_model_score: number;
+            /** Influential Features */
+            influential_features: components["schemas"]["MLFeatureContribution"][];
         };
         /** City */
         City: {
@@ -494,6 +621,156 @@ export interface components {
             /** Water Surface M */
             water_surface_m?: number | null;
         };
+        /** MLDatasetInfo */
+        MLDatasetInfo: {
+            /** Dataset Version */
+            dataset_version: string;
+            /** Engine Version */
+            engine_version: string;
+            /** Label Definition */
+            label_definition: string;
+            /** Feature Names */
+            feature_names: string[];
+            /** Target Name */
+            target_name: string;
+            /** Scenario Count */
+            scenario_count: number;
+            /** Observation Count */
+            observation_count: number;
+            /** Positive Count */
+            positive_count: number;
+            /** Negative Count */
+            negative_count: number;
+            /** Positive Fraction */
+            positive_fraction: number;
+            /** Duplicate Feature Target Rows */
+            duplicate_feature_target_rows: number;
+            /** Random Sampling Seed */
+            random_sampling_seed: number;
+            /** Configuration */
+            configuration: {
+                [key: string]: unknown;
+            };
+            /** Provenance */
+            provenance: string;
+        };
+        /** MLEvaluationReport */
+        MLEvaluationReport: {
+            /** Evaluation Version */
+            evaluation_version: string;
+            /** Created At Utc */
+            created_at_utc: string;
+            /** Selected Model */
+            selected_model: string;
+            /** Selection Metric */
+            selection_metric: string;
+            /** Validation Candidates */
+            validation_candidates: {
+                [key: string]: unknown;
+            };
+            /** Test Set Label */
+            test_set_label: string;
+            /** Test Scenario Count */
+            test_scenario_count: number;
+            /** Test Observation Count */
+            test_observation_count: number;
+            /** Test Positive Count */
+            test_positive_count: number;
+            /** Test Negative Count */
+            test_negative_count: number;
+            /** Test Metrics */
+            test_metrics: {
+                [key: string]: unknown;
+            };
+            /** Test Baselines */
+            test_baselines: {
+                [key: string]: unknown;
+            };
+            /** False Positive Examples */
+            false_positive_examples: {
+                [key: string]: unknown;
+            }[];
+            /** False Negative Examples */
+            false_negative_examples: {
+                [key: string]: unknown;
+            }[];
+            /** Permutation Importance */
+            permutation_importance: {
+                [key: string]: unknown;
+            }[];
+            /** Probabilities Calibrated */
+            probabilities_calibrated: boolean;
+            /** Model Score Note */
+            model_score_note: string;
+            /** Inference Latency Ms Per Observation */
+            inference_latency_ms_per_observation: number;
+            /** Latency Batch Size */
+            latency_batch_size: number;
+            /** Latency Repetitions */
+            latency_repetitions: number;
+            /** Test Scenario Ids */
+            test_scenario_ids: string[];
+        };
+        /** MLFeatureContribution */
+        MLFeatureContribution: {
+            /** Name */
+            name: string;
+            /** Value */
+            value: number;
+            /** Global Permutation Importance */
+            global_permutation_importance: number;
+        };
+        /** MLFeatureInfo */
+        MLFeatureInfo: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Units */
+            units: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "numeric" | "indicator";
+        };
+        /** MLModelInfo */
+        MLModelInfo: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "unavailable";
+            /** Model Name */
+            model_name: string;
+            /** Model Version */
+            model_version?: string | null;
+            /** Algorithm */
+            algorithm?: string | null;
+            /** Trained At Utc */
+            trained_at_utc?: string | null;
+            /** Training Scenarios */
+            training_scenarios?: number | null;
+            /** Observation Count */
+            observation_count?: number | null;
+            /** Horizon Ticks */
+            horizon_ticks?: number | null;
+            /** Horizon Minutes */
+            horizon_minutes?: number | null;
+            /** Target */
+            target: string;
+            /** Artifact Sha256 */
+            artifact_sha256?: string | null;
+            /** Sklearn Version */
+            sklearn_version?: string | null;
+            /**
+             * Probabilities Calibrated
+             * @default false
+             */
+            probabilities_calibrated: boolean;
+            /** Unavailable Reason */
+            unavailable_reason?: string | null;
+        };
         /** MassBalance */
         MassBalance: {
             /** Initial M3 */
@@ -643,6 +920,30 @@ export interface components {
             simulated_seconds: number;
             /** Description */
             description: string;
+        };
+        /** ScenarioPredictionSet */
+        ScenarioPredictionSet: {
+            /** Model Version */
+            model_version: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario State Version */
+            scenario_state_version: number;
+            /** Scenario Tick */
+            scenario_tick: number;
+            /** Horizon Ticks */
+            horizon_ticks: number;
+            /** Horizon Minutes */
+            horizon_minutes: number;
+            /** Target Definition */
+            target_definition: string;
+            /**
+             * Probabilities Calibrated
+             * @default false
+             */
+            probabilities_calibrated: boolean;
+            /** Predictions */
+            predictions: components["schemas"]["BuildingRiskPrediction"][];
         };
         /** ScenarioState */
         ScenarioState: {
@@ -1257,6 +1558,149 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ml_model_info_api_v1_ml_model_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MLModelInfo"];
+                };
+            };
+        };
+    };
+    ml_dataset_info_api_v1_ml_dataset_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MLDatasetInfo"];
+                };
+            };
+        };
+    };
+    ml_evaluation_info_api_v1_ml_evaluation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MLEvaluationReport"];
+                };
+            };
+        };
+    };
+    ml_feature_info_api_v1_ml_features_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MLFeatureInfo"][];
+                };
+            };
+        };
+    };
+    scenario_predictions_api_v1_scenarios__scenario_id__predictions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioPredictionSet"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    building_prediction_api_v1_scenarios__scenario_id__predictions__building_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+                building_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioPredictionSet"];
                 };
             };
             /** @description Validation Error */

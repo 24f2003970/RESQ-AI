@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "RESQ-AI Local API",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -634,6 +634,169 @@
           }
         }
       }
+    },
+    "/api/v1/ml/model": {
+      "get": {
+        "summary": "Ml Model Info",
+        "operationId": "ml_model_info_api_v1_ml_model_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MLModelInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ml/dataset": {
+      "get": {
+        "summary": "Ml Dataset Info",
+        "operationId": "ml_dataset_info_api_v1_ml_dataset_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MLDatasetInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ml/evaluation": {
+      "get": {
+        "summary": "Ml Evaluation Info",
+        "operationId": "ml_evaluation_info_api_v1_ml_evaluation_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MLEvaluationReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ml/features": {
+      "get": {
+        "summary": "Ml Feature Info",
+        "operationId": "ml_feature_info_api_v1_ml_features_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MLFeatureInfo"
+                  },
+                  "type": "array",
+                  "title": "Response Ml Feature Info Api V1 Ml Features Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/predictions": {
+      "get": {
+        "summary": "Scenario Predictions",
+        "operationId": "scenario_predictions_api_v1_scenarios__scenario_id__predictions_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioPredictionSet"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/predictions/{building_id}": {
+      "get": {
+        "summary": "Building Prediction",
+        "operationId": "building_prediction_api_v1_scenarios__scenario_id__predictions__building_id__get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "building_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Building Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioPredictionSet"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -792,6 +955,67 @@
           "material_color"
         ],
         "title": "Building"
+      },
+      "BuildingRiskPrediction": {
+        "properties": {
+          "building_id": {
+            "type": "string",
+            "title": "Building Id"
+          },
+          "current_exposed": {
+            "type": "boolean",
+            "title": "Current Exposed"
+          },
+          "current_exposure_category": {
+            "type": "string",
+            "enum": [
+              "none",
+              "watch",
+              "moderate",
+              "severe"
+            ],
+            "title": "Current Exposure Category"
+          },
+          "current_max_depth_m": {
+            "type": "number",
+            "title": "Current Max Depth M"
+          },
+          "predicted_future_exposed": {
+            "type": "boolean",
+            "title": "Predicted Future Exposed"
+          },
+          "predicted_category": {
+            "type": "string",
+            "enum": [
+              "predicted_exposed",
+              "predicted_not_exposed"
+            ],
+            "title": "Predicted Category"
+          },
+          "uncalibrated_model_score": {
+            "type": "number",
+            "title": "Uncalibrated Model Score"
+          },
+          "influential_features": {
+            "items": {
+              "$ref": "#/components/schemas/MLFeatureContribution"
+            },
+            "type": "array",
+            "title": "Influential Features"
+          }
+        },
+        "type": "object",
+        "required": [
+          "building_id",
+          "current_exposed",
+          "current_exposure_category",
+          "current_max_depth_m",
+          "predicted_future_exposed",
+          "predicted_category",
+          "uncalibrated_model_score",
+          "influential_features"
+        ],
+        "title": "BuildingRiskPrediction"
       },
       "City": {
         "properties": {
@@ -1261,6 +1485,416 @@
         ],
         "title": "ImpactItem"
       },
+      "MLDatasetInfo": {
+        "properties": {
+          "dataset_version": {
+            "type": "string",
+            "title": "Dataset Version"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "label_definition": {
+            "type": "string",
+            "title": "Label Definition"
+          },
+          "feature_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Feature Names"
+          },
+          "target_name": {
+            "type": "string",
+            "title": "Target Name"
+          },
+          "scenario_count": {
+            "type": "integer",
+            "title": "Scenario Count"
+          },
+          "observation_count": {
+            "type": "integer",
+            "title": "Observation Count"
+          },
+          "positive_count": {
+            "type": "integer",
+            "title": "Positive Count"
+          },
+          "negative_count": {
+            "type": "integer",
+            "title": "Negative Count"
+          },
+          "positive_fraction": {
+            "type": "number",
+            "title": "Positive Fraction"
+          },
+          "duplicate_feature_target_rows": {
+            "type": "integer",
+            "title": "Duplicate Feature Target Rows"
+          },
+          "random_sampling_seed": {
+            "type": "integer",
+            "title": "Random Sampling Seed"
+          },
+          "configuration": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Configuration"
+          },
+          "provenance": {
+            "type": "string",
+            "title": "Provenance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset_version",
+          "engine_version",
+          "label_definition",
+          "feature_names",
+          "target_name",
+          "scenario_count",
+          "observation_count",
+          "positive_count",
+          "negative_count",
+          "positive_fraction",
+          "duplicate_feature_target_rows",
+          "random_sampling_seed",
+          "configuration",
+          "provenance"
+        ],
+        "title": "MLDatasetInfo"
+      },
+      "MLEvaluationReport": {
+        "properties": {
+          "evaluation_version": {
+            "type": "string",
+            "title": "Evaluation Version"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "selected_model": {
+            "type": "string",
+            "title": "Selected Model"
+          },
+          "selection_metric": {
+            "type": "string",
+            "title": "Selection Metric"
+          },
+          "validation_candidates": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Validation Candidates"
+          },
+          "test_set_label": {
+            "type": "string",
+            "title": "Test Set Label"
+          },
+          "test_scenario_count": {
+            "type": "integer",
+            "title": "Test Scenario Count"
+          },
+          "test_observation_count": {
+            "type": "integer",
+            "title": "Test Observation Count"
+          },
+          "test_positive_count": {
+            "type": "integer",
+            "title": "Test Positive Count"
+          },
+          "test_negative_count": {
+            "type": "integer",
+            "title": "Test Negative Count"
+          },
+          "test_metrics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Test Metrics"
+          },
+          "test_baselines": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Test Baselines"
+          },
+          "false_positive_examples": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "False Positive Examples"
+          },
+          "false_negative_examples": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "False Negative Examples"
+          },
+          "permutation_importance": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Permutation Importance"
+          },
+          "probabilities_calibrated": {
+            "type": "boolean",
+            "title": "Probabilities Calibrated"
+          },
+          "model_score_note": {
+            "type": "string",
+            "title": "Model Score Note"
+          },
+          "inference_latency_ms_per_observation": {
+            "type": "number",
+            "title": "Inference Latency Ms Per Observation"
+          },
+          "latency_batch_size": {
+            "type": "integer",
+            "title": "Latency Batch Size"
+          },
+          "latency_repetitions": {
+            "type": "integer",
+            "title": "Latency Repetitions"
+          },
+          "test_scenario_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Test Scenario Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evaluation_version",
+          "created_at_utc",
+          "selected_model",
+          "selection_metric",
+          "validation_candidates",
+          "test_set_label",
+          "test_scenario_count",
+          "test_observation_count",
+          "test_positive_count",
+          "test_negative_count",
+          "test_metrics",
+          "test_baselines",
+          "false_positive_examples",
+          "false_negative_examples",
+          "permutation_importance",
+          "probabilities_calibrated",
+          "model_score_note",
+          "inference_latency_ms_per_observation",
+          "latency_batch_size",
+          "latency_repetitions",
+          "test_scenario_ids"
+        ],
+        "title": "MLEvaluationReport"
+      },
+      "MLFeatureContribution": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "global_permutation_importance": {
+            "type": "number",
+            "title": "Global Permutation Importance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "value",
+          "global_permutation_importance"
+        ],
+        "title": "MLFeatureContribution"
+      },
+      "MLFeatureInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "units": {
+            "type": "string",
+            "title": "Units"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "numeric",
+              "indicator"
+            ],
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "units",
+          "role"
+        ],
+        "title": "MLFeatureInfo"
+      },
+      "MLModelInfo": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "algorithm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Algorithm"
+          },
+          "trained_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trained At Utc"
+          },
+          "training_scenarios": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Scenarios"
+          },
+          "observation_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observation Count"
+          },
+          "horizon_ticks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Horizon Ticks"
+          },
+          "horizon_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Horizon Minutes"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "artifact_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Sha256"
+          },
+          "sklearn_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sklearn Version"
+          },
+          "probabilities_calibrated": {
+            "type": "boolean",
+            "title": "Probabilities Calibrated",
+            "default": false
+          },
+          "unavailable_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "model_name",
+          "target"
+        ],
+        "title": "MLModelInfo"
+      },
       "MassBalance": {
         "properties": {
           "initial_m3": {
@@ -1661,6 +2295,62 @@
           "description"
         ],
         "title": "ScenarioMetadata"
+      },
+      "ScenarioPredictionSet": {
+        "properties": {
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "scenario_state_version": {
+            "type": "integer",
+            "title": "Scenario State Version"
+          },
+          "scenario_tick": {
+            "type": "integer",
+            "title": "Scenario Tick"
+          },
+          "horizon_ticks": {
+            "type": "integer",
+            "title": "Horizon Ticks"
+          },
+          "horizon_minutes": {
+            "type": "integer",
+            "title": "Horizon Minutes"
+          },
+          "target_definition": {
+            "type": "string",
+            "title": "Target Definition"
+          },
+          "probabilities_calibrated": {
+            "type": "boolean",
+            "title": "Probabilities Calibrated",
+            "default": false
+          },
+          "predictions": {
+            "items": {
+              "$ref": "#/components/schemas/BuildingRiskPrediction"
+            },
+            "type": "array",
+            "title": "Predictions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_version",
+          "scenario_id",
+          "scenario_state_version",
+          "scenario_tick",
+          "horizon_ticks",
+          "horizon_minutes",
+          "target_definition",
+          "predictions"
+        ],
+        "title": "ScenarioPredictionSet"
       },
       "ScenarioState": {
         "properties": {

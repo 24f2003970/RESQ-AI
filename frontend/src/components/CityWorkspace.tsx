@@ -27,6 +27,7 @@ import {
 import { Link } from "react-router-dom";
 import type { Layers } from "../scene/CityScene";
 import { fetchBuilding, type Building, type CityState, type ScenarioState, type SimulationEvent } from "../api/client";
+import type { MLModelInfo, ScenarioPredictionSet } from "../api/client";
 import { Badge, Help, Panel, Row } from "./ui";
 import Inspector from "./Inspector";
 
@@ -50,6 +51,8 @@ export default function CityWorkspace({
   studio,
   status,
   retry,
+  model,
+  predictions,
 }: {
   city: CityState;
   scenario: ScenarioState | null;
@@ -57,6 +60,8 @@ export default function CityWorkspace({
   studio: boolean;
   status: string;
   retry: () => void;
+  model: MLModelInfo | null;
+  predictions: ScenarioPredictionSet | null;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Building | null>(null);
@@ -72,6 +77,7 @@ export default function CityWorkspace({
     units: true,
     flood: true,
     infrastructure: true,
+    predictedRisk: false,
   });
   useEffect(() => {
     setSelected(null);
@@ -225,6 +231,7 @@ export default function CityWorkspace({
                 onSelect={setSelectedId}
                 layers={layers}
                 lowGraphics={lowGraphics}
+                predictions={predictions}
               />
               <AnimatePresence>
                 {layerOpen && (
@@ -255,7 +262,7 @@ export default function CityWorkspace({
                         />
                       </label>
                     ))}
-                    <p>Flood depth and infrastructure status come from the local simulation API. Risk and rescue routing are not implemented in Part 3.</p>
+                    <p>Current flood depth comes from the physical simulation. Predicted exposure is a separate ML layer for the next 30 minutes.</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -280,6 +287,7 @@ export default function CityWorkspace({
                 <i className="depth-extreme" title="Very deep: over 2.00 m"/>
                 <span>Water depth</span>
               </span>
+              {layers.predictedRisk && <span><i className="legend-predicted"/> Predicted future exposure</span>}
               <span className="viewport-state">
                 {scenario ? `${scenario.status.toUpperCase()} · T+${String(Math.floor(scenario.simulated_seconds / 3600)).padStart(2, "0")}:${String(Math.floor((scenario.simulated_seconds % 3600) / 60)).padStart(2, "0")} · V${scenario.state_version}` : "LOADING SCENARIO"}
               </span>
@@ -367,6 +375,7 @@ export default function CityWorkspace({
             error={detailError}
             close={() => setSelectedId(null)}
             choose={setSelectedId}
+            predictions={predictions}
           />
           <Panel
             title="Critical facilities"
@@ -405,12 +414,14 @@ export default function CityWorkspace({
               <Bot size={19} />
             </span>
             <div>
-              <h2>Intelligence, with evidence.</h2>
-              <p>
-                Agent recommendations will appear here once the risk and
-                planning pipeline is implemented.
-              </p>
-              <Badge tone="amber">Unavailable · no agents implemented</Badge>
+              <h2>Flood risk intelligence</h2>
+              <p>{predictions ? `${predictions.predictions.filter((p) => p.predicted_future_exposed).length} buildings estimated exposed in ${predictions.horizon_minutes} minutes. Current exposure remains based on simulated water depth.` : "Predictions are loading for the active scenario."}</p>
+              {predictions?.predictions.filter((p) => p.predicted_future_exposed).slice(0, 3).map((prediction) => {
+                const building = city.buildings.find((item) => item.id === prediction.building_id);
+                return building ? <button key={building.id} className="predicted-building-link" onClick={() => setSelectedId(building.id)}>{building.name} <span>predicted exposed</span></button> : null;
+              })}
+              <Badge tone={model?.status === "ready" ? "green" : "amber"}>{model?.status === "ready" ? `Local model · ${model.model_version}` : model?.unavailable_reason ?? "Model unavailable"}</Badge>
+              <Link className="risk-lab-link" to="/model">Open Model Intelligence Lab <ArrowRight size={14}/></Link>
             </div>
           </section>
           <div className="provenance">

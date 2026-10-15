@@ -1,0 +1,131 @@
+{
+  "properties": {
+    "evaluation_version": {
+      "title": "Evaluation Version",
+      "type": "string"
+    },
+    "created_at_utc": {
+      "title": "Created At Utc",
+      "type": "string"
+    },
+    "selected_model": {
+      "title": "Selected Model",
+      "type": "string"
+    },
+    "selection_metric": {
+      "title": "Selection Metric",
+      "type": "string"
+    },
+    "validation_candidates": {
+      "additionalProperties": true,
+      "title": "Validation Candidates",
+      "type": "object"
+    },
+    "test_set_label": {
+      "title": "Test Set Label",
+      "type": "string"
+    },
+    "test_scenario_count": {
+      "title": "Test Scenario Count",
+      "type": "integer"
+    },
+    "test_observation_count": {
+      "title": "Test Observation Count",
+      "type": "integer"
+    },
+    "test_positive_count": {
+      "title": "Test Positive Count",
+      "type": "integer"
+    },
+    "test_negative_count": {
+      "title": "Test Negative Count",
+      "type": "integer"
+    },
+    "test_metrics": {
+      "additionalProperties": true,
+      "title": "Test Metrics",
+      "type": "object"
+    },
+    "test_baselines": {
+      "additionalProperties": true,
+      "title": "Test Baselines",
+      "type": "object"
+    },
+    "false_positive_examples": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "False Positive Examples",
+      "type": "array"
+    },
+    "false_negative_examples": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "False Negative Examples",
+      "type": "array"
+    },
+    "permutation_importance": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Permutation Importance",
+      "type": "array"
+    },
+    "probabilities_calibrated": {
+      "title": "Probabilities Calibrated",
+      "type": "boolean"
+    },
+    "model_score_note": {
+      "title": "Model Score Note",
+      "type": "string"
+    },
+    "inference_latency_ms_per_observation": {
+      "title": "Inference Latency Ms Per Observation",
+      "type": "number"
+    },
+    "latency_batch_size": {
+      "title": "Latency Batch Size",
+      "type": "integer"
+    },
+    "latency_repetitions": {
+      "title": "Latency Repetitions",
+      "type": "integer"
+    },
+    "test_scenario_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Test Scenario Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "evaluation_version",
+    "created_at_utc",
+    "selected_model",
+    "selection_metric",
+    "validation_candidates",
+    "test_set_label",
+    "test_scenario_count",
+    "test_observation_count",
+    "test_positive_count",
+    "test_negative_count",
+    "test_metrics",
+    "test_baselines",
+    "false_positive_examples",
+    "false_negative_examples",
+    "permutation_importance",
+    "probabilities_calibrated",
+    "model_score_note",
+    "inference_latency_ms_per_observation",
+    "latency_batch_size",
+    "latency_repetitions",
+    "test_scenario_ids"
+  ],
+  "title": "MLEvaluationReport",
+  "type": "object"
+}
