@@ -1,5 +1,7 @@
 # Product Requirements
 
+> **Current delivery:** Part 3 implements the deterministic flood simulation, locally persisted scenarios, transparent exposure/access rules, replay, and Scenario Lab. ML classification, prioritization, routing, resource assignments, and operational decisions below are planned requirements, not available features.
+
 ## Purpose and users
 
 RESQ-AI is a local, hackathon-scale decision-support prototype for demonstrating how a changing flood scenario can drive risk assessment and rescue replanning in a fictional city. Its primary users are a command-center operator and a judge evaluating the demo. It does not issue public warnings, connect to emergency services, or dispatch real responders.
@@ -63,3 +65,5 @@ Given a saved scenario and city seed, RESQ-AI produces a repeatable simulated ci
 ## Explicit exclusions
 
 No real emergency dispatch, operational hazard forecast, public alert, external AI API, cloud dependency, medical triage recommendation, unsupported real-world performance claim, or public source-code license is in scope for Part 1.
+
+Part 3 continues to exclude AI predictions and rescue-priority claims. The Command Center must identify agent recommendations as unavailable until a later implementation provides real, testable agents.

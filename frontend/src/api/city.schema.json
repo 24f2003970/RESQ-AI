@@ -590,6 +590,48 @@
       ],
       "title": "Shelter",
       "type": "object"
+    },
+    "TerrainGrid": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_size_m": {
+          "exclusiveMinimum": 0,
+          "title": "Cell Size M",
+          "type": "number"
+        },
+        "x_centers_m": {
+          "items": {
+            "type": "number"
+          },
+          "title": "X Centers M",
+          "type": "array"
+        },
+        "y_centers_m": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Y Centers M",
+          "type": "array"
+        },
+        "elevation_m": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Elevation M",
+          "type": "array"
+        }
+      },
+      "required": [
+        "cell_size_m",
+        "x_centers_m",
+        "y_centers_m",
+        "elevation_m"
+      ],
+      "title": "TerrainGrid",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -599,6 +641,9 @@
     },
     "scenario": {
       "$ref": "#/$defs/ScenarioMetadata"
+    },
+    "terrain": {
+      "$ref": "#/$defs/TerrainGrid"
     },
     "districts": {
       "items": {
@@ -674,6 +719,7 @@
   "required": [
     "city",
     "scenario",
+    "terrain",
     "districts",
     "buildings",
     "roads",

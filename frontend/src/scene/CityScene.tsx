@@ -12,7 +12,9 @@ import { Canvas, type ThreeEvent, useThree } from "@react-three/fiber";
 import { Edges, Line, OrbitControls } from "@react-three/drei";
 import {
   BoxGeometry,
+  BufferGeometry,
   Color,
+  Float32BufferAttribute,
   InstancedMesh,
   Matrix4,
   MeshStandardMaterial,
@@ -21,7 +23,7 @@ import {
 } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { Compass, Focus, Minus, Plus, RotateCcw, View } from "lucide-react";
-import type { Building, CityState } from "../api/client";
+import type { Building, CityState, ScenarioState } from "../api/client";
 import { toScene } from "./coordinates";
 
 export type Layers = {
@@ -30,6 +32,8 @@ export type Layers = {
   facilities: boolean;
   districts: boolean;
   units: boolean;
+  flood: boolean;
+  infrastructure: boolean;
 };
 type Instance = {
   position: [number, number, number];
@@ -88,10 +92,12 @@ function Batch({
 
 function BuildingBlocks({
   city,
+  scenario,
   onSelect,
   selected,
 }: {
   city: CityState;
+  scenario: ScenarioState | null;
   onSelect: (id: string) => void;
   selected: Building | null;
 }) {
@@ -102,8 +108,13 @@ function BuildingBlocks({
       equipment: Instance[] = [];
     for (const b of city.buildings) {
       const [x, y, z] = toScene(b.position);
+      const exposure = scenario?.impacts.buildings.find((item) => item.entity_id === b.id);
       const color =
-        b.use === "hospital"
+        exposure?.category === "severe"
+          ? "#b48b72"
+          : exposure?.category === "moderate"
+            ? "#b1a084"
+            : b.use === "hospital"
           ? "#d3dfd7"
           : b.use === "shelter"
             ? "#aac5b4"
@@ -174,7 +185,7 @@ function BuildingBlocks({
       }
     }
     return { walls, roofs, windows, equipment };
-  }, [city]);
+  }, [city, scenario]);
   return (
     <>
       <Batch items={batches.walls} onSelect={onSelect} shadows />
@@ -185,7 +196,7 @@ function BuildingBlocks({
         <mesh
           position={[
             selected.position.x_m,
-            selected.height_m / 2 + 0.2,
+            selected.position.elevation_m + selected.height_m / 2 + 0.2,
             -selected.position.y_m,
           ]}
         >
@@ -209,23 +220,113 @@ function BuildingBlocks({
   );
 }
 
-function Ground({ city, layers }: { city: CityState; layers: Layers }) {
+function sampleGrid(grid: number[][], x: number, y: number) {
+  const height = grid.length;
+  const width = grid[0]?.length ?? 0;
+  if (!width || !height) return 0;
+  const gx = Math.max(0, Math.min(width - 1, (x + 320) / 20));
+  const gy = Math.max(0, Math.min(height - 1, (y + 240) / 20));
+  const x0 = Math.floor(gx), y0 = Math.floor(gy);
+  const x1 = Math.min(x0 + 1, width - 1), y1 = Math.min(y0 + 1, height - 1);
+  const tx = gx - x0, ty = gy - y0;
+  return (grid[y0][x0] * (1 - tx) + grid[y0][x1] * tx) * (1 - ty)
+    + (grid[y1][x0] * (1 - tx) + grid[y1][x1] * tx) * ty;
+}
+
+function terrainGeometry(grid: number[][]) {
+  const geometry = new BufferGeometry();
+  const rows = grid.length, columns = grid[0]?.length ?? 0;
+  const positions: number[] = [], indices: number[] = [];
+  for (let row = 0; row <= rows; row++) {
+    const northing = 250 - row * 20;
+    for (let column = 0; column <= columns; column++) {
+      const east = -330 + column * 20;
+      positions.push(east, sampleGrid(grid, east, northing), -northing);
+      if (row < rows && column < columns) {
+        const a = row * (columns + 1) + column;
+        const b = a + 1, c = a + columns + 1, d = c + 1;
+        indices.push(a, c, b, b, c, d);
+      }
+    }
+  }
+  geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function floodGeometry(terrain: number[][], depth: number[][]) {
+  const geometry = new BufferGeometry();
+  const positions: number[] = [], colors: number[] = [], indices: number[] = [];
+  const shades = ["#98e9e8", "#398fc1", "#1e5a98", "#443477"];
+  for (let row = 0; row < depth.length; row++) {
+    for (let column = 0; column < depth[row].length; column++) {
+      const level = depth[row][column];
+      if (level < 0.025) continue;
+      const x = -320 + column * 20, north = -240 + row * 20;
+      const points: [number, number][] = [[x - 10, north - 10], [x + 10, north - 10], [x + 10, north + 10], [x - 10, north + 10]];
+      const color = new Color(level < 0.3 ? shades[0] : level < 1 ? shades[1] : level < 2 ? shades[2] : shades[3]);
+      const first = positions.length / 3;
+      for (const [east, northing] of points) {
+        const base = sampleGrid(terrain, east, northing);
+        const water = sampleGrid(depth, east, northing);
+        positions.push(east, base + Math.max(level * 0.55, water) + 0.025, -northing);
+        colors.push(color.r, color.g, color.b);
+      }
+      indices.push(first, first + 1, first + 2, first, first + 2, first + 3);
+    }
+  }
+  geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function Terrain({ grid }: { grid: number[][] }) {
+  const geometry = useMemo(() => terrainGeometry(grid), [grid]);
+  useEffect(() => () => geometry?.dispose(), [geometry]);
+  if (!geometry) return null;
+  return <mesh geometry={geometry} receiveShadow><meshStandardMaterial color="#718477" roughness={0.96}/></mesh>;
+}
+
+function Floodwater({ scenario }: { scenario: ScenarioState | null }) {
+  const terrain = scenario?.terrain_m;
+  const depth = scenario?.depth_m;
+  const geometry = useMemo(() => terrain && depth ? floodGeometry(terrain, depth) : null,
+    [terrain, depth]);
+  useEffect(() => () => geometry?.dispose(), [geometry]);
+  if (!geometry || geometry.getAttribute("position").count === 0) return null;
+  return <mesh geometry={geometry} renderOrder={2}><meshPhysicalMaterial vertexColors transparent opacity={0.78} roughness={0.24} metalness={0.18} clearcoat={0.55} clearcoatRoughness={0.22} depthWrite={false}/></mesh>;
+}
+
+function Ground({ city, layers, scenario }: { city: CityState; layers: Layers; scenario: ScenarioState | null }) {
+  const terrain = scenario?.terrain_m ?? city.terrain.elevation_m;
+  const roadImpacts = scenario?.impacts.roads;
+  const bridgesById = new Map((scenario?.impacts.bridges ?? []).map((bridge) => [bridge.entity_id, bridge]));
   const streetItems = useMemo(
-    () =>
-      city.roads.map((r) => ({
-        position: [
-          (r.start.x_m + r.end.x_m) / 2,
-          0.15,
-          -(r.start.y_m + r.end.y_m) / 2,
-        ] as [number, number, number],
-        scale: [
-          r.start.x_m === r.end.x_m ? r.width_m : r.length_m,
-          0.35,
-          r.start.x_m === r.end.x_m ? r.length_m : r.width_m,
-        ] as [number, number, number],
-        color: "#4d5b5c",
-      })),
-    [city],
+    () => city.roads.flatMap((road) => {
+      const count = Math.ceil(road.length_m / 20);
+      const bridge = city.bridges.find((item) => item.road_id === road.id);
+      const roadsById = new Map((roadImpacts ?? []).map((impact) => [impact.entity_id, impact]));
+      return Array.from({ length: count }, (_, index) => {
+        const t0 = index / count, t1 = (index + 1) / count, t = (t0 + t1) / 2;
+        const x = road.start.x_m + (road.end.x_m - road.start.x_m) * t;
+        const y = road.start.y_m + (road.end.y_m - road.start.y_m) * t;
+        if (bridge && Math.abs(y - bridge.position.y_m) <= bridge.length_m / 2) return null;
+        const endX = road.start.x_m + (road.end.x_m - road.start.x_m) * t1;
+        const endY = road.start.y_m + (road.end.y_m - road.start.y_m) * t1;
+        const length = Math.hypot(endX - x, endY - y) + 0.8;
+        const elevation = sampleGrid(terrain, x, y) + 0.19;
+        const condition = roadsById.get(road.id)?.status;
+        return {
+          position: [x, elevation, -y] as [number, number, number],
+          scale: [road.start.x_m === road.end.x_m ? road.width_m : length, 0.3, road.start.x_m === road.end.x_m ? length : road.width_m] as [number, number, number],
+          color: condition === "flooded" ? "#28678f" : condition === "caution" ? "#91764e" : "#4d5b5c",
+        };
+      }).filter((item): item is NonNullable<typeof item> => item !== null);
+    }),
+    [city, terrain, roadImpacts],
   );
   const markings = useMemo(() => {
     const result: Instance[] = [];
@@ -234,14 +335,17 @@ function Ground({ city, layers }: { city: CityState; layers: Layers }) {
         const t = d / r.length_m;
         const x = r.start.x_m + (r.end.x_m - r.start.x_m) * t,
           y = r.start.y_m + (r.end.y_m - r.start.y_m) * t;
+        const bridge = city.bridges.find((item) => item.road_id === r.id);
+        if (bridge && Math.abs(y - bridge.position.y_m) <= bridge.length_m / 2) continue;
+        const elevation = sampleGrid(terrain, x, y) + 0.37;
         result.push({
-          position: [x, 0.37, -y],
+          position: [x, elevation, -y],
           scale: r.start.x_m === r.end.x_m ? [0.6, 0.04, 6] : [6, 0.04, 0.6],
           color: "#afbbb2",
         });
       }
     return result;
-  }, [city]);
+  }, [city, terrain]);
   return (
     <>
       <mesh position={[0, -9, 0]} receiveShadow>
@@ -250,32 +354,17 @@ function Ground({ city, layers }: { city: CityState; layers: Layers }) {
         />
         <meshStandardMaterial color="#394b49" roughness={0.9} />
       </mesh>
-      {[-1, 1].map((side) => (
-        <mesh
-          key={side}
-          position={[0, -0.5, (side * (city.city.depth_m + 34)) / 4]}
-          receiveShadow
-        >
-          <boxGeometry
-            args={[city.city.width_m, 1, (city.city.depth_m - 34) / 2]}
-          />
-          <meshStandardMaterial color="#88958a" roughness={1} />
-        </mesh>
-      ))}
+      <Terrain grid={scenario?.terrain_m ?? city.terrain.elevation_m}/>
       {city.rivers.map((r) => (
-        <group key={r.id}>
-          <mesh position={[0, r.surface_elevation_m, -r.start.y_m]}>
+        <group key={r.id} position={[0, scenario?.parameters.river_level_m ?? r.surface_elevation_m, -r.start.y_m]}>
+          {!scenario && <mesh>
             <boxGeometry args={[r.end.x_m - r.start.x_m, 0.3, r.width_m]} />
-            <meshStandardMaterial
-              color="#326977"
-              roughness={0.29}
-              metalness={0.25}
-            />
-          </mesh>
+            <meshStandardMaterial color="#326977" roughness={0.29} metalness={0.25}/>
+          </mesh>}
           {[-1, 1].map((s) => (
             <mesh
               key={s}
-              position={[0, 0.1, s * (r.width_m / 2 + 2)]}
+              position={[0, sampleGrid(scenario?.terrain_m ?? city.terrain.elevation_m, 0, s * (r.width_m / 2 + 2)) + 0.5 - (scenario?.parameters.river_level_m ?? r.surface_elevation_m), s * (r.width_m / 2 + 2)]}
               receiveShadow
             >
               <boxGeometry args={[660, 2, 3]} />
@@ -284,13 +373,15 @@ function Ground({ city, layers }: { city: CityState; layers: Layers }) {
           ))}
         </group>
       ))}
-      <Batch items={streetItems} />
-      <Batch items={markings} />
-      {city.bridges.map((b) => (
+      {layers.infrastructure && <Batch items={streetItems} />}
+      {layers.infrastructure && <Batch items={markings} />}
+      {layers.infrastructure && city.bridges.map((b) => (
         <group key={b.id} position={toScene(b.position)}>
           <mesh receiveShadow>
             <boxGeometry args={[b.width_m + 1, 0.4, b.length_m]} />
-            <meshStandardMaterial color="#879391" />
+            <meshStandardMaterial
+              color={bridgesById.get(b.id)?.status === "closed" ? "#a76556" : "#879391"}
+            />
           </mesh>
           {[-1, 1].map((s) => (
             <mesh key={s} position={[s * (b.width_m / 2), 1.2, 0]}>
@@ -304,7 +395,7 @@ function Ground({ city, layers }: { city: CityState; layers: Layers }) {
         city.green_areas.map((park) => (
           <group key={park.id}>
             <mesh
-              position={[park.position.x_m, 0.12, -park.position.y_m]}
+              position={[park.position.x_m, park.position.elevation_m + 0.12, -park.position.y_m]}
               receiveShadow
             >
               <boxGeometry args={[park.width_m, 0.3, park.depth_m]} />
@@ -359,7 +450,7 @@ function Ground({ city, layers }: { city: CityState; layers: Layers }) {
           .map((b) => (
             <group
               key={b.id}
-              position={[b.position.x_m, b.height_m + 3.5, -b.position.y_m]}
+              position={[b.position.x_m, b.position.elevation_m + b.height_m + 3.5, -b.position.y_m]}
             >
               <mesh>
                 <boxGeometry args={[12, 0.3, 4]} />
@@ -396,6 +487,7 @@ function Ground({ city, layers }: { city: CityState; layers: Layers }) {
             </mesh>
           </group>
         ))}
+      {layers.flood && <Floodwater scenario={scenario}/>}
     </>
   );
 }
@@ -440,8 +532,8 @@ function Camera({
     else if (action.type === "zoom-out")
       camera.zoom = Math.max(0.4, camera.zoom / 1.2);
     else if (action.type === "reset") {
-      camera.position.set(600, 600, 680);
-      camera.zoom = Math.min(size.width / 880, size.height / 620) * 0.95;
+      camera.position.set(520, 500, 570);
+      camera.zoom = Math.min(size.width / 820, size.height / 570) * 1.05;
       controls.current.target.set(0, 0, 0);
     }
     camera.updateProjectionMatrix();
@@ -476,12 +568,14 @@ class SceneBoundary extends Component<
 
 export default function CityScene({
   city,
+  scenario,
   selected,
   onSelect,
   layers,
   lowGraphics,
 }: {
   city: CityState;
+  scenario: ScenarioState | null;
   selected: Building | null;
   onSelect: (id: string) => void;
   layers: Layers;
@@ -529,7 +623,7 @@ export default function CityScene({
             <Canvas
               orthographic
               camera={{
-                position: [600, 600, 680],
+                position: [520, 500, 570],
                 zoom: 0.9,
                 near: 1,
                 far: 3000,
@@ -553,10 +647,11 @@ export default function CityScene({
                 shadow-camera-far={1200}
                 shadow-bias={-0.001}
               />
-              <Ground city={city} layers={layers} />
+              <Ground city={city} layers={layers} scenario={scenario} />
               {layers.buildings && (
                 <BuildingBlocks
                   city={city}
+                  scenario={scenario}
                   selected={selected}
                   onSelect={onSelect}
                 />

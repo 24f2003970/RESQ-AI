@@ -1,16 +1,22 @@
 import Ajv2020 from "ajv/dist/2020";
 import citySchema from "./city.schema.json";
+import scenarioSchema from "./scenario.schema.json";
 import type { components } from "./schema";
 
 export type CityState = components["schemas"]["CityState"];
 export type Building = components["schemas"]["Building"];
 export type Position = components["schemas"]["Position"];
 export type Health = components["schemas"]["Health"];
+export type ScenarioEnvelope = components["schemas"]["ScenarioEnvelope"];
+export type ScenarioState = components["schemas"]["ScenarioState"];
+export type SimulationParameters = components["schemas"]["SimulationParameters"];
+export type SimulationEvent = components["schemas"]["SimulationEvent"];
 
 const validate = new Ajv2020({
   strict: false,
   allErrors: true,
 }).compile<CityState>(citySchema);
+const validateScenario = new Ajv2020({ strict: false, allErrors: true }).compile<ScenarioEnvelope>(scenarioSchema);
 
 export function parseCity(value: unknown): CityState {
   if (!validate(value))
@@ -24,9 +30,10 @@ export function parseCity(value: unknown): CityState {
   return value;
 }
 
-async function request(path: string, signal?: AbortSignal): Promise<unknown> {
+async function request(path: string, signal?: AbortSignal, init?: RequestInit): Promise<unknown> {
   const timeout = AbortSignal.timeout(8000);
   const response = await fetch(`/api/v1/${path}`, {
+    ...init,
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
   if (!response.ok)
@@ -35,6 +42,32 @@ async function request(path: string, signal?: AbortSignal): Promise<unknown> {
     );
   return response.json();
 }
+
+async function scenarioRequest(path: string, method = "GET", body?: unknown, extraHeaders?: Record<string, string>): Promise<ScenarioEnvelope> {
+  const value = await request(path, undefined, {
+    method,
+    ...(body === undefined && !extraHeaders ? {} : {
+      headers: { ...(body === undefined ? {} : { "Content-Type": "application/json" }), ...extraHeaders },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    }),
+  });
+  if (!validateScenario(value)) throw new Error("The local service returned an invalid scenario state.");
+  return value;
+}
+
+export const fetchActiveScenario = () => scenarioRequest("scenarios/active");
+export const createScenario = (name: string, preset: "mild" | "heavy" | "extreme") =>
+  scenarioRequest("scenarios", "POST", { name, preset, seed: 2026 }, { "Idempotency-Key": crypto.randomUUID() });
+export const fetchScenario = (id: string) => scenarioRequest(`scenarios/${encodeURIComponent(id)}`);
+export const fetchReplay = (id: string, tick: number) => scenarioRequest(`scenarios/${encodeURIComponent(id)}/replay/${tick}`);
+export const updateScenarioParameters = (state: ScenarioState, params: Partial<SimulationParameters>) =>
+  scenarioRequest(`scenarios/${encodeURIComponent(state.id)}/parameters`, "PATCH", { ...params, expected_version: state.state_version });
+export const transitionScenario = (state: ScenarioState, action: "start" | "pause" | "resume") =>
+  scenarioRequest(`scenarios/${encodeURIComponent(state.id)}/${action}`, "POST", { expected_version: state.state_version });
+export const advanceScenario = (state: ScenarioState, steps = 1, singleStep = false) =>
+  scenarioRequest(`scenarios/${encodeURIComponent(state.id)}/advance`, "POST", { steps, single_step: singleStep, expected_version: state.state_version });
+export const resetScenario = (state: ScenarioState) =>
+  scenarioRequest(`scenarios/${encodeURIComponent(state.id)}/reset`, "POST", { expected_version: state.state_version });
 
 export async function fetchCity(signal?: AbortSignal): Promise<CityState> {
   return parseCity(await request("city/state", signal));

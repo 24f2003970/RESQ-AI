@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "RESQ-AI Local API",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -97,10 +97,574 @@
           }
         }
       }
+    },
+    "/api/v1/scenarios/active": {
+      "get": {
+        "summary": "Active Scenario",
+        "operationId": "active_scenario_api_v1_scenarios_active_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios": {
+      "post": {
+        "summary": "Create Scenario",
+        "operationId": "create_scenario_api_v1_scenarios_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}": {
+      "get": {
+        "summary": "Get Scenario",
+        "operationId": "get_scenario_api_v1_scenarios__scenario_id__get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/parameters": {
+      "patch": {
+        "summary": "Update Scenario Parameters",
+        "operationId": "update_scenario_parameters_api_v1_scenarios__scenario_id__parameters_patch",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParameterUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/start": {
+      "post": {
+        "summary": "Start Scenario",
+        "operationId": "start_scenario_api_v1_scenarios__scenario_id__start_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/pause": {
+      "post": {
+        "summary": "Pause Scenario",
+        "operationId": "pause_scenario_api_v1_scenarios__scenario_id__pause_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/resume": {
+      "post": {
+        "summary": "Resume Scenario",
+        "operationId": "resume_scenario_api_v1_scenarios__scenario_id__resume_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/advance": {
+      "post": {
+        "summary": "Advance Scenario",
+        "operationId": "advance_scenario_api_v1_scenarios__scenario_id__advance_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/reset": {
+      "post": {
+        "summary": "Reset Scenario",
+        "operationId": "reset_scenario_api_v1_scenarios__scenario_id__reset_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/events": {
+      "get": {
+        "summary": "Scenario Events",
+        "operationId": "scenario_events_api_v1_scenarios__scenario_id__events_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SimulationEvent"
+                  },
+                  "title": "Response Scenario Events Api V1 Scenarios  Scenario Id  Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/replay/{tick}": {
+      "get": {
+        "summary": "Replay Scenario",
+        "operationId": "replay_scenario_api_v1_scenarios__scenario_id__replay__tick__get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "tick",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tick"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/snapshots": {
+      "get": {
+        "summary": "Scenario Snapshots",
+        "operationId": "scenario_snapshots_api_v1_scenarios__scenario_id__snapshots_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Scenario Snapshots Api V1 Scenarios  Scenario Id  Snapshots Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AdvanceRequest": {
+        "properties": {
+          "steps": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Steps"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "single_step": {
+            "type": "boolean",
+            "title": "Single Step",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "steps",
+          "expected_version"
+        ],
+        "title": "AdvanceRequest"
+      },
       "Bridge": {
         "properties": {
           "id": {
@@ -285,6 +849,9 @@
           "scenario": {
             "$ref": "#/components/schemas/ScenarioMetadata"
           },
+          "terrain": {
+            "$ref": "#/components/schemas/TerrainGrid"
+          },
           "districts": {
             "items": {
               "$ref": "#/components/schemas/District"
@@ -361,6 +928,7 @@
         "required": [
           "city",
           "scenario",
+          "terrain",
           "districts",
           "buildings",
           "roads",
@@ -552,6 +1120,258 @@
         ],
         "title": "Hospital"
       },
+      "ImpactAssessment": {
+        "properties": {
+          "buildings": {
+            "items": {
+              "$ref": "#/components/schemas/ImpactItem"
+            },
+            "type": "array",
+            "title": "Buildings"
+          },
+          "roads": {
+            "items": {
+              "$ref": "#/components/schemas/ImpactItem"
+            },
+            "type": "array",
+            "title": "Roads"
+          },
+          "bridges": {
+            "items": {
+              "$ref": "#/components/schemas/ImpactItem"
+            },
+            "type": "array",
+            "title": "Bridges"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "buildings",
+          "roads",
+          "bridges"
+        ],
+        "title": "ImpactAssessment"
+      },
+      "ImpactItem": {
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "title": "Entity Id"
+          },
+          "max_depth_m": {
+            "type": "number",
+            "title": "Max Depth M"
+          },
+          "mean_depth_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Depth M"
+          },
+          "exposed_fraction": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exposed Fraction"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "watch",
+                  "moderate",
+                  "severe"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "water_reaches_building": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water Reaches Building"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "caution",
+                  "flooded",
+                  "closed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "deck_elevation_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deck Elevation M"
+          },
+          "water_surface_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water Surface M"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "entity_id",
+          "max_depth_m"
+        ],
+        "title": "ImpactItem"
+      },
+      "MassBalance": {
+        "properties": {
+          "initial_m3": {
+            "type": "number",
+            "title": "Initial M3"
+          },
+          "rainfall_m3": {
+            "type": "number",
+            "title": "Rainfall M3"
+          },
+          "river_in_m3": {
+            "type": "number",
+            "title": "River In M3"
+          },
+          "river_out_m3": {
+            "type": "number",
+            "title": "River Out M3"
+          },
+          "drainage_m3": {
+            "type": "number",
+            "title": "Drainage M3"
+          },
+          "stored_m3": {
+            "type": "number",
+            "title": "Stored M3"
+          },
+          "balance_error_m3": {
+            "type": "number",
+            "title": "Balance Error M3"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "initial_m3",
+          "rainfall_m3",
+          "river_in_m3",
+          "river_out_m3",
+          "drainage_m3",
+          "stored_m3",
+          "balance_error_m3"
+        ],
+        "title": "MassBalance"
+      },
+      "ParameterUpdate": {
+        "properties": {
+          "rainfall_mm_h": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rainfall Mm H"
+          },
+          "river_level_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 5.0,
+                "minimum": -2.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "River Level M"
+          },
+          "drainage_effectiveness": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drainage Effectiveness"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 8.0,
+                "minimum": 0.25
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version"
+        ],
+        "title": "ParameterUpdate"
+      },
       "Position": {
         "properties": {
           "x_m": {
@@ -741,6 +1561,59 @@
         ],
         "title": "RoadNode"
       },
+      "ScenarioCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "seed": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Seed",
+            "default": 2026
+          },
+          "preset": {
+            "type": "string",
+            "enum": [
+              "mild",
+              "heavy",
+              "extreme"
+            ],
+            "title": "Preset",
+            "default": "mild"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "ScenarioCreate"
+      },
+      "ScenarioEnvelope": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/ScenarioState"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "events"
+        ],
+        "title": "ScenarioEnvelope"
+      },
       "ScenarioMetadata": {
         "properties": {
           "id": {
@@ -789,6 +1662,159 @@
         ],
         "title": "ScenarioMetadata"
       },
+      "ScenarioState": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "city_id": {
+            "type": "string",
+            "title": "City Id"
+          },
+          "preset": {
+            "type": "string",
+            "enum": [
+              "mild",
+              "heavy",
+              "extreme"
+            ],
+            "title": "Preset"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "paused",
+              "running"
+            ],
+            "title": "Status"
+          },
+          "tick": {
+            "type": "integer",
+            "title": "Tick"
+          },
+          "epoch": {
+            "type": "integer",
+            "title": "Epoch"
+          },
+          "state_version": {
+            "type": "integer",
+            "title": "State Version"
+          },
+          "simulated_seconds": {
+            "type": "integer",
+            "title": "Simulated Seconds"
+          },
+          "grid_width": {
+            "type": "integer",
+            "title": "Grid Width"
+          },
+          "grid_height": {
+            "type": "integer",
+            "title": "Grid Height"
+          },
+          "cell_size_m": {
+            "type": "number",
+            "title": "Cell Size M"
+          },
+          "x_centers_m": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "X Centers M"
+          },
+          "y_centers_m": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Y Centers M"
+          },
+          "terrain_m": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Terrain M"
+          },
+          "depth_m": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Depth M"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/SimulationParameters"
+          },
+          "impacts": {
+            "$ref": "#/components/schemas/ImpactAssessment"
+          },
+          "mass_balance": {
+            "$ref": "#/components/schemas/MassBalance"
+          },
+          "maximum_depth_m": {
+            "type": "number",
+            "title": "Maximum Depth M"
+          },
+          "affected_buildings": {
+            "type": "integer",
+            "title": "Affected Buildings"
+          },
+          "exposed_roads": {
+            "type": "integer",
+            "title": "Exposed Roads"
+          },
+          "closed_bridges": {
+            "type": "integer",
+            "title": "Closed Bridges"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "seed",
+          "city_id",
+          "preset",
+          "status",
+          "tick",
+          "epoch",
+          "state_version",
+          "simulated_seconds",
+          "grid_width",
+          "grid_height",
+          "cell_size_m",
+          "x_centers_m",
+          "y_centers_m",
+          "terrain_m",
+          "depth_m",
+          "parameters",
+          "impacts",
+          "mass_balance",
+          "maximum_depth_m",
+          "affected_buildings",
+          "exposed_roads",
+          "closed_bridges"
+        ],
+        "title": "ScenarioState"
+      },
       "Shelter": {
         "properties": {
           "id": {
@@ -832,6 +1858,141 @@
         ],
         "title": "Shelter"
       },
+      "SimulationEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "tick": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Tick"
+          },
+          "simulated_seconds": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Simulated Seconds"
+          },
+          "state_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "State Version"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "entity_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Entity Ids"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "scenario_id",
+          "tick",
+          "simulated_seconds",
+          "state_version",
+          "event_type",
+          "entity_ids",
+          "payload"
+        ],
+        "title": "SimulationEvent"
+      },
+      "SimulationParameters": {
+        "properties": {
+          "rainfall_mm_h": {
+            "type": "number",
+            "maximum": 300.0,
+            "minimum": 0.0,
+            "title": "Rainfall Mm H"
+          },
+          "river_level_m": {
+            "type": "number",
+            "maximum": 5.0,
+            "minimum": -2.0,
+            "title": "River Level M"
+          },
+          "drainage_effectiveness": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Drainage Effectiveness"
+          },
+          "speed": {
+            "type": "number",
+            "maximum": 8.0,
+            "minimum": 0.25,
+            "title": "Speed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rainfall_mm_h",
+          "river_level_m",
+          "drainage_effectiveness",
+          "speed"
+        ],
+        "title": "SimulationParameters"
+      },
+      "TerrainGrid": {
+        "properties": {
+          "cell_size_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Cell Size M"
+          },
+          "x_centers_m": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "X Centers M"
+          },
+          "y_centers_m": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Y Centers M"
+          },
+          "elevation_m": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Elevation M"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cell_size_m",
+          "x_centers_m",
+          "y_centers_m",
+          "elevation_m"
+        ],
+        "title": "TerrainGrid"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -871,6 +2032,21 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VersionRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version"
+        ],
+        "title": "VersionRequest"
       }
     }
   }

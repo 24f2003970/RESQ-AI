@@ -2,16 +2,14 @@
 
 **Predict. Simulate. Prioritize. Respond. Replan.**
 
-RESQ-AI is an offline-first disaster response command center for a deterministic fictional city. It combines a stateful flood simulation, a locally trained risk classifier, explainable coordination agents, rescue route and resource planning, and an interactive 3D Digital Twin. The system is a decision-support prototype for a two-student Innotech hackathon team; it is not an operational warning or dispatch system.
+RESQ-AI is an offline-first disaster response command center for a deterministic fictional city. Part 3 adds a stateful flood simulation, locally persisted scenario engine, transparent infrastructure exposure, and an interactive 3D Digital Twin. Later parts may add a locally trained risk classifier and response-planning tools. It is a decision-support prototype, not an operational warning or dispatch system.
 
 ## What the demonstration will show
 
 1. Load the same seed-based city and scenario on every run.
 2. Increase rainfall and river stage, then inspect simulated inundation and affected assets.
-3. Compare the local classifier with a transparent rule baseline and inspect its limitations.
-4. Prioritize zones, assign available rescue units, and display routes on the city.
-5. Block a bridge or road and watch the event-driven plan recalculate.
-6. Review the proposed actions, approve or reject them, and replay the decision timeline.
+3. Inspect backend-computed exposure and event history; replay a selected tick.
+4. Explore the deterministic city and its facilities.
 
 Every displayed metric must come from backend state or a recorded experiment. Simulated data, assumptions, and model results will be labeled as such. No hosted AI inference or external AI API key is part of the design. Once dependencies and any optional data are installed, the application must run locally without network access.
 
@@ -24,11 +22,11 @@ Every displayed metric must come from backend state or a recorded experiment. Si
 
 The backend owns scenario state, simulation steps, predictions, agent decisions, assignments, and event history. The 3D scene renders a read-only projection of that state and sends user commands back through the API.
 
-## Current implementation — Part 2
+## Current implementation — Part 3
 
 The local full-stack foundation renders backend-generated city geometry and inventory. Command Center and Digital Twin Studio include building selection, an API-backed inspector, camera reset/focus/orbit/zoom/pan, map layers, snapshot export, and a building-inventory fallback. The other three routes explain their future scope. Connection status is based on successful local API requests, with retries and a stale-snapshot warning when the service disconnects.
 
-The seeded baseline contains 72 buildings, four districts, ten road corridors, six bridge crossings, one hospital, one shelter, two parks, and five response units. No flood simulation, model training, agent decisions, or rescue optimization is implemented in this part.
+The seeded baseline contains 72 buildings, four districts, ten road corridors, six bridge crossings, one hospital, one shelter, two parks, and five response units. Part 3 adds a deterministic 20 m flood grid over the existing 660 m × 500 m city, SQLite scenarios/events/checkpoints, pause/resume/step/reset/replay, exposure thresholds, a live flood surface, and a Scenario Lab. ML, response agents, rescue optimization, and earthquake simulation are future work.
 
 ## Repository map
 
@@ -52,6 +50,9 @@ docs/
   TEAM_WORKFLOW.md
   UI_UX_SPEC.md
   PART_02_IMPLEMENTATION.md
+  PART_03_IMPLEMENTATION.md
+  PART_03_VERIFICATION.md
+  FLOOD_SIMULATION_METHOD.md
 ```
 
 ## Getting started
@@ -93,7 +94,7 @@ npm test
 npm run build
 ```
 
-Regenerate and commit the OpenAPI schema, city JSON Schema, test fixture, and TypeScript declarations whenever the Python contract changes. The generated fixture is used only by tests, never by the application. See [Part 2 implementation notes](docs/PART_02_IMPLEMENTATION.md) for endpoints, coordinates, controls, assumptions, and limitations.
+Regenerate and commit the OpenAPI schema, JSON Schemas, test fixture, and TypeScript declarations whenever the Python contract changes. The generated city fixture is used only by tests, never by the application. See [Part 3 implementation notes](docs/PART_03_IMPLEMENTATION.md) and [the flood method](docs/FLOOD_SIMULATION_METHOD.md) for current endpoints, coordinates, controls, assumptions, and limitations.
 
 ## Data, safety, and scope
 
@@ -108,4 +109,4 @@ Regenerate and commit the OpenAPI schema, city JSON Schema, test fixture, and Ty
 
 Two student developers are planned: one owns the service, simulation, and model pipeline; the other owns the web interface and Digital Twin. Both review integration pull requests and jointly rehearse the demo. See [the roadmap](docs/DEVELOPMENT_ROADMAP.md) and [team workflow](docs/TEAM_WORKFLOW.md).
 
-**Status:** Part 2 full-stack foundation. The initial city and interface are implemented; simulation and intelligence remain future work.
+**Status:** Part 3 flood simulation vertical slice. Risk ML, rescue agents, routing optimization, and earthquake scenarios remain future work.
