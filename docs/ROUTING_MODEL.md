@@ -1,0 +1,7 @@
+# Routing model
+
+The offline routing graph is generated from the deterministic city corridors in `city_service.py`. Pairwise segment intersections are split into nodes rounded to millimetres for stable identity. Parallel/collinear overlaps are not produced by the current city generator and are not separately noded. Each 46 m bridge span is an explicit edge on its avenue. Graph coordinates use local city metres; routes include explicit unit and building access spurs to the nearest graph node, capped at 90 m.
+
+The graph preserves road and bridge IDs. Physical road and bridge status comes from the scenario's flood `ImpactAssessment`; commander closures are a scenario-linked SQLite overlay. Closed, flooded, and manually blocked edges cannot be traversed. Ambulances allow at most 0.15 m edge exposure, ground teams at most 0.30 m. Caution edges remain available with a synthetic penalty. These are prototype movement policies, not real emergency vehicle standards. Boats are excluded: this model has no navigable water graph or docks.
+
+Dijkstra minimizes synthetic distance cost (edge length multiplied by a caution/depth factor). Ground-road speed assumptions are 30 km/h, 24 km/h over bridge segments, and 5 km/h on access spurs; calculated minutes are simulation estimates and are not traffic ETAs. Route polylines are the graph coordinates, including access spurs, and are rendered without a straight-line bypass.

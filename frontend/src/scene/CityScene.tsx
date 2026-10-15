@@ -37,6 +37,13 @@ export type Layers = {
   infrastructure: boolean;
   predictedRisk: boolean;
 };
+
+function routePointToScene(city: CityState, point: number[]): [number,number,number] {
+  const [x,y]=point;
+  const ix=city.terrain.x_centers_m.reduce((best,value,index)=>Math.abs(value-x)<Math.abs(city.terrain.x_centers_m[best]-x)?index:best,0);
+  const iy=city.terrain.y_centers_m.reduce((best,value,index)=>Math.abs(value-y)<Math.abs(city.terrain.y_centers_m[best]-y)?index:best,0);
+  return [x,city.terrain.elevation_m[iy][ix]+1.5,-y];
+}
 type Instance = {
   position: [number, number, number];
   scale: [number, number, number];
@@ -582,6 +589,7 @@ export default function CityScene({
   layers,
   lowGraphics,
   predictions,
+  routeLines,
 }: {
   city: CityState;
   scenario: ScenarioState | null;
@@ -590,6 +598,7 @@ export default function CityScene({
   layers: Layers;
   lowGraphics: boolean;
   predictions: ScenarioPredictionSet | null;
+  routeLines: number[][][];
 }) {
   const [action, setAction] = useState({ type: "reset", key: 0 });
   const [mapMode, setMapMode] = useState(false);
@@ -658,6 +667,7 @@ export default function CityScene({
                 shadow-bias={-0.001}
               />
               <Ground city={city} layers={layers} scenario={scenario} />
+              {routeLines.map((route,index)=><Line key={`planned-route-${index}`} points={route.map(point=>routePointToScene(city,point))} color="#57d7cf" lineWidth={3} transparent opacity={0.9}/>) }
               {layers.buildings && (
                 <BuildingBlocks
                   city={city}

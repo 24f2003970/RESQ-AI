@@ -4,7 +4,9 @@ import tempfile
 from pathlib import Path
 from app.main import app
 from app.schemas import (BuildingRiskPrediction, CityState, MLDatasetInfo, MLEvaluationReport,
-                         MLFeatureInfo, MLModelInfo, ScenarioEnvelope, ScenarioPredictionSet)
+                         MLFeatureInfo, MLModelInfo, ScenarioEnvelope, ScenarioPredictionSet,
+                         RescuePlanDecision, RoadClosureRequest, RescuePlanModification)
+from app.rescue import RescuePlan
 from app.city_service import generate_city
 from app.scenarios import ScenarioStore
 
@@ -20,6 +22,10 @@ for name, model in {
     "ml-feature.schema.json": MLFeatureInfo,
     "ml-predictions.schema.json": ScenarioPredictionSet,
     "ml-building-prediction.schema.json": BuildingRiskPrediction,
+    "rescue-plan.schema.json": RescuePlan,
+    "rescue-plan-decision.schema.json": RescuePlanDecision,
+    "road-closure.schema.json": RoadClosureRequest,
+    "rescue-plan-modification.schema.json": RescuePlanModification,
 }.items():
     (target / name).write_text(json.dumps(model.model_json_schema(), indent=2) + "\n", encoding="utf-8")
 fixtures = target.parent / "test" / "fixtures"

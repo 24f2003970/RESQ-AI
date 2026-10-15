@@ -1,6 +1,6 @@
 # System Architecture
 
-> **Part 3 implementation status:** The local FastAPI service is authoritative for flood scenario state. The implementation described in the Part 3 section below supersedes future-state components in this planning document. No classifier, agent coordinator, WebSocket stream, route planner, or rescue assignment service is implemented yet.
+> **Implementation status through Part 5:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing, constrained plan proposals, and human review. Full autonomous agent coordination, WebSockets, boat navigation, and mission execution remain future work.
 
 ## Design principles
 

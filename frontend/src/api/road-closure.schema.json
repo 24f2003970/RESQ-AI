@@ -1,0 +1,22 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "road_id": {
+      "minLength": 1,
+      "title": "Road Id",
+      "type": "string"
+    },
+    "reason": {
+      "default": "Commander closure",
+      "maxLength": 300,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "road_id"
+  ],
+  "title": "RoadClosureRequest",
+  "type": "object"
+}

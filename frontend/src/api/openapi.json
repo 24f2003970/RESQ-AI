@@ -797,6 +797,275 @@
           }
         }
       }
+    },
+    "/api/v1/scenarios/{scenario_id}/rescue-plans": {
+      "post": {
+        "summary": "Create Rescue Plan",
+        "operationId": "create_rescue_plan_api_v1_scenarios__scenario_id__rescue_plans_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RescuePlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rescue-plans/{plan_id}": {
+      "get": {
+        "summary": "Get Rescue Plan",
+        "operationId": "get_rescue_plan_api_v1_rescue_plans__plan_id__get",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RescuePlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rescue-plans/{plan_id}/decision": {
+      "post": {
+        "summary": "Decide Rescue Plan",
+        "operationId": "decide_rescue_plan_api_v1_rescue_plans__plan_id__decision_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescuePlanDecision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RescuePlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rescue-plans/{plan_id}/assignments": {
+      "patch": {
+        "summary": "Modify Rescue Assignments",
+        "operationId": "modify_rescue_assignments_api_v1_rescue_plans__plan_id__assignments_patch",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescuePlanModification"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RescuePlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/road-closures": {
+      "post": {
+        "summary": "Close Road",
+        "operationId": "close_road_api_v1_scenarios__scenario_id__road_closures_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoadClosureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/road-closures/{road_id}": {
+      "delete": {
+        "summary": "Reopen Road",
+        "operationId": "reopen_road_api_v1_scenarios__scenario_id__road_closures__road_id__delete",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "road_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Road Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2030,6 +2299,183 @@
         ],
         "title": "Position"
       },
+      "RescueAssignmentEdit": {
+        "properties": {
+          "unit_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Unit Id"
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Destination Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "unit_id",
+          "destination_id"
+        ],
+        "title": "RescueAssignmentEdit"
+      },
+      "RescuePlan": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "scenario_version": {
+            "type": "integer",
+            "title": "Scenario Version"
+          },
+          "simulation_tick": {
+            "type": "integer",
+            "title": "Simulation Tick"
+          },
+          "generated_at": {
+            "type": "string",
+            "title": "Generated At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "proposed",
+              "approved",
+              "rejected",
+              "superseded"
+            ],
+            "title": "Status",
+            "default": "proposed"
+          },
+          "priorities": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Priorities"
+          },
+          "missions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Missions"
+          },
+          "available_assignments": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Available Assignments"
+          },
+          "unreachable": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Unreachable"
+          },
+          "comparison": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Comparison"
+          },
+          "solver_status": {
+            "type": "string",
+            "title": "Solver Status"
+          },
+          "objective": {
+            "type": "string",
+            "title": "Objective"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_id",
+          "scenario_id",
+          "scenario_version",
+          "simulation_tick",
+          "generated_at",
+          "priorities",
+          "missions",
+          "available_assignments",
+          "unreachable",
+          "comparison",
+          "solver_status",
+          "objective",
+          "explanation"
+        ],
+        "title": "RescuePlan"
+      },
+      "RescuePlanDecision": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "rejected"
+            ],
+            "title": "Action"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Reason",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action",
+          "expected_version"
+        ],
+        "title": "RescuePlanDecision"
+      },
+      "RescuePlanModification": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/RescueAssignmentEdit"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Assignments"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "assignments"
+        ],
+        "title": "RescuePlanModification"
+      },
       "RescueUnit": {
         "properties": {
           "id": {
@@ -2170,6 +2616,28 @@
           "length_m"
         ],
         "title": "Road"
+      },
+      "RoadClosureRequest": {
+        "properties": {
+          "road_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Road Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Reason",
+            "default": "Commander closure"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "road_id"
+        ],
+        "title": "RoadClosureRequest"
       },
       "RoadNode": {
         "properties": {

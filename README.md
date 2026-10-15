@@ -1,6 +1,6 @@
 # RESQ-AI
 
-**Predict. Simulate. Prioritize. Respond. Replan.**
+**Predict. Simulate. Plan. Review. Replan.**
 
 RESQ-AI is an offline-first disaster response command center for a deterministic fictional city. Part 3 adds a stateful flood simulation, locally persisted scenario engine, transparent infrastructure exposure, and an interactive 3D Digital Twin. Part 4 adds a locally trained classifier for synthetic building exposure 30 minutes ahead. It is a decision-support prototype, not an operational warning or dispatch system.
 
@@ -10,7 +10,8 @@ RESQ-AI is an offline-first disaster response command center for a deterministic
 2. Increase rainfall and river stage, then inspect simulated inundation and affected assets.
 3. Inspect backend-computed current exposure and event history; replay a selected tick.
 4. Compare current exposure with a separately labeled 30-minute synthetic ML estimate in the Model Intelligence Lab.
-5. Enable the predicted exposure layer to highlight future estimates without changing simulated flood colors.
+5. Generate a flood-aware rescue plan, compare exact constrained assignment with a nearest-unit baseline, review ranked destinations, and explicitly approve or reject a proposal.
+6. Close a road from the Command Center and see pending proposals invalidated before generating a replacement.
 
 Every displayed metric must come from backend state or a recorded experiment. Simulated data, assumptions, and model results will be labeled as such. No hosted AI inference or external AI API key is part of the design. Once dependencies and any optional data are installed, the application must run locally without network access.
 
@@ -23,11 +24,13 @@ Every displayed metric must come from backend state or a recorded experiment. Si
 
 The backend owns scenario state, simulation steps, predictions, agent decisions, assignments, and event history. The 3D scene renders a read-only projection of that state and sends user commands back through the API.
 
-## Current implementation — Parts 3 and 4
+## Current implementation — Parts 3, 4 and 5
 
 The local full-stack foundation renders backend-generated city geometry and inventory. Command Center and Digital Twin Studio include building selection, an API-backed inspector, camera reset/focus/orbit/zoom/pan, map layers, snapshot export, and a building-inventory fallback. The other three routes explain their future scope. Connection status is based on successful local API requests, with retries and a stale-snapshot warning when the service disconnects.
 
-The seeded baseline contains 72 buildings, four districts, ten road corridors, six bridge crossings, one hospital, one shelter, two parks, and five response units. Part 3 adds a deterministic 20 m flood grid over the existing 660 m × 500 m city, SQLite scenarios/events/checkpoints, pause/resume/step/reset/replay, exposure thresholds, a live flood surface, and a Scenario Lab. Part 4 provides local training and inference, scenario-grouped evaluation, dataset provenance, model APIs, Model Intelligence Lab, and a toggleable predicted exposure layer. The ML was trained only on synthetic simulator output and is not validated for real disasters. Response agents, rescue optimization, and earthquake simulation remain future scope.
+The seeded baseline contains 72 buildings, four districts, ten road corridors, six bridge crossings, one hospital, one shelter, two parks, and five response units. Part 3 adds a deterministic 20 m flood grid, SQLite scenarios/events/checkpoints, replay, and exposure modeling. Part 4 provides offline training/inference and a predicted exposure layer. Part 5 adds an intersection-connected NetworkX route graph, bridge segments, flood-aware ground routes, transparent destination priorities, constrained assignment with a baseline comparison, persistent plan proposals, commander approval/rejection, manual closure overlays, and 3D route display. All simulation and ML data are synthetic and are not validated for real disasters. Boat routing remains unsupported.
+
+Part 5 assumptions and verification are documented in `docs/PART_05_IMPLEMENTATION.md`, `docs/PART_05_VERIFICATION.md`, `docs/ROUTING_MODEL.md`, `docs/RESOURCE_OPTIMIZATION.md`, and `docs/RESCUE_PLAN_CONTRACT.md`.
 
 ## Repository map
 

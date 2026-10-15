@@ -1,0 +1,47 @@
+{
+  "$defs": {
+    "RescueAssignmentEdit": {
+      "additionalProperties": false,
+      "properties": {
+        "unit_id": {
+          "minLength": 1,
+          "title": "Unit Id",
+          "type": "string"
+        },
+        "destination_id": {
+          "minLength": 1,
+          "title": "Destination Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unit_id",
+        "destination_id"
+      ],
+      "title": "RescueAssignmentEdit",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "expected_version": {
+      "minimum": 1,
+      "title": "Expected Version",
+      "type": "integer"
+    },
+    "assignments": {
+      "items": {
+        "$ref": "#/$defs/RescueAssignmentEdit"
+      },
+      "maxItems": 20,
+      "title": "Assignments",
+      "type": "array"
+    }
+  },
+  "required": [
+    "expected_version",
+    "assignments"
+  ],
+  "title": "RescuePlanModification",
+  "type": "object"
+}
