@@ -2,7 +2,7 @@ import random
 from functools import lru_cache
 from .schemas import (
     Bridge, Building, City, CityState, District, GreenArea, Hospital, Position,
-    RescueUnit, River, Road, ScenarioMetadata, Shelter,
+    RescueUnit, River, Road, RoadNode, ScenarioMetadata, Shelter,
 )
 
 
@@ -72,6 +72,8 @@ def generate_city(seed: int = 2026) -> CityState:
         city_id=city.id, state_version=1, simulated_seconds=0,
         description="Seeded fictional city. Normal conditions. Disaster simulation is not yet implemented."),
         districts=districts, buildings=buildings, roads=roads, bridges=bridges,
+        road_nodes=[RoadNode(id=node_id, name=f"{r.name} endpoint", position=position)
+                    for r in roads for node_id, position in [(r.from_node, r.start), (r.to_node, r.end)]],
         hospitals=[Hospital(id="hospital-1", name="Riverside General", building_id="building-hospital",
                             capacity=120, capabilities=["Emergency", "Inpatient"])],
         shelters=[Shelter(id="shelter-1", name="Northbank Community Shelter", building_id="building-shelter",

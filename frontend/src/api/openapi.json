@@ -1,0 +1,877 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RESQ-AI Local API",
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/city/state": {
+      "get": {
+        "summary": "City State",
+        "operationId": "city_state_api_v1_city_state_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CityState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/default": {
+      "get": {
+        "summary": "Default Scenario",
+        "operationId": "default_scenario_api_v1_scenarios_default_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioMetadata"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/city/buildings/{building_id}": {
+      "get": {
+        "summary": "Building Detail",
+        "operationId": "building_detail_api_v1_city_buildings__building_id__get",
+        "parameters": [
+          {
+            "name": "building_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Building Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Building"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Bridge": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "road_id": {
+            "type": "string",
+            "title": "Road Id"
+          },
+          "position": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "width_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width M"
+          },
+          "length_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Length M"
+          },
+          "status": {
+            "type": "string",
+            "const": "open",
+            "title": "Status",
+            "default": "open"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "road_id",
+          "position",
+          "width_m",
+          "length_m"
+        ],
+        "title": "Bridge"
+      },
+      "Building": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "district_id": {
+            "type": "string",
+            "title": "District Id"
+          },
+          "position": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "width_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width M"
+          },
+          "depth_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Depth M"
+          },
+          "height_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Height M"
+          },
+          "floors": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Floors"
+          },
+          "use": {
+            "type": "string",
+            "enum": [
+              "residential",
+              "commercial",
+              "hospital",
+              "shelter"
+            ],
+            "title": "Use"
+          },
+          "occupants": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Occupants"
+          },
+          "material_color": {
+            "type": "string",
+            "title": "Material Color"
+          },
+          "condition": {
+            "type": "string",
+            "const": "baseline",
+            "title": "Condition",
+            "default": "baseline"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "district_id",
+          "position",
+          "width_m",
+          "depth_m",
+          "height_m",
+          "floors",
+          "use",
+          "occupants",
+          "material_color"
+        ],
+        "title": "Building"
+      },
+      "City": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "generator_version": {
+            "type": "string",
+            "title": "Generator Version"
+          },
+          "width_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width M"
+          },
+          "depth_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Depth M"
+          },
+          "provenance": {
+            "type": "string",
+            "const": "fictional_seed_city",
+            "title": "Provenance",
+            "default": "fictional_seed_city"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "seed",
+          "generator_version",
+          "width_m",
+          "depth_m"
+        ],
+        "title": "City"
+      },
+      "CityState": {
+        "properties": {
+          "city": {
+            "$ref": "#/components/schemas/City"
+          },
+          "scenario": {
+            "$ref": "#/components/schemas/ScenarioMetadata"
+          },
+          "districts": {
+            "items": {
+              "$ref": "#/components/schemas/District"
+            },
+            "type": "array",
+            "title": "Districts"
+          },
+          "buildings": {
+            "items": {
+              "$ref": "#/components/schemas/Building"
+            },
+            "type": "array",
+            "title": "Buildings"
+          },
+          "roads": {
+            "items": {
+              "$ref": "#/components/schemas/Road"
+            },
+            "type": "array",
+            "title": "Roads"
+          },
+          "road_nodes": {
+            "items": {
+              "$ref": "#/components/schemas/RoadNode"
+            },
+            "type": "array",
+            "title": "Road Nodes"
+          },
+          "bridges": {
+            "items": {
+              "$ref": "#/components/schemas/Bridge"
+            },
+            "type": "array",
+            "title": "Bridges"
+          },
+          "hospitals": {
+            "items": {
+              "$ref": "#/components/schemas/Hospital"
+            },
+            "type": "array",
+            "title": "Hospitals"
+          },
+          "shelters": {
+            "items": {
+              "$ref": "#/components/schemas/Shelter"
+            },
+            "type": "array",
+            "title": "Shelters"
+          },
+          "rivers": {
+            "items": {
+              "$ref": "#/components/schemas/River"
+            },
+            "type": "array",
+            "title": "Rivers"
+          },
+          "rescue_units": {
+            "items": {
+              "$ref": "#/components/schemas/RescueUnit"
+            },
+            "type": "array",
+            "title": "Rescue Units"
+          },
+          "green_areas": {
+            "items": {
+              "$ref": "#/components/schemas/GreenArea"
+            },
+            "type": "array",
+            "title": "Green Areas"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "city",
+          "scenario",
+          "districts",
+          "buildings",
+          "roads",
+          "road_nodes",
+          "bridges",
+          "hospitals",
+          "shelters",
+          "rivers",
+          "rescue_units",
+          "green_areas"
+        ],
+        "title": "CityState"
+      },
+      "District": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "land_use": {
+            "type": "string",
+            "enum": [
+              "residential",
+              "commercial",
+              "mixed"
+            ],
+            "title": "Land Use"
+          },
+          "center": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "width_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width M"
+          },
+          "depth_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Depth M"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "land_use",
+          "center",
+          "width_m",
+          "depth_m"
+        ],
+        "title": "District"
+      },
+      "GreenArea": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "position": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "width_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width M"
+          },
+          "depth_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Depth M"
+          },
+          "trees": {
+            "items": {
+              "$ref": "#/components/schemas/Position"
+            },
+            "type": "array",
+            "title": "Trees"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "position",
+          "width_m",
+          "depth_m",
+          "trees"
+        ],
+        "title": "GreenArea"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "mode": {
+            "type": "string",
+            "const": "local",
+            "title": "Mode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "service",
+          "version",
+          "mode"
+        ],
+        "title": "Health"
+      },
+      "Hospital": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "building_id": {
+            "type": "string",
+            "title": "Building Id"
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Capacity"
+          },
+          "status": {
+            "type": "string",
+            "const": "available",
+            "title": "Status",
+            "default": "available"
+          },
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capabilities"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "building_id",
+          "capacity",
+          "capabilities"
+        ],
+        "title": "Hospital"
+      },
+      "Position": {
+        "properties": {
+          "x_m": {
+            "type": "number",
+            "title": "X M"
+          },
+          "y_m": {
+            "type": "number",
+            "title": "Y M"
+          },
+          "elevation_m": {
+            "type": "number",
+            "title": "Elevation M",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "x_m",
+          "y_m"
+        ],
+        "title": "Position"
+      },
+      "RescueUnit": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ambulance",
+              "boat",
+              "rescue_team"
+            ],
+            "title": "Type"
+          },
+          "position": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "capacity": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Capacity"
+          },
+          "status": {
+            "type": "string",
+            "const": "standby",
+            "title": "Status",
+            "default": "standby"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "position",
+          "capacity"
+        ],
+        "title": "RescueUnit"
+      },
+      "River": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "start": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "end": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "width_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width M"
+          },
+          "surface_elevation_m": {
+            "type": "number",
+            "title": "Surface Elevation M"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "start",
+          "end",
+          "width_m",
+          "surface_elevation_m"
+        ],
+        "title": "River"
+      },
+      "Road": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "from_node": {
+            "type": "string",
+            "title": "From Node"
+          },
+          "to_node": {
+            "type": "string",
+            "title": "To Node"
+          },
+          "start": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "end": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "width_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width M"
+          },
+          "length_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Length M"
+          },
+          "status": {
+            "type": "string",
+            "const": "open",
+            "title": "Status",
+            "default": "open"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "from_node",
+          "to_node",
+          "start",
+          "end",
+          "width_m",
+          "length_m"
+        ],
+        "title": "Road"
+      },
+      "RoadNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "position": {
+            "$ref": "#/components/schemas/Position"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "position"
+        ],
+        "title": "RoadNode"
+      },
+      "ScenarioMetadata": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "city_id": {
+            "type": "string",
+            "title": "City Id"
+          },
+          "simulation_status": {
+            "type": "string",
+            "const": "baseline",
+            "title": "Simulation Status",
+            "default": "baseline"
+          },
+          "state_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "State Version"
+          },
+          "simulated_seconds": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Simulated Seconds"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "city_id",
+          "state_version",
+          "simulated_seconds",
+          "description"
+        ],
+        "title": "ScenarioMetadata"
+      },
+      "Shelter": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "building_id": {
+            "type": "string",
+            "title": "Building Id"
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Capacity"
+          },
+          "status": {
+            "type": "string",
+            "const": "available",
+            "title": "Status",
+            "default": "available"
+          },
+          "occupancy": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Occupancy"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "building_id",
+          "capacity",
+          "occupancy"
+        ],
+        "title": "Shelter"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+src/api/schema.d.ts
+src/api/*.json
+src/test/fixtures/
+package-lock.json
+dist/
+node_modules/

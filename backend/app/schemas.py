@@ -3,13 +3,13 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class Entity(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
     id: str = Field(min_length=1)
     name: str
 
 
 class Position(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
     x_m: float
     y_m: float
     elevation_m: float = 0
@@ -33,6 +33,10 @@ class Building(Entity):
     occupants: int = Field(ge=0)
     material_color: str
     condition: Literal["baseline"] = "baseline"
+
+
+class RoadNode(Entity):
+    position: Position
 
 
 class Road(Entity):
@@ -111,6 +115,7 @@ class CityState(BaseModel):
     districts: list[District]
     buildings: list[Building]
     roads: list[Road]
+    road_nodes: list[RoadNode]
     bridges: list[Bridge]
     hospitals: list[Hospital]
     shelters: list[Shelter]
@@ -120,7 +125,7 @@ class CityState(BaseModel):
 
     @model_validator(mode="after")
     def validate_relationships(self):
-        groups = [self.districts, self.buildings, self.roads, self.bridges,
+        groups = [self.districts, self.buildings, self.roads, self.road_nodes, self.bridges,
                   self.hospitals, self.shelters, self.rivers, self.rescue_units, self.green_areas]
         ids = [e.id for group in groups for e in group]
         if len(ids) != len(set(ids)):
@@ -128,6 +133,9 @@ class CityState(BaseModel):
         districts = {d.id for d in self.districts}
         buildings = {b.id for b in self.buildings}
         roads = {r.id for r in self.roads}
+        nodes = {n.id for n in self.road_nodes}
+        if any(r.from_node not in nodes or r.to_node not in nodes for r in self.roads):
+            raise ValueError("Road references unknown endpoint")
         if any(b.district_id not in districts for b in self.buildings):
             raise ValueError("Building references unknown district")
         if any(f.building_id not in buildings for f in [*self.hospitals, *self.shelters]):

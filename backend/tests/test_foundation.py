@@ -59,3 +59,18 @@ def test_local_cors_and_no_wildcard_access():
     denied = client.get("/api/v1/health", headers={"Origin": "https://untrusted.example"})
     assert allowed.headers["access-control-allow-origin"] == "http://localhost:5173"
     assert "access-control-allow-origin" not in denied.headers
+
+
+@pytest.mark.parametrize("mutation", ["duplicate_id", "missing_node", "unknown_field", "nonfinite"])
+def test_contract_rejects_corrupt_state(mutation):
+    payload = generate_city().model_dump()
+    if mutation == "duplicate_id":
+        payload["buildings"][1]["id"] = payload["buildings"][0]["id"]
+    elif mutation == "missing_node":
+        payload["roads"][0]["from_node"] = "missing"
+    elif mutation == "unknown_field":
+        payload["buildings"][0]["predicted_risk"] = "invented"
+    else:
+        payload["buildings"][0]["position"]["x_m"] = float("inf")
+    with pytest.raises(ValidationError):
+        CityState.model_validate(payload)

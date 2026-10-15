@@ -14,7 +14,7 @@ logger.setLevel(logging.INFO)
 if not logger.handlers:
     logger.addHandler(logging.StreamHandler())
 
-app = FastAPI(title="RESQ-AI Local API", version="0.2.0")
+app = FastAPI(title="RESQ-AI Local API", version="0.2.0", docs_url=None, redoc_url=None)
 app.add_middleware(CORSMiddleware, allow_origins=list(settings.allowed_origins),
                    allow_methods=["GET"], allow_headers=["Content-Type"])
 
