@@ -30,6 +30,8 @@ import { fetchBuilding, type Building, type CityState, type ScenarioState, type 
 import type { MLModelInfo, ScenarioPredictionSet } from "../api/client";
 import { Badge, Help, Panel, Row } from "./ui";
 import Inspector from "./Inspector";
+import RescuePlanning from "./RescuePlanning";
+import type { Plan } from "./RescuePlanning";
 
 const LazyCityScene = lazy(() => import("../scene/CityScene"));
 function CityScene(props: ComponentProps<typeof LazyCityScene>) {
@@ -67,6 +69,7 @@ export default function CityWorkspace({
   const [selected, setSelected] = useState<Building | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
+  const [rescuePlan, setRescuePlan] = useState<Plan|null>(null);
   const [layerOpen, setLayerOpen] = useState(false);
   const [lowGraphics, setLowGraphics] = useState(false);
   const [layers, setLayers] = useState<Layers>({
@@ -232,6 +235,7 @@ export default function CityWorkspace({
                 layers={layers}
                 lowGraphics={lowGraphics}
                 predictions={predictions}
+                routeLines={rescuePlan?.status === "proposed" && rescuePlan.scenario_version === scenario?.state_version ? rescuePlan.missions.map(m=>m.route.polyline) : []}
               />
               <AnimatePresence>
                 {layerOpen && (
@@ -368,6 +372,7 @@ export default function CityWorkspace({
           </Panel>
         </div>
         <aside className="right-column">
+          <RescuePlanning city={city} scenario={scenario} onPlan={setRescuePlan}/>
           <Inspector
             selected={selected}
             city={city}

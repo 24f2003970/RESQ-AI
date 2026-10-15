@@ -1,0 +1,112 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "plan_id": {
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "scenario_version": {
+      "title": "Scenario Version",
+      "type": "integer"
+    },
+    "scenario_epoch": {
+      "default": 0,
+      "title": "Scenario Epoch",
+      "type": "integer"
+    },
+    "infrastructure_revision": {
+      "default": 0,
+      "title": "Infrastructure Revision",
+      "type": "integer"
+    },
+    "simulation_tick": {
+      "title": "Simulation Tick",
+      "type": "integer"
+    },
+    "generated_at": {
+      "title": "Generated At",
+      "type": "string"
+    },
+    "status": {
+      "default": "proposed",
+      "enum": [
+        "proposed",
+        "approved",
+        "rejected",
+        "superseded"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "priorities": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Priorities",
+      "type": "array"
+    },
+    "missions": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Missions",
+      "type": "array"
+    },
+    "available_assignments": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Available Assignments",
+      "type": "array"
+    },
+    "unreachable": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Unreachable",
+      "type": "array"
+    },
+    "comparison": {
+      "additionalProperties": true,
+      "title": "Comparison",
+      "type": "object"
+    },
+    "solver_status": {
+      "title": "Solver Status",
+      "type": "string"
+    },
+    "objective": {
+      "title": "Objective",
+      "type": "string"
+    },
+    "explanation": {
+      "title": "Explanation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "plan_id",
+    "scenario_id",
+    "scenario_version",
+    "simulation_tick",
+    "generated_at",
+    "priorities",
+    "missions",
+    "available_assignments",
+    "unreachable",
+    "comparison",
+    "solver_status",
+    "objective",
+    "explanation"
+  ],
+  "title": "RescuePlan",
+  "type": "object"
+}

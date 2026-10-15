@@ -10,6 +10,7 @@ env/
 ENV/
 pip-wheel-metadata/
 .pytest_cache/
+backend/.pytest-tmp-part5/
 .mypy_cache/
 .ruff_cache/
 .coverage

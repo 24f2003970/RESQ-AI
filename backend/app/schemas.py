@@ -199,6 +199,37 @@ class VersionRequest(BaseModel):
     expected_version: int = Field(ge=1)
 
 
+class RescuePlanDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    action: Literal["approved", "rejected"]
+    expected_version: int = Field(ge=1)
+    reason: str = Field(default="", max_length=500)
+
+    @model_validator(mode="after")
+    def require_rejection_reason(self):
+        if self.action == "rejected" and not self.reason.strip():
+            raise ValueError("A rejection reason is required.")
+        return self
+
+
+class RoadClosureRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    road_id: str = Field(min_length=1)
+    reason: str = Field(default="Commander closure", min_length=1, max_length=300)
+
+
+class RescueAssignmentEdit(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    unit_id: str = Field(min_length=1)
+    destination_id: str = Field(min_length=1)
+
+
+class RescuePlanModification(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_version: int = Field(ge=1)
+    assignments: list[RescueAssignmentEdit] = Field(max_length=20)
+
+
 class ImpactItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
     entity_id: str
