@@ -2334,6 +2334,16 @@
             "type": "integer",
             "title": "Scenario Version"
           },
+          "scenario_epoch": {
+            "type": "integer",
+            "title": "Scenario Epoch",
+            "default": 0
+          },
+          "infrastructure_revision": {
+            "type": "integer",
+            "title": "Infrastructure Revision",
+            "default": 0
+          },
           "simulation_tick": {
             "type": "integer",
             "title": "Simulation Tick"

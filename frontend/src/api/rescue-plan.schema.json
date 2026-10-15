@@ -13,6 +13,16 @@
       "title": "Scenario Version",
       "type": "integer"
     },
+    "scenario_epoch": {
+      "default": 0,
+      "title": "Scenario Epoch",
+      "type": "integer"
+    },
+    "infrastructure_revision": {
+      "default": 0,
+      "title": "Infrastructure Revision",
+      "type": "integer"
+    },
     "simulation_tick": {
       "title": "Simulation Tick",
       "type": "integer"

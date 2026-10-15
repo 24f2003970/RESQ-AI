@@ -189,8 +189,10 @@ def create_rescue_plan(scenario_id: str):
     envelope = _scenario_call(lambda: store.get(scenario_id))
     try:
         prediction_set = predictions(scenario_id)
-        plan = generate_plan(generate_city(envelope.state.seed), envelope.state, prediction_set,
-                             rescue_plans.closures(scenario_id))
+        infrastructure_revision, closures = rescue_plans.infrastructure(scenario_id, envelope.state.epoch)
+        reserved = rescue_plans.reserved_units(scenario_id, envelope.state.epoch)
+        plan = generate_plan(generate_city(envelope.state.seed), envelope.state, prediction_set, closures,
+                             infrastructure_revision=infrastructure_revision, reserved_unit_ids=reserved)
         try:
             return rescue_plans.save(plan)
         except ValueError as exc:
@@ -231,27 +233,46 @@ def close_road(scenario_id: str, request: RoadClosureRequest):
     if road_id not in {road.id for road in city.roads}:
         raise HTTPException(422, "Unknown road ID.")
     import sqlite3
-    with sqlite3.connect(store.path) as db:
-        db.execute("INSERT INTO road_closures(scenario_id,road_id,reason,active) VALUES(?,?,?,1) ON CONFLICT(scenario_id,road_id) DO UPDATE SET reason=excluded.reason,active=1", (scenario_id, road_id, reason))
+    with sqlite3.connect(store.path, timeout=10, isolation_level=None) as db:
+        db.execute("BEGIN IMMEDIATE")
+        scenario_row=db.execute("SELECT epoch FROM scenarios WHERE id=?",(scenario_id,)).fetchone()
+        if scenario_row is None:
+            db.rollback();raise HTTPException(404,"Scenario does not exist.")
+        epoch=scenario_row[0]
+        db.execute("INSERT OR IGNORE INTO scenario_infrastructure(scenario_id,epoch,revision) VALUES(?,?,0)",(scenario_id,epoch))
+        db.execute("INSERT INTO road_closures(scenario_id,epoch,road_id,reason,active) VALUES(?,?,?,?,1) ON CONFLICT(scenario_id,epoch,road_id) DO UPDATE SET reason=excluded.reason,active=1", (scenario_id, epoch, road_id, reason))
+        db.execute("UPDATE scenario_infrastructure SET revision=revision+1 WHERE scenario_id=? AND epoch=?",(scenario_id,epoch))
         stale = db.execute("SELECT plan_id FROM rescue_plans WHERE scenario_id=? AND status='proposed'", (scenario_id,)).fetchall()
         db.execute("UPDATE rescue_plans SET status='superseded' WHERE scenario_id=? AND status='proposed'", (scenario_id,))
         for (plan_id,) in stale:
             db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,CURRENT_TIMESTAMP)", (plan_id,"superseded",json.dumps({"reason":"Manual road closure changed route accessibility.","road_id":road_id})))
         db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,CURRENT_TIMESTAMP)", ("scenario:"+scenario_id,"road_manually_closed",json.dumps({"road_id":road_id,"reason":reason})))
-    return {"scenario_id":scenario_id,"road_id":road_id,"status":"manually_blocked","reason":reason,"closures":rescue_plans.closures(scenario_id)}
+        db.commit()
+    revision,closures=rescue_plans.infrastructure(scenario_id,epoch)
+    return {"scenario_id":scenario_id,"road_id":road_id,"status":"manually_blocked","reason":reason,"infrastructure_revision":revision,"closures":closures}
 
 
 @app.delete("/api/v1/scenarios/{scenario_id}/road-closures/{road_id}")
 def reopen_road(scenario_id: str, road_id: str):
     _scenario_call(lambda: store.get(scenario_id))
     import sqlite3
-    with sqlite3.connect(store.path) as db:
-        cursor = db.execute("UPDATE road_closures SET active=0 WHERE scenario_id=? AND road_id=? AND active=1", (scenario_id, road_id))
+    with sqlite3.connect(store.path, timeout=10, isolation_level=None) as db:
+        db.execute("BEGIN IMMEDIATE")
+        scenario_row=db.execute("SELECT epoch FROM scenarios WHERE id=?",(scenario_id,)).fetchone()
+        if scenario_row is None:
+            db.rollback();raise HTTPException(404,"Scenario does not exist.")
+        epoch=scenario_row[0]
+        db.execute("INSERT OR IGNORE INTO scenario_infrastructure(scenario_id,epoch,revision) VALUES(?,?,0)",(scenario_id,epoch))
+        cursor = db.execute("UPDATE road_closures SET active=0 WHERE scenario_id=? AND epoch=? AND road_id=? AND active=1", (scenario_id, epoch, road_id))
         if not cursor.rowcount:
+            db.rollback()
             raise HTTPException(404, "No active manual closure exists for this road.")
+        db.execute("UPDATE scenario_infrastructure SET revision=revision+1 WHERE scenario_id=? AND epoch=?",(scenario_id,epoch))
         stale = db.execute("SELECT plan_id FROM rescue_plans WHERE scenario_id=? AND status='proposed'", (scenario_id,)).fetchall()
         db.execute("UPDATE rescue_plans SET status='superseded' WHERE scenario_id=? AND status='proposed'", (scenario_id,))
         for (plan_id,) in stale:
             db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,CURRENT_TIMESTAMP)", (plan_id,"superseded",json.dumps({"reason":"Road closure was removed; route snapshot changed.","road_id":road_id})))
         db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,CURRENT_TIMESTAMP)", ("scenario:"+scenario_id,"road_reopened",json.dumps({"road_id":road_id})))
-    return {"scenario_id":scenario_id,"road_id":road_id,"status":"reopened","closures":rescue_plans.closures(scenario_id)}
+        db.commit()
+    revision,closures=rescue_plans.infrastructure(scenario_id,epoch)
+    return {"scenario_id":scenario_id,"road_id":road_id,"status":"reopened","infrastructure_revision":revision,"closures":closures}
