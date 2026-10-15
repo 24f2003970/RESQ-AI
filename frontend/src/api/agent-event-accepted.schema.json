@@ -1,0 +1,38 @@
+{
+  "properties": {
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "status": {
+      "title": "Status",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "scenario_epoch": {
+      "title": "Scenario Epoch",
+      "type": "integer"
+    },
+    "simulation_tick": {
+      "title": "Simulation Tick",
+      "type": "integer"
+    },
+    "simulation_state_version": {
+      "title": "Simulation State Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "event_id",
+    "status",
+    "scenario_id",
+    "scenario_epoch",
+    "simulation_tick",
+    "simulation_state_version"
+  ],
+  "title": "AgentEventAccepted",
+  "type": "object"
+}

@@ -315,7 +315,7 @@ function Floodwater({ scenario }: { scenario: ScenarioState | null }) {
   return <mesh geometry={geometry} renderOrder={2}><meshPhysicalMaterial vertexColors transparent opacity={0.78} roughness={0.24} metalness={0.18} clearcoat={0.55} clearcoatRoughness={0.22} depthWrite={false}/></mesh>;
 }
 
-function Ground({ city, layers, scenario }: { city: CityState; layers: Layers; scenario: ScenarioState | null }) {
+function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState; layers: Layers; scenario: ScenarioState | null; manualClosureIds:string[] }) {
   const terrain = scenario?.terrain_m ?? city.terrain.elevation_m;
   const roadImpacts = scenario?.impacts.roads;
   const bridgesById = new Map((scenario?.impacts.bridges ?? []).map((bridge) => [bridge.entity_id, bridge]));
@@ -333,15 +333,15 @@ function Ground({ city, layers, scenario }: { city: CityState; layers: Layers; s
         const endY = road.start.y_m + (road.end.y_m - road.start.y_m) * t1;
         const length = Math.hypot(endX - x, endY - y) + 0.8;
         const elevation = sampleGrid(terrain, x, y) + 0.19;
-        const condition = roadsById.get(road.id)?.status;
+        const condition = manualClosureIds.includes(road.id) ? "manually_blocked" : roadsById.get(road.id)?.status;
         return {
           position: [x, elevation, -y] as [number, number, number],
           scale: [road.start.x_m === road.end.x_m ? road.width_m : length, 0.3, road.start.x_m === road.end.x_m ? length : road.width_m] as [number, number, number],
-          color: condition === "flooded" ? "#28678f" : condition === "caution" ? "#91764e" : "#4d5b5c",
+          color: condition === "manually_blocked" ? "#d15f52" : condition === "flooded" ? "#28678f" : condition === "caution" ? "#91764e" : "#4d5b5c",
         };
       }).filter((item): item is NonNullable<typeof item> => item !== null);
     }),
-    [city, terrain, roadImpacts],
+    [city, terrain, roadImpacts, manualClosureIds],
   );
   const markings = useMemo(() => {
     const result: Instance[] = [];
@@ -395,7 +395,7 @@ function Ground({ city, layers, scenario }: { city: CityState; layers: Layers; s
           <mesh receiveShadow>
             <boxGeometry args={[b.width_m + 1, 0.4, b.length_m]} />
             <meshStandardMaterial
-              color={bridgesById.get(b.id)?.status === "closed" ? "#a76556" : "#879391"}
+              color={manualClosureIds.includes(b.road_id) || bridgesById.get(b.id)?.status === "closed" ? "#d15f52" : "#879391"}
             />
           </mesh>
           {[-1, 1].map((s) => (
@@ -590,6 +590,7 @@ export default function CityScene({
   lowGraphics,
   predictions,
   routeLines,
+  manualClosureIds,
 }: {
   city: CityState;
   scenario: ScenarioState | null;
@@ -599,6 +600,7 @@ export default function CityScene({
   lowGraphics: boolean;
   predictions: ScenarioPredictionSet | null;
   routeLines: number[][][];
+  manualClosureIds:string[];
 }) {
   const [action, setAction] = useState({ type: "reset", key: 0 });
   const [mapMode, setMapMode] = useState(false);
@@ -666,7 +668,7 @@ export default function CityScene({
                 shadow-camera-far={1200}
                 shadow-bias={-0.001}
               />
-              <Ground city={city} layers={layers} scenario={scenario} />
+              <Ground city={city} layers={layers} scenario={scenario} manualClosureIds={manualClosureIds} />
               {routeLines.map((route,index)=><Line key={`planned-route-${index}`} points={route.map(point=>routePointToScene(city,point))} color="#57d7cf" lineWidth={3} transparent opacity={0.9}/>) }
               {layers.buildings && (
                 <BuildingBlocks

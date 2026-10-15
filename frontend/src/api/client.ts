@@ -6,6 +6,10 @@ import datasetSchema from "./ml-dataset.schema.json";
 import evaluationSchema from "./ml-evaluation.schema.json";
 import featureSchema from "./ml-feature.schema.json";
 import predictionsSchema from "./ml-predictions.schema.json";
+import agentDashboardSchema from "./agent-dashboard.schema.json";
+import agentEventSchema from "./agent-event.schema.json";
+import agentTraceDetailSchema from "./agent-trace-detail.schema.json";
+import rescuePlanSchema from "./rescue-plan.schema.json";
 import type { components } from "./schema";
 
 export type CityState = components["schemas"]["CityState"];
@@ -22,6 +26,11 @@ export type MLEvaluationReport = components["schemas"]["MLEvaluationReport"];
 export type MLFeatureInfo = components["schemas"]["MLFeatureInfo"];
 export type BuildingRiskPrediction = components["schemas"]["BuildingRiskPrediction"];
 export type ScenarioPredictionSet = components["schemas"]["ScenarioPredictionSet"];
+export type AgentDashboard = components["schemas"]["AgentDashboard"];
+export type AgentEventEnvelope = components["schemas"]["AgentEventEnvelope"];
+export type AgentTraceDetail = components["schemas"]["AgentTraceDetail"];
+export type AgentRunRecord = components["schemas"]["AgentRunRecord"];
+export type RescueRecommendation = components["schemas"]["RescuePlan"];
 
 const validate = new Ajv2020({
   strict: false,
@@ -29,11 +38,16 @@ const validate = new Ajv2020({
 }).compile<CityState>(citySchema);
 const validateScenario = new Ajv2020({ strict: false, allErrors: true }).compile<ScenarioEnvelope>(scenarioSchema);
 const ajv = new Ajv2020({ strict: false, allErrors: true });
+ajv.addFormat("date-time", true);
 const validateModel = ajv.compile<MLModelInfo>(modelSchema);
 const validateDataset = ajv.compile<MLDatasetInfo>(datasetSchema);
 const validateEvaluation = ajv.compile<MLEvaluationReport>(evaluationSchema);
 const validateFeature = ajv.compile<MLFeatureInfo>(featureSchema);
 const validatePredictions = ajv.compile<ScenarioPredictionSet>(predictionsSchema);
+const validateAgentDashboard = ajv.compile<AgentDashboard>(agentDashboardSchema);
+const validateAgentEvent = ajv.compile<AgentEventEnvelope>(agentEventSchema);
+const validateAgentTrace = ajv.compile<AgentTraceDetail>(agentTraceDetailSchema);
+const validateRescuePlan = ajv.compile<RescueRecommendation>(rescuePlanSchema);
 
 export function parseCity(value: unknown): CityState {
   if (!validate(value))
@@ -91,6 +105,37 @@ export const fetchScenarioPredictions = (state: ScenarioState, buildingId?: stri
   validatedML(`scenarios/${encodeURIComponent(state.id)}/predictions${buildingId ? `/${encodeURIComponent(buildingId)}` : ""}`, validatePredictions, signal);
 
 export const fetchActiveScenario = () => scenarioRequest("scenarios/active");
+export const fetchAgentDashboard = async (scenarioId: string, signal?: AbortSignal) => {
+  const value = await request(`scenarios/${encodeURIComponent(scenarioId)}/agent-status`, signal);
+  if (!validateAgentDashboard(value)) throw new Error("The local service returned an invalid agent status contract.");
+  return value;
+};
+export const fetchAgentEvents = async (scenarioId: string, signal?: AbortSignal) => {
+  const value: unknown = await request(`scenarios/${encodeURIComponent(scenarioId)}/agent-events?limit=30`, signal);
+  if (!Array.isArray(value) || !value.every((event) => validateAgentEvent(event))) throw new Error("The local service returned invalid agent events.");
+  return value as AgentEventEnvelope[];
+};
+export const fetchAgentTrace = async (eventId: string, signal?: AbortSignal) => {
+  const value = await request(`agent-traces/${encodeURIComponent(eventId)}`, signal);
+  if (!validateAgentTrace(value)) throw new Error("The local service returned an invalid decision trace contract.");
+  return value;
+};
+export const fetchLatestRecommendation = async (scenarioId:string, signal?:AbortSignal):Promise<RescueRecommendation|null> => {
+  const value=await request(`scenarios/${encodeURIComponent(scenarioId)}/recommendations/latest`,signal);
+  if(value===null)return null;
+  if(!validateRescuePlan(value))throw new Error("The local service returned an invalid rescue recommendation.");
+  return value;
+};
+export async function requestIntelligenceAssessment(scenarioId: string, signal?: AbortSignal) {
+  const value = await request(`scenarios/${encodeURIComponent(scenarioId)}/intelligence-assessments`, signal, {method:"POST"});
+  if (!value || typeof value !== "object" || !("event_id" in value) || typeof value.event_id !== "string") throw new Error("The local service returned an invalid assessment receipt.");
+  return value as components["schemas"]["AgentEventAccepted"];
+}
+export async function retryAgentEvent(eventId: string, signal?: AbortSignal) {
+  const value = await request(`agent-events/${encodeURIComponent(eventId)}/retry`, signal, {method:"POST"});
+  if (!value || typeof value !== "object" || !("event_id" in value)) throw new Error("The local service returned an invalid retry receipt.");
+  return value as components["schemas"]["AgentEventAccepted"];
+}
 export const createScenario = (name: string, preset: "mild" | "heavy" | "extreme") =>
   scenarioRequest("scenarios", "POST", { name, preset, seed: 2026 }, { "Idempotency-Key": crypto.randomUUID() });
 export const fetchScenario = (id: string) => scenarioRequest(`scenarios/${encodeURIComponent(id)}`);

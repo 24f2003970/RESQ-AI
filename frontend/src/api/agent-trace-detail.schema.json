@@ -1,0 +1,417 @@
+{
+  "$defs": {
+    "AgentEventEnvelope": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "title": "Event Type",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "scenario_epoch": {
+          "title": "Scenario Epoch",
+          "type": "integer"
+        },
+        "simulation_tick": {
+          "title": "Simulation Tick",
+          "type": "integer"
+        },
+        "simulation_state_version": {
+          "title": "Simulation State Version",
+          "type": "integer"
+        },
+        "infrastructure_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Infrastructure Revision"
+        },
+        "created_at_utc": {
+          "format": "date-time",
+          "title": "Created At Utc",
+          "type": "string"
+        },
+        "source_module": {
+          "title": "Source Module",
+          "type": "string"
+        },
+        "affected_entity_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Affected Entity Ids",
+          "type": "array"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "title": "Payload",
+          "type": "object"
+        },
+        "correlation_id": {
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "causation_event_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Causation Event Id"
+        },
+        "outbox_insert_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outbox Insert Ms"
+        }
+      },
+      "required": [
+        "event_id",
+        "event_type",
+        "scenario_id",
+        "scenario_epoch",
+        "simulation_tick",
+        "simulation_state_version",
+        "created_at_utc",
+        "source_module",
+        "correlation_id"
+      ],
+      "title": "AgentEventEnvelope",
+      "type": "object"
+    },
+    "AgentRunRecord": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "scenario_epoch": {
+          "title": "Scenario Epoch",
+          "type": "integer"
+        },
+        "simulation_state_version": {
+          "title": "Simulation State Version",
+          "type": "integer"
+        },
+        "infrastructure_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Infrastructure Revision"
+        },
+        "agent_name": {
+          "title": "Agent Name",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "waiting",
+            "running",
+            "completed",
+            "skipped",
+            "failed",
+            "superseded",
+            "degraded"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "started_at_utc": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Started At Utc"
+        },
+        "completed_at_utc": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completed At Utc"
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Ms"
+        },
+        "input_hash": {
+          "title": "Input Hash",
+          "type": "string"
+        },
+        "input_snapshot_ref": {
+          "title": "Input Snapshot Ref",
+          "type": "string"
+        },
+        "output_summary": {
+          "additionalProperties": true,
+          "title": "Output Summary",
+          "type": "object"
+        },
+        "numerical_evidence": {
+          "additionalProperties": true,
+          "title": "Numerical Evidence",
+          "type": "object"
+        },
+        "proposed_action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposed Action"
+        },
+        "explanation": {
+          "default": "",
+          "title": "Explanation",
+          "type": "string"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error"
+        },
+        "attempt": {
+          "default": 0,
+          "title": "Attempt",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run_id",
+        "event_id",
+        "correlation_id",
+        "scenario_id",
+        "scenario_epoch",
+        "simulation_state_version",
+        "infrastructure_revision",
+        "agent_name",
+        "status",
+        "input_hash",
+        "input_snapshot_ref"
+      ],
+      "title": "AgentRunRecord",
+      "type": "object"
+    },
+    "AgentTrace": {
+      "properties": {
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        },
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "scenario_epoch": {
+          "title": "Scenario Epoch",
+          "type": "integer"
+        },
+        "simulation_state_version": {
+          "title": "Simulation State Version",
+          "type": "integer"
+        },
+        "infrastructure_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Infrastructure Revision"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed",
+            "superseded",
+            "degraded"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "plan_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Id"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "evidence": {
+          "additionalProperties": true,
+          "title": "Evidence",
+          "type": "object"
+        },
+        "created_at_utc": {
+          "format": "date-time",
+          "title": "Created At Utc",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "event_id",
+        "correlation_id",
+        "scenario_id",
+        "scenario_epoch",
+        "simulation_state_version",
+        "infrastructure_revision",
+        "status",
+        "summary",
+        "created_at_utc"
+      ],
+      "title": "AgentTrace",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "event": {
+      "$ref": "#/$defs/AgentEventEnvelope"
+    },
+    "event_status": {
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "superseded",
+        "degraded"
+      ],
+      "title": "Event Status",
+      "type": "string"
+    },
+    "attempts": {
+      "title": "Attempts",
+      "type": "integer"
+    },
+    "agents": {
+      "items": {
+        "$ref": "#/$defs/AgentRunRecord"
+      },
+      "title": "Agents",
+      "type": "array"
+    },
+    "trace": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentTrace"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "related_plan": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Related Plan"
+    }
+  },
+  "required": [
+    "event",
+    "event_status",
+    "attempts",
+    "agents"
+  ],
+  "title": "AgentTraceDetail",
+  "type": "object"
+}

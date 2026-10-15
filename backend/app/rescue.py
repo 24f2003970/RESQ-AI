@@ -12,6 +12,7 @@ import networkx as nx
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from pydantic import BaseModel, ConfigDict, Field
+from .agent_contracts import ensure_agent_event_table, persist_agent_event
 
 from .city_service import generate_city
 from .schemas import ScenarioState
@@ -24,6 +25,7 @@ class RescuePlan(BaseModel):
     scenario_version: int
     scenario_epoch: int = 0
     infrastructure_revision: int = 0
+    trigger_event_id: str | None = None
     simulation_tick: int
     generated_at: str
     status: Literal["proposed", "approved", "rejected", "superseded"] = "proposed"
@@ -226,17 +228,20 @@ def _assign(units, destinations, route_map, optimized=True):
     return output
 
 
-def generate_plan(city, state, prediction_set, closures=(), *, infrastructure_revision=0, reserved_unit_ids=()):
+def generate_plan(city, state, prediction_set, closures=(), *, infrastructure_revision=0, reserved_unit_ids=(),
+                  priorities_override=None, route_map_override=None, trigger_event_id=None):
     g=build_road_graph(city,state,closures)
-    ranked=priorities(city,state,prediction_set,closures,reserved_unit_ids)
+    ranked=priorities_override if priorities_override is not None else priorities(city,state,prediction_set,closures,reserved_unit_ids)
     reserved=set(reserved_unit_ids)
     units=[u.model_dump() for u in city.rescue_units if u.status=="standby" and u.type!="boat" and u.id not in reserved]
-    route_map={}
-    for u in units:
-        for d in ranked:
-            b=next(x for x in city.buildings if x.id==d["building_id"])
-            r=route(g,u["position"],b.position,u["type"])
-            if r["reachable"]: route_map[(u["id"],b.id)]=r
+    route_map=route_map_override
+    if route_map is None:
+        route_map={}
+        for u in units:
+            for d in ranked:
+                b=next(x for x in city.buildings if x.id==d["building_id"])
+                r=route(g,u["position"],b.position,u["type"])
+                if r["reachable"]: route_map[(u["id"],b.id)]=r
     optimized=_assign(units,ranked,route_map,True)
     baseline=_assign(units,ranked,route_map,False)
     reachable_destinations={destination_id for _,destination_id in route_map}
@@ -252,7 +257,7 @@ def generate_plan(city, state, prediction_set, closures=(), *, infrastructure_re
     for (uid,did),r in route_map.items():
         u=unit_by_id[uid]; d=destination_by_id[did]
         available.append({"unit_id":uid,"destination_id":did,"unit_capacity":u["capacity"],"occupants_targeted":min(u["capacity"],d["occupants"]),"route":r})
-    return RescuePlan(plan_id=plan_id,scenario_id=state.id,scenario_version=state.state_version,scenario_epoch=state.epoch,infrastructure_revision=infrastructure_revision,simulation_tick=state.tick,generated_at=datetime.now(timezone.utc).isoformat(),priorities=ranked,missions=optimized,available_assignments=available,unreachable=unreachable,comparison={"baseline":metrics(baseline),"optimized":metrics(optimized),"baseline_missions":baseline},solver_status="optimal_linear_sum_assignment",objective="Maximize sum(priority_score × capacity-covered occupant fraction - 0.15 × synthetic route minutes), with each unit assigned at most once and each destination at most once.",explanation="Assignments are recommendations; unit capacity limits the occupant count targeted in this single mission. Approval reserves assigned units until the scenario is reset into a new epoch; no mission completion or automatic release is simulated.")
+    return RescuePlan(plan_id=plan_id,scenario_id=state.id,scenario_version=state.state_version,scenario_epoch=state.epoch,infrastructure_revision=infrastructure_revision,trigger_event_id=trigger_event_id,simulation_tick=state.tick,generated_at=datetime.now(timezone.utc).isoformat(),priorities=ranked,missions=optimized,available_assignments=available,unreachable=unreachable,comparison={"baseline":metrics(baseline),"optimized":metrics(optimized),"baseline_missions":baseline},solver_status="optimal_linear_sum_assignment",objective="Maximize sum(priority_score × capacity-covered occupant fraction - 0.15 × synthetic route minutes), with each unit assigned at most once and each destination at most once.",explanation="Assignments are recommendations; unit capacity limits the occupant count targeted in this single mission. Approval reserves assigned units until the scenario is reset into a new epoch; no mission completion or automatic release is simulated.")
 
 
 class PlanStore:
@@ -260,6 +265,11 @@ class PlanStore:
         self.path=str(path)
         with sqlite3.connect(self.path) as db:
             db.executescript("CREATE TABLE IF NOT EXISTS rescue_plans (plan_id TEXT PRIMARY KEY, scenario_id TEXT NOT NULL, scenario_version INTEGER NOT NULL, payload TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL); CREATE TABLE IF NOT EXISTS rescue_events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, plan_id TEXT NOT NULL, event_type TEXT NOT NULL, detail TEXT NOT NULL, created_at TEXT NOT NULL); CREATE TABLE IF NOT EXISTS road_closures (scenario_id TEXT NOT NULL, epoch INTEGER NOT NULL DEFAULT 0, road_id TEXT NOT NULL, reason TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(scenario_id,epoch,road_id)); CREATE TABLE IF NOT EXISTS scenario_infrastructure (scenario_id TEXT NOT NULL, epoch INTEGER NOT NULL, revision INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(scenario_id,epoch));")
+            ensure_agent_event_table(db)
+            plan_columns={row[1] for row in db.execute("PRAGMA table_info(rescue_plans)")}
+            if "scenario_epoch" not in plan_columns:db.execute("ALTER TABLE rescue_plans ADD COLUMN scenario_epoch INTEGER NOT NULL DEFAULT 0")
+            if "trigger_event_id" not in plan_columns:db.execute("ALTER TABLE rescue_plans ADD COLUMN trigger_event_id TEXT")
+            db.execute("CREATE UNIQUE INDEX IF NOT EXISTS rescue_plans_by_trigger ON rescue_plans(scenario_id,scenario_epoch,trigger_event_id) WHERE trigger_event_id IS NOT NULL")
             columns={row[1]:row[5] for row in db.execute("PRAGMA table_info(road_closures)")}
             if not columns.get("epoch"):
                 db.execute("ALTER TABLE road_closures RENAME TO road_closures_legacy")
@@ -277,15 +287,56 @@ class PlanStore:
             rows=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(scenario_id,)).fetchall()
             plans=[RescuePlan.model_validate_json(payload) for (payload,) in rows]
             return {mission["unit_id"] for plan in plans if plan.scenario_epoch==epoch for mission in plan.missions}
+    def by_trigger(self,event_id):
+        if not event_id:return None
+        with sqlite3.connect(self.path) as db:
+            row=db.execute("SELECT payload,status FROM rescue_plans WHERE trigger_event_id=? ORDER BY created_at DESC LIMIT 1",(event_id,)).fetchone()
+        if not row:return None
+        plan=RescuePlan.model_validate_json(row[0]);plan.status=row[1];return plan
+    def latest_valid(self,scenario_id,state):
+        with sqlite3.connect(self.path) as db:
+            rows=db.execute("SELECT plan_id FROM rescue_plans WHERE scenario_id=? AND scenario_epoch=? AND status='proposed' ORDER BY created_at DESC",(scenario_id,state.epoch)).fetchall()
+        for (plan_id,) in rows:
+            plan=self.get(plan_id)
+            if plan and plan.status=="proposed" and plan.scenario_version==state.state_version:
+                return plan
+        return None
+    def supersede_stale(self,scenario_id,epoch,state_version,infrastructure_revision,reason):
+        """Persist invalidation of proposals whose versioned assumptions changed."""
+        with sqlite3.connect(self.path,timeout=10,isolation_level=None) as db:
+            db.execute("BEGIN IMMEDIATE")
+            rows=db.execute("SELECT plan_id,payload,scenario_epoch FROM rescue_plans WHERE scenario_id=? AND status='proposed'",(scenario_id,)).fetchall()
+            stale=[]
+            for plan_id,payload,plan_epoch in rows:
+                plan=RescuePlan.model_validate_json(payload)
+                if plan_epoch!=epoch or plan.scenario_version!=state_version or plan.infrastructure_revision!=infrastructure_revision:
+                    plan.status="superseded"
+                    db.execute("UPDATE rescue_plans SET payload=?,status='superseded' WHERE plan_id=?",(plan.model_dump_json(),plan_id))
+                    db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,?)",(plan_id,"superseded",json.dumps({"reason":reason}),datetime.now(timezone.utc).isoformat()))
+                    stale.append(plan_id)
+            db.commit()
+        return stale
     def save(self,plan):
         with sqlite3.connect(self.path) as db:
             db.execute("BEGIN IMMEDIATE")
+            if plan.trigger_event_id:
+                existing=db.execute("SELECT payload,status FROM rescue_plans WHERE scenario_id=? AND scenario_epoch=? AND trigger_event_id=?",(plan.scenario_id,plan.scenario_epoch,plan.trigger_event_id)).fetchone()
+                if existing:
+                    db.rollback()
+                    saved=RescuePlan.model_validate_json(existing[0]);saved.status=existing[1];return saved
             current=db.execute("SELECT state_version,epoch FROM scenarios WHERE id=?",(plan.scenario_id,)).fetchone()
             infra=db.execute("SELECT revision FROM scenario_infrastructure WHERE scenario_id=? AND epoch=?",(plan.scenario_id,plan.scenario_epoch)).fetchone()
             if not current or current[0]!=plan.scenario_version or current[1]!=plan.scenario_epoch or not infra or infra[0]!=plan.infrastructure_revision:
                 db.rollback();raise ValueError("Scenario changed while the plan was being generated; request a fresh proposal.")
+            approved=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(plan.scenario_id,)).fetchall()
+            committed={mission["unit_id"] for (payload,) in approved
+                       for approved_plan in [RescuePlan.model_validate_json(payload)]
+                       if approved_plan.scenario_epoch==plan.scenario_epoch for mission in approved_plan.missions}
+            conflict=committed & {mission["unit_id"] for mission in plan.missions}
+            if conflict:
+                db.rollback();raise ValueError("Resources became unavailable while the plan was being generated: "+", ".join(sorted(conflict)))
             previous=db.execute("SELECT plan_id FROM rescue_plans WHERE scenario_id=? AND status='proposed'",(plan.scenario_id,)).fetchall()
-            db.execute("INSERT INTO rescue_plans VALUES(?,?,?,?,?,?)",(plan.plan_id,plan.scenario_id,plan.scenario_version,plan.model_dump_json(),plan.status,plan.generated_at))
+            db.execute("INSERT INTO rescue_plans(plan_id,scenario_id,scenario_version,payload,status,created_at,scenario_epoch,trigger_event_id) VALUES(?,?,?,?,?,?,?,?)",(plan.plan_id,plan.scenario_id,plan.scenario_version,plan.model_dump_json(),plan.status,plan.generated_at,plan.scenario_epoch,plan.trigger_event_id))
             for (prior_id,) in previous:
                 db.execute("UPDATE rescue_plans SET status='superseded' WHERE plan_id=?",(prior_id,))
                 db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,?)",(prior_id,"superseded",json.dumps({"reason":"A newer scenario recommendation replaced this proposal."}),datetime.now(timezone.utc).isoformat()))
@@ -327,6 +378,10 @@ class PlanStore:
             plan.status=action
             db.execute("UPDATE rescue_plans SET payload=?,status=? WHERE plan_id=?",(plan.model_dump_json(),action,plan_id))
             db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,?)",(plan_id,action,json.dumps({"reason":reason}),datetime.now(timezone.utc).isoformat()))
+            persist_agent_event(db,event_type=f"rescue_plan_{action}",scenario_id=plan.scenario_id,scenario_epoch=plan.scenario_epoch,
+                simulation_tick=plan.simulation_tick,state_version=current[0],infrastructure_revision=infra[0],
+                source_module="rescue_plan_store",payload={"plan_id":plan_id,"reason":reason,"reserved_unit_ids":[m["unit_id"] for m in plan.missions] if action=="approved" else []},
+                correlation_id=plan.trigger_event_id or plan_id,causation_event_id=plan.trigger_event_id)
             db.commit()
             return plan
 

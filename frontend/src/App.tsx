@@ -19,7 +19,7 @@ import { useCity } from "./api/useCity";
 import { useScenario } from "./api/useScenario";
 import { Badge } from "./components/ui";
 import CityWorkspace from "./components/CityWorkspace";
-import Development from "./components/Development";
+import AgentExplorer from "./components/AgentExplorer";
 import ScenarioLab from "./components/ScenarioLab";
 import ModelLab from "./components/ModelLab";
 import { useRisk } from "./api/useRisk";
@@ -159,7 +159,7 @@ export default function App() {
             >
               <RefreshCw size={16} />
             </button>
-            <span className="part-label">PART 04</span>
+            <span className="part-label">PART 06</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -236,7 +236,7 @@ export default function App() {
                 />
                 <Route
                   path="/decisions"
-                  element={<Development kind="decisions" />}
+                  element={<AgentExplorer scenario={simulation.scenario} />}
                 />
                 <Route path="/model" element={<ModelLab scenario={simulation.scenario} />} />
                 <Route

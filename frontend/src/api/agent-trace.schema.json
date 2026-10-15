@@ -1,0 +1,89 @@
+{
+  "properties": {
+    "trace_id": {
+      "title": "Trace Id",
+      "type": "string"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "correlation_id": {
+      "title": "Correlation Id",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "scenario_epoch": {
+      "title": "Scenario Epoch",
+      "type": "integer"
+    },
+    "simulation_state_version": {
+      "title": "Simulation State Version",
+      "type": "integer"
+    },
+    "infrastructure_revision": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Infrastructure Revision"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "failed",
+        "superseded",
+        "degraded"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "plan_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Plan Id"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    },
+    "evidence": {
+      "additionalProperties": true,
+      "title": "Evidence",
+      "type": "object"
+    },
+    "created_at_utc": {
+      "format": "date-time",
+      "title": "Created At Utc",
+      "type": "string"
+    }
+  },
+  "required": [
+    "trace_id",
+    "event_id",
+    "correlation_id",
+    "scenario_id",
+    "scenario_epoch",
+    "simulation_state_version",
+    "infrastructure_revision",
+    "status",
+    "summary",
+    "created_at_utc"
+  ],
+  "title": "AgentTrace",
+  "type": "object"
+}

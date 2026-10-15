@@ -1,0 +1,376 @@
+{
+  "$defs": {
+    "AgentDefinition": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "responsibility": {
+          "title": "Responsibility",
+          "type": "string"
+        },
+        "position": {
+          "title": "Position",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "title",
+        "responsibility",
+        "position"
+      ],
+      "title": "AgentDefinition",
+      "type": "object"
+    },
+    "AgentRunRecord": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "scenario_epoch": {
+          "title": "Scenario Epoch",
+          "type": "integer"
+        },
+        "simulation_state_version": {
+          "title": "Simulation State Version",
+          "type": "integer"
+        },
+        "infrastructure_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Infrastructure Revision"
+        },
+        "agent_name": {
+          "title": "Agent Name",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "waiting",
+            "running",
+            "completed",
+            "skipped",
+            "failed",
+            "superseded",
+            "degraded"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "started_at_utc": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Started At Utc"
+        },
+        "completed_at_utc": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completed At Utc"
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Ms"
+        },
+        "input_hash": {
+          "title": "Input Hash",
+          "type": "string"
+        },
+        "input_snapshot_ref": {
+          "title": "Input Snapshot Ref",
+          "type": "string"
+        },
+        "output_summary": {
+          "additionalProperties": true,
+          "title": "Output Summary",
+          "type": "object"
+        },
+        "numerical_evidence": {
+          "additionalProperties": true,
+          "title": "Numerical Evidence",
+          "type": "object"
+        },
+        "proposed_action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposed Action"
+        },
+        "explanation": {
+          "default": "",
+          "title": "Explanation",
+          "type": "string"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error"
+        },
+        "attempt": {
+          "default": 0,
+          "title": "Attempt",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run_id",
+        "event_id",
+        "correlation_id",
+        "scenario_id",
+        "scenario_epoch",
+        "simulation_state_version",
+        "infrastructure_revision",
+        "agent_name",
+        "status",
+        "input_hash",
+        "input_snapshot_ref"
+      ],
+      "title": "AgentRunRecord",
+      "type": "object"
+    },
+    "AgentTrace": {
+      "properties": {
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        },
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "scenario_epoch": {
+          "title": "Scenario Epoch",
+          "type": "integer"
+        },
+        "simulation_state_version": {
+          "title": "Simulation State Version",
+          "type": "integer"
+        },
+        "infrastructure_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Infrastructure Revision"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed",
+            "superseded",
+            "degraded"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "plan_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Id"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "evidence": {
+          "additionalProperties": true,
+          "title": "Evidence",
+          "type": "object"
+        },
+        "created_at_utc": {
+          "format": "date-time",
+          "title": "Created At Utc",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "event_id",
+        "correlation_id",
+        "scenario_id",
+        "scenario_epoch",
+        "simulation_state_version",
+        "infrastructure_revision",
+        "status",
+        "summary",
+        "created_at_utc"
+      ],
+      "title": "AgentTrace",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "scenario_epoch": {
+      "title": "Scenario Epoch",
+      "type": "integer"
+    },
+    "simulation_state_version": {
+      "title": "Simulation State Version",
+      "type": "integer"
+    },
+    "infrastructure_revision": {
+      "title": "Infrastructure Revision",
+      "type": "integer"
+    },
+    "definitions": {
+      "items": {
+        "$ref": "#/$defs/AgentDefinition"
+      },
+      "title": "Definitions",
+      "type": "array"
+    },
+    "latest_runs": {
+      "items": {
+        "$ref": "#/$defs/AgentRunRecord"
+      },
+      "title": "Latest Runs",
+      "type": "array"
+    },
+    "latest_trace": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentTrace"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "pending_events": {
+      "default": 0,
+      "title": "Pending Events",
+      "type": "integer"
+    },
+    "available_ground_units": {
+      "default": 0,
+      "title": "Available Ground Units",
+      "type": "integer"
+    },
+    "reserved_ground_units": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Reserved Ground Units",
+      "type": "array"
+    },
+    "commander_action_required": {
+      "default": false,
+      "title": "Commander Action Required",
+      "type": "boolean"
+    },
+    "approved_route_review_required": {
+      "default": false,
+      "title": "Approved Route Review Required",
+      "type": "boolean"
+    },
+    "approved_route_review_plan_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Approved Route Review Plan Ids",
+      "type": "array"
+    },
+    "manual_closure_road_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Manual Closure Road Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "scenario_id",
+    "scenario_epoch",
+    "simulation_state_version",
+    "infrastructure_revision",
+    "definitions",
+    "latest_runs"
+  ],
+  "title": "AgentDashboard",
+  "type": "object"
+}

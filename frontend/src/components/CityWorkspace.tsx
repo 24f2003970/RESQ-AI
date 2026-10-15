@@ -24,13 +24,14 @@ import {
   Waves,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import type { Layers } from "../scene/CityScene";
-import { fetchBuilding, type Building, type CityState, type ScenarioState, type SimulationEvent } from "../api/client";
+import { fetchAgentDashboard, fetchBuilding, type Building, type CityState, type ScenarioState, type SimulationEvent } from "../api/client";
 import type { MLModelInfo, ScenarioPredictionSet } from "../api/client";
 import { Badge, Help, Panel, Row } from "./ui";
 import Inspector from "./Inspector";
 import RescuePlanning from "./RescuePlanning";
+import { AgentCommandPanel } from "./AgentExplorer";
 import type { Plan } from "./RescuePlanning";
 
 const LazyCityScene = lazy(() => import("../scene/CityScene"));
@@ -70,6 +71,9 @@ export default function CityWorkspace({
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
   const [rescuePlan, setRescuePlan] = useState<Plan|null>(null);
+  const [manualClosureIds,setManualClosureIds]=useState<string[]>([]);
+  const [searchParams]=useSearchParams();
+  const scenarioId=scenario?.id;
   const [layerOpen, setLayerOpen] = useState(false);
   const [lowGraphics, setLowGraphics] = useState(false);
   const [layers, setLayers] = useState<Layers>({
@@ -108,6 +112,15 @@ export default function CityWorkspace({
       });
     return () => controller.abort();
   }, [selectedId, city]);
+  useEffect(()=>{
+    const destination=searchParams.get("destination");
+    if(destination&&city.buildings.some(building=>building.id===destination))setSelectedId(destination);
+  },[searchParams,city.buildings]);
+  useEffect(()=>{
+    if(!scenarioId)return;let live=true;let sequence=0;
+    const refresh=()=>{const requestId=++sequence;fetchAgentDashboard(scenarioId).then(status=>{if(live&&requestId===sequence)setManualClosureIds(status.manual_closure_road_ids??[])}).catch(()=>{});};
+    refresh();const timer=window.setInterval(refresh,3000);return()=>{live=false;window.clearInterval(timer)};
+  },[scenarioId]);
   function downloadSnapshot() {
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(city, null, 2)], { type: "application/json" }),
@@ -236,6 +249,7 @@ export default function CityWorkspace({
                 lowGraphics={lowGraphics}
                 predictions={predictions}
                 routeLines={rescuePlan?.status === "proposed" && rescuePlan.scenario_version === scenario?.state_version ? rescuePlan.missions.map(m=>m.route.polyline) : []}
+                manualClosureIds={manualClosureIds}
               />
               <AnimatePresence>
                 {layerOpen && (
@@ -373,6 +387,7 @@ export default function CityWorkspace({
         </div>
         <aside className="right-column">
           <RescuePlanning city={city} scenario={scenario} onPlan={setRescuePlan}/>
+          <AgentCommandPanel scenarioId={scenario?.id??null}/>
           <Inspector
             selected={selected}
             city={city}

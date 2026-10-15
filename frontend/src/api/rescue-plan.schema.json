@@ -23,6 +23,18 @@
       "title": "Infrastructure Revision",
       "type": "integer"
     },
+    "trigger_event_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Trigger Event Id"
+    },
     "simulation_tick": {
       "title": "Simulation Tick",
       "type": "integer"

@@ -1,0 +1,11 @@
+# Replanning policy
+
+Every automatic recommendation is a proposal tied to one scenario ID, epoch, simulation state version, infrastructure revision and trigger event. A state or revision change invalidates proposed plans; the orchestrator persists them as superseded before evaluating the newer snapshot. PlanStore independently checks these values and approved unit reservations at save time, then checks them again during commander approval or modification.
+
+Replanning inputs include new or ML-predicted exposure, a measured increase in depth of at least 0.05 m, changed road/bridge accessibility, a route becoming unavailable or changing, a priority-score change of at least 3 points, an explicit manual assessment, infrastructure closure/reopening, reset, or an approval that reserves resources. The priority formula, compatibility rules and SciPy maximum-weight assignment remain those from Part 5. Routing reports inaccessible destinations; it does not invent alternate reachability.
+
+The commander suppresses a duplicate when epoch, infrastructure revision, ordered priority scores, assignment and route edge signature match a current proposal. There is no time cooldown, so a meaningful closure does not wait. Minor changes are still traced but do not necessarily create another plan. The latest valid recommendation endpoint returns only a currently proposed, matching-version recommendation.
+
+Approval reserves assigned resources immediately. Every later proposal excludes those units; save-time checks prevent a race with an approval. There is no simulated completion or release. Reservations remain for the scenario epoch and a reset starts a new epoch. Approved plans are historical commander choices and are never rewritten or revoked. If their saved route intersects a currently flooded, closed or manually blocked road, dashboard status surfaces a commander-review warning without pretending the plan was changed.
+
+Replay is read-only: it does not repeat closure commands, approvals, reservations or agent plan creation. Historical decisions remain queryable by event ID and are marked historical in the explorer.
