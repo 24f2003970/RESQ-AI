@@ -1,0 +1,2113 @@
+{
+  "city": {
+    "id": "city-v1-2026",
+    "name": "Riverside",
+    "seed": 2026,
+    "generator_version": "1.0.0",
+    "width_m": 660.0,
+    "depth_m": 500.0,
+    "provenance": "fictional_seed_city"
+  },
+  "scenario": {
+    "id": "default",
+    "name": "Riverside / Baseline",
+    "city_id": "city-v1-2026",
+    "simulation_status": "baseline",
+    "state_version": 1,
+    "simulated_seconds": 0,
+    "description": "Seeded fictional city. Normal conditions. Disaster simulation is not yet implemented."
+  },
+  "districts": [
+    {
+      "id": "district-1",
+      "name": "Northbank",
+      "land_use": "residential",
+      "center": {
+        "x_m": -165.0,
+        "y_m": 125.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 320.0,
+      "depth_m": 220.0
+    },
+    {
+      "id": "district-2",
+      "name": "Civic Quarter",
+      "land_use": "mixed",
+      "center": {
+        "x_m": 165.0,
+        "y_m": 125.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 320.0,
+      "depth_m": 220.0
+    },
+    {
+      "id": "district-3",
+      "name": "West End",
+      "land_use": "mixed",
+      "center": {
+        "x_m": -165.0,
+        "y_m": -125.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 320.0,
+      "depth_m": 220.0
+    },
+    {
+      "id": "district-4",
+      "name": "Commerce Park",
+      "land_use": "commercial",
+      "center": {
+        "x_m": 165.0,
+        "y_m": -125.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 320.0,
+      "depth_m": 220.0
+    }
+  ],
+  "buildings": [
+    {
+      "id": "building-0-0-0",
+      "name": "West End 01",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -231.0,
+        "y_m": -167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.024832722912848,
+      "depth_m": 21.155400117439335,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 80,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-0-1",
+      "name": "West End 02",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -185.0,
+        "y_m": -167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.64428647802253,
+      "depth_m": 23.38693487711512,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 55,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-0-2",
+      "name": "West End 03",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -231.0,
+        "y_m": -133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 28.70478724029535,
+      "depth_m": 22.467759378647763,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 85,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-0-3",
+      "name": "West End 04",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -185.0,
+        "y_m": -133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.148439334550645,
+      "depth_m": 19.336733386145788,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 60,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-1-0",
+      "name": "West End 05",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -231.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 26.45686720243267,
+      "depth_m": 20.303013070728973,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 42,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-1-1",
+      "name": "West End 06",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -185.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 28.94776175924029,
+      "depth_m": 25.290581654145296,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 63,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-1-2",
+      "name": "West End 07",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -231.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.77875268675755,
+      "depth_m": 20.57422691362533,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 22,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-1-3",
+      "name": "West End 08",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -185.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.24689198264339,
+      "depth_m": 21.42113404647647,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 33,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-3-0",
+      "name": "Northbank 13",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -231.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 27.5564304251737,
+      "depth_m": 22.993756148167783,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "residential",
+      "occupants": 80,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-3-1",
+      "name": "Northbank 14",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -185.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 29.149486566789104,
+      "depth_m": 23.448924446988883,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 55,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-3-2",
+      "name": "Northbank 15",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -231.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.15485527631425,
+      "depth_m": 24.629070367778738,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 40,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-0-3-3",
+      "name": "Northbank 16",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -185.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.29965963500534,
+      "depth_m": 23.707179302919915,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 55,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-0-0",
+      "name": "West End 17",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -127.0,
+        "y_m": -167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 29.933941625097788,
+      "depth_m": 22.988055987729744,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 63,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-0-1",
+      "name": "West End 18",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -81.0,
+        "y_m": -167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 29.33329524144262,
+      "depth_m": 22.195446827277785,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 32,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-0-2",
+      "name": "West End 19",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -127.0,
+        "y_m": -133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 25.726148936702387,
+      "depth_m": 19.914690275540444,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 50,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-0-3",
+      "name": "West End 20",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -81.0,
+        "y_m": -133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 22.570069832666064,
+      "depth_m": 20.366503959535766,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 110,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-hospital",
+      "name": "Riverside General",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -127.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 26.050463724568292,
+      "depth_m": 22.458670329280093,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "hospital",
+      "occupants": 40,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-1-1",
+      "name": "West End 22",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -81.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 25.080393058759327,
+      "depth_m": 25.59496516611999,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "residential",
+      "occupants": 44,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-1-2",
+      "name": "West End 23",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -127.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 22.06269027400308,
+      "depth_m": 25.33847961332178,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 80,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-1-3",
+      "name": "West End 24",
+      "district_id": "district-3",
+      "position": {
+        "x_m": -81.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 25.37880256684214,
+      "depth_m": 20.72493511475203,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 24,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-2-0",
+      "name": "Northbank 25",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -127.0,
+        "y_m": 43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 26.757243012510756,
+      "depth_m": 23.97056634601993,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 48,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-2-1",
+      "name": "Northbank 26",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -81.0,
+        "y_m": 43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.630496372977493,
+      "depth_m": 25.098388665179215,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 34,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-2-2",
+      "name": "Northbank 27",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -127.0,
+        "y_m": 77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.00401316782694,
+      "depth_m": 22.766015253678145,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 40,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-2-3",
+      "name": "Northbank 28",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -81.0,
+        "y_m": 77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 27.144947790141654,
+      "depth_m": 21.692630862146657,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 70,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-3-0",
+      "name": "Northbank 29",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -127.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 29.878055222790238,
+      "depth_m": 20.406930434598593,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "residential",
+      "occupants": 56,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-3-1",
+      "name": "Northbank 30",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -81.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.763500439152438,
+      "depth_m": 21.377657916630433,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 75,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-3-2",
+      "name": "Northbank 31",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -127.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 28.462981723045864,
+      "depth_m": 19.147620919840502,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "residential",
+      "occupants": 40,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-1-3-3",
+      "name": "Northbank 32",
+      "district_id": "district-1",
+      "position": {
+        "x_m": -81.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 27.877550589941286,
+      "depth_m": 24.039482031041594,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 57,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-0-0",
+      "name": "Commerce Park 33",
+      "district_id": "district-4",
+      "position": {
+        "x_m": -23.0,
+        "y_m": -167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.105573383179305,
+      "depth_m": 25.627178477499626,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "commercial",
+      "occupants": 60,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-0-1",
+      "name": "Commerce Park 34",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 23.0,
+        "y_m": -167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 29.55325752576521,
+      "depth_m": 25.259294357386743,
+      "height_m": 39.6,
+      "floors": 11,
+      "use": "commercial",
+      "occupants": 132,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-0-2",
+      "name": "Commerce Park 35",
+      "district_id": "district-4",
+      "position": {
+        "x_m": -23.0,
+        "y_m": -133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 27.094786797011633,
+      "depth_m": 23.870564672857668,
+      "height_m": 25.2,
+      "floors": 7,
+      "use": "commercial",
+      "occupants": 133,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-0-3",
+      "name": "Commerce Park 36",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 23.0,
+        "y_m": -133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 28.328172167296856,
+      "depth_m": 22.705314397503763,
+      "height_m": 36.0,
+      "floors": 10,
+      "use": "commercial",
+      "occupants": 230,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-1-0",
+      "name": "Commerce Park 37",
+      "district_id": "district-4",
+      "position": {
+        "x_m": -23.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.303253861497645,
+      "depth_m": 19.912926329516342,
+      "height_m": 21.6,
+      "floors": 6,
+      "use": "commercial",
+      "occupants": 72,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-1-1",
+      "name": "Commerce Park 38",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 23.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.737099754476013,
+      "depth_m": 21.058688484272086,
+      "height_m": 43.2,
+      "floors": 12,
+      "use": "commercial",
+      "occupants": 204,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-1-2",
+      "name": "Commerce Park 39",
+      "district_id": "district-4",
+      "position": {
+        "x_m": -23.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.085619218811917,
+      "depth_m": 23.32150407798766,
+      "height_m": 25.2,
+      "floors": 7,
+      "use": "commercial",
+      "occupants": 119,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-1-3",
+      "name": "Commerce Park 40",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 23.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 27.357696286109004,
+      "depth_m": 19.35240694761776,
+      "height_m": 28.8,
+      "floors": 8,
+      "use": "commercial",
+      "occupants": 128,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-2-0",
+      "name": "Civic Quarter 41",
+      "district_id": "district-2",
+      "position": {
+        "x_m": -23.0,
+        "y_m": 43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.92754515327619,
+      "depth_m": 19.958349154196508,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 54,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-2-1",
+      "name": "Civic Quarter 42",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 23.0,
+        "y_m": 43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 27.040129116618868,
+      "depth_m": 24.714030001758836,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 39,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-2-2",
+      "name": "Civic Quarter 43",
+      "district_id": "district-2",
+      "position": {
+        "x_m": -23.0,
+        "y_m": 77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 22.914077808018973,
+      "depth_m": 19.336717722520852,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 28,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-2-3",
+      "name": "Civic Quarter 44",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 23.0,
+        "y_m": 77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.47592747986386,
+      "depth_m": 20.84211031113155,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 36,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-3-0",
+      "name": "Civic Quarter 45",
+      "district_id": "district-2",
+      "position": {
+        "x_m": -23.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 26.967566172376024,
+      "depth_m": 22.102037371906253,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 60,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-3-1",
+      "name": "Civic Quarter 46",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 23.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 28.659392580609985,
+      "depth_m": 19.755731848554415,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "residential",
+      "occupants": 40,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-3-2",
+      "name": "Civic Quarter 47",
+      "district_id": "district-2",
+      "position": {
+        "x_m": -23.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 29.513788896239397,
+      "depth_m": 21.887712776830917,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 95,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-2-3-3",
+      "name": "Civic Quarter 48",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 23.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.258999049487578,
+      "depth_m": 19.407576891708235,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 51,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-1-0",
+      "name": "Commerce Park 53",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 81.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 26.586939876064083,
+      "depth_m": 24.081828577830187,
+      "height_m": 25.2,
+      "floors": 7,
+      "use": "commercial",
+      "occupants": 84,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-1-1",
+      "name": "Commerce Park 54",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 127.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.78684616001117,
+      "depth_m": 24.083924806811623,
+      "height_m": 32.4,
+      "floors": 9,
+      "use": "commercial",
+      "occupants": 153,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-1-2",
+      "name": "Commerce Park 55",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 81.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.957752326390672,
+      "depth_m": 20.49972157691891,
+      "height_m": 36.0,
+      "floors": 10,
+      "use": "commercial",
+      "occupants": 170,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-1-3",
+      "name": "Commerce Park 56",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 127.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 28.20437053702051,
+      "depth_m": 21.190251924816742,
+      "height_m": 32.4,
+      "floors": 9,
+      "use": "commercial",
+      "occupants": 117,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-2-0",
+      "name": "Civic Quarter 57",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 81.0,
+        "y_m": 43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.96367703611233,
+      "depth_m": 21.00171069514851,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 75,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-2-1",
+      "name": "Civic Quarter 58",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 127.0,
+        "y_m": 43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 23.457559292699468,
+      "depth_m": 20.818317524170865,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "residential",
+      "occupants": 76,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-2-2",
+      "name": "Civic Quarter 59",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 81.0,
+        "y_m": 77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.061470270965877,
+      "depth_m": 22.85458881217135,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 90,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-2-3",
+      "name": "Civic Quarter 60",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 127.0,
+        "y_m": 77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.16616750570755,
+      "depth_m": 23.174603660422207,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 22,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-3-0",
+      "name": "Civic Quarter 61",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 81.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 25.0881657469026,
+      "depth_m": 20.97627189091113,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 105,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-3-1",
+      "name": "Civic Quarter 62",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 127.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 26.564370525956633,
+      "depth_m": 23.831483551646564,
+      "height_m": 18.0,
+      "floors": 5,
+      "use": "residential",
+      "occupants": 60,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-3-2",
+      "name": "Civic Quarter 63",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 81.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 23.866286817251062,
+      "depth_m": 22.204973012137724,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "residential",
+      "occupants": 30,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-3-3-3",
+      "name": "Civic Quarter 64",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 127.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 28.980495520680318,
+      "depth_m": 22.262268434466897,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "residential",
+      "occupants": 72,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-0-0",
+      "name": "Commerce Park 65",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 185.0,
+        "y_m": -167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.90082113881251,
+      "depth_m": 21.789644373428338,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "commercial",
+      "occupants": 44,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-0-1",
+      "name": "Commerce Park 66",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 231.0,
+        "y_m": -167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.594980008786777,
+      "depth_m": 24.56832000404091,
+      "height_m": 21.6,
+      "floors": 6,
+      "use": "commercial",
+      "occupants": 96,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-0-2",
+      "name": "Commerce Park 67",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 185.0,
+        "y_m": -133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 27.512984573373924,
+      "depth_m": 24.15413937623153,
+      "height_m": 25.2,
+      "floors": 7,
+      "use": "commercial",
+      "occupants": 161,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-0-3",
+      "name": "Commerce Park 68",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 231.0,
+        "y_m": -133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.46142338555473,
+      "depth_m": 19.483962596388142,
+      "height_m": 39.6,
+      "floors": 11,
+      "use": "commercial",
+      "occupants": 209,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-1-0",
+      "name": "Commerce Park 69",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 185.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.746952558702148,
+      "depth_m": 20.718643623251104,
+      "height_m": 25.2,
+      "floors": 7,
+      "use": "commercial",
+      "occupants": 161,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-1-1",
+      "name": "Commerce Park 70",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 231.0,
+        "y_m": -77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 25.65139400593973,
+      "depth_m": 25.10665623836286,
+      "height_m": 36.0,
+      "floors": 10,
+      "use": "commercial",
+      "occupants": 230,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-1-2",
+      "name": "Commerce Park 71",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 185.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 26.532490693252708,
+      "depth_m": 20.953894991018082,
+      "height_m": 36.0,
+      "floors": 10,
+      "use": "commercial",
+      "occupants": 210,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-1-3",
+      "name": "Commerce Park 72",
+      "district_id": "district-4",
+      "position": {
+        "x_m": 231.0,
+        "y_m": -43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.8327161047222,
+      "depth_m": 19.25061754353335,
+      "height_m": 36.0,
+      "floors": 10,
+      "use": "commercial",
+      "occupants": 150,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-2-0",
+      "name": "Civic Quarter 73",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 185.0,
+        "y_m": 43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.443872008206164,
+      "depth_m": 23.162791096944186,
+      "height_m": 14.4,
+      "floors": 4,
+      "use": "residential",
+      "occupants": 60,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-2-1",
+      "name": "Civic Quarter 74",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 231.0,
+        "y_m": 43.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.452366898694137,
+      "depth_m": 19.547501781873343,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 66,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-2-2",
+      "name": "Civic Quarter 75",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 185.0,
+        "y_m": 77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 24.699178126578488,
+      "depth_m": 22.35427828612514,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 36,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-2-3",
+      "name": "Civic Quarter 76",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 231.0,
+        "y_m": 77.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 30.761278485788456,
+      "depth_m": 19.956758927618136,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 72,
+      "material_color": "#b7c0bd",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-3-0",
+      "name": "Civic Quarter 77",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 185.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 29.672938545730645,
+      "depth_m": 22.00378343217138,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 30,
+      "material_color": "#c7c6bc",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-3-1",
+      "name": "Civic Quarter 78",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 231.0,
+        "y_m": 133.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 28.459989221839123,
+      "depth_m": 21.417203254558334,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 33,
+      "material_color": "#c4b39c",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-shelter",
+      "name": "Northbank Community Shelter",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 185.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 31.005054766018198,
+      "depth_m": 21.23627521210026,
+      "height_m": 7.2,
+      "floors": 2,
+      "use": "shelter",
+      "occupants": 40,
+      "material_color": "#879393",
+      "condition": "baseline"
+    },
+    {
+      "id": "building-4-3-3",
+      "name": "Civic Quarter 80",
+      "district_id": "district-2",
+      "position": {
+        "x_m": 231.0,
+        "y_m": 167.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 29.736376209551743,
+      "depth_m": 20.782330516558627,
+      "height_m": 10.8,
+      "floors": 3,
+      "use": "residential",
+      "occupants": 36,
+      "material_color": "#929da1",
+      "condition": "baseline"
+    }
+  ],
+  "roads": [
+    {
+      "id": "road-ns-0",
+      "name": "1 Avenue",
+      "from_node": "node-0-south",
+      "to_node": "node-0-north",
+      "start": {
+        "x_m": -260.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": -260.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 480.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ns-1",
+      "name": "2 Avenue",
+      "from_node": "node-1-south",
+      "to_node": "node-1-north",
+      "start": {
+        "x_m": -156.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": -156.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 480.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ns-2",
+      "name": "3 Avenue",
+      "from_node": "node-2-south",
+      "to_node": "node-2-north",
+      "start": {
+        "x_m": -52.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": -52.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 480.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ns-3",
+      "name": "4 Avenue",
+      "from_node": "node-3-south",
+      "to_node": "node-3-north",
+      "start": {
+        "x_m": 52.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": 52.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 480.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ns-4",
+      "name": "5 Avenue",
+      "from_node": "node-4-south",
+      "to_node": "node-4-north",
+      "start": {
+        "x_m": 156.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": 156.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 480.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ns-5",
+      "name": "6 Avenue",
+      "from_node": "node-5-south",
+      "to_node": "node-5-north",
+      "start": {
+        "x_m": 260.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": 260.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 480.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ew-0",
+      "name": "Foundry Road",
+      "from_node": "node-west-0",
+      "to_node": "node-east-0",
+      "start": {
+        "x_m": -320.0,
+        "y_m": -200.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": 320.0,
+        "y_m": -200.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 640.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ew-1",
+      "name": "Civic Road",
+      "from_node": "node-west-1",
+      "to_node": "node-east-1",
+      "start": {
+        "x_m": -320.0,
+        "y_m": -100.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": 320.0,
+        "y_m": -100.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 640.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ew-2",
+      "name": "Garden Road",
+      "from_node": "node-west-2",
+      "to_node": "node-east-2",
+      "start": {
+        "x_m": -320.0,
+        "y_m": 100.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": 320.0,
+        "y_m": 100.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 640.0,
+      "status": "open"
+    },
+    {
+      "id": "road-ew-3",
+      "name": "Northbank Road",
+      "from_node": "node-west-3",
+      "to_node": "node-east-3",
+      "start": {
+        "x_m": -320.0,
+        "y_m": 200.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": 320.0,
+        "y_m": 200.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 14.0,
+      "length_m": 640.0,
+      "status": "open"
+    }
+  ],
+  "road_nodes": [
+    {
+      "id": "node-0-south",
+      "name": "1 Avenue endpoint",
+      "position": {
+        "x_m": -260.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-0-north",
+      "name": "1 Avenue endpoint",
+      "position": {
+        "x_m": -260.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-1-south",
+      "name": "2 Avenue endpoint",
+      "position": {
+        "x_m": -156.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-1-north",
+      "name": "2 Avenue endpoint",
+      "position": {
+        "x_m": -156.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-2-south",
+      "name": "3 Avenue endpoint",
+      "position": {
+        "x_m": -52.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-2-north",
+      "name": "3 Avenue endpoint",
+      "position": {
+        "x_m": -52.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-3-south",
+      "name": "4 Avenue endpoint",
+      "position": {
+        "x_m": 52.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-3-north",
+      "name": "4 Avenue endpoint",
+      "position": {
+        "x_m": 52.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-4-south",
+      "name": "5 Avenue endpoint",
+      "position": {
+        "x_m": 156.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-4-north",
+      "name": "5 Avenue endpoint",
+      "position": {
+        "x_m": 156.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-5-south",
+      "name": "6 Avenue endpoint",
+      "position": {
+        "x_m": 260.0,
+        "y_m": -240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-5-north",
+      "name": "6 Avenue endpoint",
+      "position": {
+        "x_m": 260.0,
+        "y_m": 240.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-west-0",
+      "name": "Foundry Road endpoint",
+      "position": {
+        "x_m": -320.0,
+        "y_m": -200.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-east-0",
+      "name": "Foundry Road endpoint",
+      "position": {
+        "x_m": 320.0,
+        "y_m": -200.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-west-1",
+      "name": "Civic Road endpoint",
+      "position": {
+        "x_m": -320.0,
+        "y_m": -100.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-east-1",
+      "name": "Civic Road endpoint",
+      "position": {
+        "x_m": 320.0,
+        "y_m": -100.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-west-2",
+      "name": "Garden Road endpoint",
+      "position": {
+        "x_m": -320.0,
+        "y_m": 100.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-east-2",
+      "name": "Garden Road endpoint",
+      "position": {
+        "x_m": 320.0,
+        "y_m": 100.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-west-3",
+      "name": "Northbank Road endpoint",
+      "position": {
+        "x_m": -320.0,
+        "y_m": 200.0,
+        "elevation_m": 0.0
+      }
+    },
+    {
+      "id": "node-east-3",
+      "name": "Northbank Road endpoint",
+      "position": {
+        "x_m": 320.0,
+        "y_m": 200.0,
+        "elevation_m": 0.0
+      }
+    }
+  ],
+  "bridges": [
+    {
+      "id": "bridge-0",
+      "name": "1 Avenue crossing",
+      "road_id": "road-ns-0",
+      "position": {
+        "x_m": -260.0,
+        "y_m": 0.0,
+        "elevation_m": 0.4
+      },
+      "width_m": 14.0,
+      "length_m": 46.0,
+      "status": "open"
+    },
+    {
+      "id": "bridge-1",
+      "name": "2 Avenue crossing",
+      "road_id": "road-ns-1",
+      "position": {
+        "x_m": -156.0,
+        "y_m": 0.0,
+        "elevation_m": 0.4
+      },
+      "width_m": 14.0,
+      "length_m": 46.0,
+      "status": "open"
+    },
+    {
+      "id": "bridge-2",
+      "name": "3 Avenue crossing",
+      "road_id": "road-ns-2",
+      "position": {
+        "x_m": -52.0,
+        "y_m": 0.0,
+        "elevation_m": 0.4
+      },
+      "width_m": 14.0,
+      "length_m": 46.0,
+      "status": "open"
+    },
+    {
+      "id": "bridge-3",
+      "name": "4 Avenue crossing",
+      "road_id": "road-ns-3",
+      "position": {
+        "x_m": 52.0,
+        "y_m": 0.0,
+        "elevation_m": 0.4
+      },
+      "width_m": 14.0,
+      "length_m": 46.0,
+      "status": "open"
+    },
+    {
+      "id": "bridge-4",
+      "name": "5 Avenue crossing",
+      "road_id": "road-ns-4",
+      "position": {
+        "x_m": 156.0,
+        "y_m": 0.0,
+        "elevation_m": 0.4
+      },
+      "width_m": 14.0,
+      "length_m": 46.0,
+      "status": "open"
+    },
+    {
+      "id": "bridge-5",
+      "name": "6 Avenue crossing",
+      "road_id": "road-ns-5",
+      "position": {
+        "x_m": 260.0,
+        "y_m": 0.0,
+        "elevation_m": 0.4
+      },
+      "width_m": 14.0,
+      "length_m": 46.0,
+      "status": "open"
+    }
+  ],
+  "hospitals": [
+    {
+      "id": "hospital-1",
+      "name": "Riverside General",
+      "building_id": "building-hospital",
+      "capacity": 120,
+      "status": "available",
+      "capabilities": [
+        "Emergency",
+        "Inpatient"
+      ]
+    }
+  ],
+  "shelters": [
+    {
+      "id": "shelter-1",
+      "name": "Northbank Community Shelter",
+      "building_id": "building-shelter",
+      "capacity": 240,
+      "status": "available",
+      "occupancy": 0
+    }
+  ],
+  "rivers": [
+    {
+      "id": "river-1",
+      "name": "Riverside Canal",
+      "start": {
+        "x_m": -330.0,
+        "y_m": 0.0,
+        "elevation_m": 0.0
+      },
+      "end": {
+        "x_m": 330.0,
+        "y_m": 0.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 34.0,
+      "surface_elevation_m": -0.8
+    }
+  ],
+  "rescue_units": [
+    {
+      "id": "unit-1",
+      "name": "Medic 01",
+      "type": "ambulance",
+      "position": {
+        "x_m": -156.0,
+        "y_m": -82.0,
+        "elevation_m": 0.0
+      },
+      "capacity": 2,
+      "status": "standby"
+    },
+    {
+      "id": "unit-2",
+      "name": "Medic 02",
+      "type": "ambulance",
+      "position": {
+        "x_m": -156.0,
+        "y_m": -70.0,
+        "elevation_m": 0.0
+      },
+      "capacity": 2,
+      "status": "standby"
+    },
+    {
+      "id": "unit-3",
+      "name": "Marine 01",
+      "type": "boat",
+      "position": {
+        "x_m": 280.0,
+        "y_m": 23.0,
+        "elevation_m": 0.0
+      },
+      "capacity": 8,
+      "status": "standby"
+    },
+    {
+      "id": "unit-4",
+      "name": "Alpha team",
+      "type": "rescue_team",
+      "position": {
+        "x_m": 260.0,
+        "y_m": 166.0,
+        "elevation_m": 0.0
+      },
+      "capacity": 6,
+      "status": "standby"
+    },
+    {
+      "id": "unit-5",
+      "name": "Bravo team",
+      "type": "rescue_team",
+      "position": {
+        "x_m": 260.0,
+        "y_m": 178.0,
+        "elevation_m": 0.0
+      },
+      "capacity": 6,
+      "status": "standby"
+    }
+  ],
+  "green_areas": [
+    {
+      "id": "park-0-2",
+      "name": "Canal Gardens",
+      "position": {
+        "x_m": -208.0,
+        "y_m": 60.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 84.0,
+      "depth_m": 62.0,
+      "trees": [
+        {
+          "x_m": -210.5675124126054,
+          "y_m": 69.82478991684125,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -202.11933109359092,
+          "y_m": 78.64321231190726,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -234.1980170662924,
+          "y_m": 77.64418187672054,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -197.24967839518533,
+          "y_m": 63.486417218603194,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -231.2379289813499,
+          "y_m": 73.72570850617515,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -180.4394851310065,
+          "y_m": 43.674075805195336,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -183.1017127059522,
+          "y_m": 37.96041538558501,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -202.5492240239402,
+          "y_m": 70.48788975314861,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -187.22916875353096,
+          "y_m": 61.51653284877449,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -230.61215159209792,
+          "y_m": 79.90445142977065,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -232.33985212524135,
+          "y_m": 81.57024491038277,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -208.48137219257572,
+          "y_m": 60.66126883907393,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -215.46651543372695,
+          "y_m": 82.26004709827396,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -228.90033718199305,
+          "y_m": 49.70784602446608,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -177.35258572544842,
+          "y_m": 66.26131983965156,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": -177.76603827710431,
+          "y_m": 79.19019363009431,
+          "elevation_m": 0.0
+        }
+      ]
+    },
+    {
+      "id": "park-3-0",
+      "name": "Commerce Green",
+      "position": {
+        "x_m": 104.0,
+        "y_m": -150.0,
+        "elevation_m": 0.0
+      },
+      "width_m": 84.0,
+      "depth_m": 62.0,
+      "trees": [
+        {
+          "x_m": 95.06005495357942,
+          "y_m": -146.70809540644936,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 106.12668137015424,
+          "y_m": -142.2696275319816,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 85.76946440555136,
+          "y_m": -146.17871055496238,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 123.32817977154832,
+          "y_m": -137.33165502000003,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 115.04364523105136,
+          "y_m": -161.31052015801714,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 121.30219609295006,
+          "y_m": -172.53153555301176,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 91.91338789857203,
+          "y_m": -129.85973735119472,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 133.30004045203998,
+          "y_m": -144.9070166964367,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 103.80001192484261,
+          "y_m": -130.44483952743767,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 74.92810385403271,
+          "y_m": -145.6899291374872,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 73.35372739743914,
+          "y_m": -143.63839984846308,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 131.102230949398,
+          "y_m": -140.19596777978677,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 133.0466493632157,
+          "y_m": -158.23820778879264,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 91.05338221981616,
+          "y_m": -132.33000316907382,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 133.55678454472505,
+          "y_m": -149.93322569189,
+          "elevation_m": 0.0
+        },
+        {
+          "x_m": 78.68201818051685,
+          "y_m": -149.27433213509963,
+          "elevation_m": 0.0
+        }
+      ]
+    }
+  ]
+}

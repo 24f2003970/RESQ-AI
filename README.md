@@ -24,9 +24,25 @@ Every displayed metric must come from backend state or a recorded experiment. Si
 
 The backend owns scenario state, simulation steps, predictions, agent decisions, assignments, and event history. The 3D scene renders a read-only projection of that state and sends user commands back through the API.
 
+## Current implementation — Part 2
+
+The local full-stack foundation renders backend-generated city geometry and inventory. Command Center and Digital Twin Studio include building selection, an API-backed inspector, camera reset/focus/orbit/zoom/pan, map layers, snapshot export, and a building-inventory fallback. The other three routes explain their future scope. Connection status is based on successful local API requests, with retries and a stale-snapshot warning when the service disconnects.
+
+The seeded baseline contains 72 buildings, four districts, ten road corridors, six bridge crossings, one hospital, one shelter, two parks, and five response units. No flood simulation, model training, agent decisions, or rescue optimization is implemented in this part.
+
 ## Repository map
 
 ```text
+backend/
+  app/             # Configuration, Pydantic schemas, seed service, FastAPI routes
+  tests/           # Determinism, relationships, schemas, endpoints and CORS
+  export_contract.py
+  requirements.txt # Exact installed dependency versions
+frontend/
+  src/api/         # Generated OpenAPI types and JSON-schema payload validation
+  src/components/  # Reusable UI primitives
+  src/scene/       # Backend-to-scene mapping and instanced 3D rendering
+  src/test/        # API/interaction tests; generated fixture is test-only
 docs/
   ARCHITECTURE.md
   DATA_MODEL.md
@@ -35,11 +51,49 @@ docs/
   PRODUCT_REQUIREMENTS.md
   TEAM_WORKFLOW.md
   UI_UX_SPEC.md
+  PART_02_IMPLEMENTATION.md
 ```
 
 ## Getting started
 
-Implementation begins after the architecture review. The repository currently contains the project foundation and does not yet include a runnable application. The intended local development commands and dependency versions will be documented with the first implementation slice.
+Use Python 3.12 and Node.js 22.12+ (Node 24 is recommended). Internet access is needed to install dependencies. Fonts and geometry are local after installation. Commands below work in PowerShell and do not require activating a script or changing execution policy.
+
+From the repository root, prepare and start the backend:
+
+```powershell
+cd backend
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+In a second terminal, from the repository root:
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+Open **http://127.0.0.1:5173**. Keep both terminals running; stop them with Ctrl+C. Vite proxies `/api` to the local backend on port 8000. Use `npm run build` and `npm run preview` for a local production-build demo at **http://127.0.0.1:4173**, with the same backend running. `vite preview` is for local review, not public hosting.
+
+### Verification and contract generation
+
+```powershell
+# From backend/
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe export_contract.py
+
+# From frontend/
+npm run generate-api
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
+
+Regenerate and commit the OpenAPI schema, city JSON Schema, test fixture, and TypeScript declarations whenever the Python contract changes. The generated fixture is used only by tests, never by the application. See [Part 2 implementation notes](docs/PART_02_IMPLEMENTATION.md) for endpoints, coordinates, controls, assumptions, and limitations.
 
 ## Data, safety, and scope
 
@@ -54,4 +108,4 @@ Implementation begins after the architecture review. The repository currently co
 
 Two student developers are planned: one owns the service, simulation, and model pipeline; the other owns the web interface and Digital Twin. Both review integration pull requests and jointly rehearse the demo. See [the roadmap](docs/DEVELOPMENT_ROADMAP.md) and [team workflow](docs/TEAM_WORKFLOW.md).
 
-**Status:** Part 1 foundation. Implementation has not started.
+**Status:** Part 2 full-stack foundation. The initial city and interface are implemented; simulation and intelligence remain future work.
