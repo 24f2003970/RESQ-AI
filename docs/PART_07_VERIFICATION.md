@@ -36,4 +36,4 @@ The model outputs and scenario measurements are synthetic. No browser walkthroug
 
 ## CI and delivery
 
-Hosted GitHub Actions status and pull request details are recorded in the final repository delivery after branch push. No merge is performed.
+GitHub Actions run **#10** (`38850236747`) completed successfully after the branch was pushed. Both the `backend` job (dependency install and full pytest suite) and `frontend` job (typecheck, ESLint, Vitest, and production build) passed. The follow-up documentation commit is covered by a subsequent run on the same PR head. No merge is performed.
