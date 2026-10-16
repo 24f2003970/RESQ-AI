@@ -1,11 +1,12 @@
 import sqlite3
 import threading
+import math
 
 import pytest
 
 from app.city_service import generate_city
 from app.missions import MissionClockAdvance, MissionStore
-from app.rescue import PlanStore, RescuePlan, build_road_graph, route
+from app.rescue import PlanStore, RescuePlan, build_road_graph, route, route_from_mission_segment
 from app.scenarios import ScenarioStore
 from app.schemas import ScenarioCreate, VersionRequest
 
@@ -149,6 +150,70 @@ def test_route_revision_requires_explicit_approval_and_records_new_version(tmp_p
     assert store.approve_route(blocked.mission_id,recommendation.mission_version,route_id,state,rev,"approve-route-once").mission_version==resumed.mission_version
     assert resumed.status=="en_route" and resumed.route_revision==2
     assert resumed.position==blocked.position
+
+
+def test_midroute_reroute_uses_open_geometry_and_rejects_closed_current_segment(tmp_path):
+    path,scenarios,plans,store,city,state,approved,mission=fixture(tmp_path,use_real_route=True)
+    mission=store.command(mission.mission_id,"dispatch",mission.mission_version,idempotency_key="dispatch-midroute")
+    clock=store.clock(state.id,state.epoch)
+    clock,updated=store.advance(state.id,state.epoch,clock.version,state.state_version,20)
+    mission=updated[0]
+    assert mission.traversed_distance_m>18
+    assert mission.route_segment_index==1
+    assert mission.position["x_m"] < -156 and mission.position["y_m"]==-100
+
+    # Close the downstream north-south road while the unit is on the open east-west segment.
+    with sqlite3.connect(path) as db:
+        db.execute("INSERT INTO road_closures(scenario_id,epoch,road_id,reason,active) VALUES(?,?,?,?,1)",
+                   (state.id,state.epoch,"road-ns-0","closure ahead"))
+        db.execute("UPDATE scenario_infrastructure SET revision=revision+1 WHERE scenario_id=? AND epoch=?",
+                   (state.id,state.epoch))
+    rev,closures=plans.infrastructure(state.id,state.epoch)
+    assert store.infrastructure_changed(state.id,state.epoch,rev,set(closures))==[mission.mission_id]
+    blocked=store.get(mission.mission_id)
+    proposal=store.propose_route(blocked.mission_id,blocked.mission_version,city,state,closures,rev)
+    replacement=proposal.route_proposal["route"]
+    assert replacement["reachable"]
+    assert replacement["polyline"][0]==[blocked.position["x_m"],blocked.position["y_m"]]
+    assert "road-ns-0" not in replacement["road_ids"]
+
+    # Every graph-road segment is backed by an open source edge, and each pair
+    # of consecutive route points is the corresponding physical edge geometry.
+    graph=build_road_graph(city,state,closures)
+    source_edges={data["edge_id"]: (graph.nodes[a]["xy"],graph.nodes[b]["xy"],data)
+                  for a,b,data in graph.edges(data=True)}
+    points=replacement["polyline"]
+    for index,edge_id in enumerate(replacement["edge_ids"]):
+        start,end=points[index],points[index+1]
+        if edge_id=="access:building":
+            assert math.dist(start,end)<=90
+            continue
+        assert edge_id in source_edges
+        edge_a,edge_b,data=source_edges[edge_id]
+        assert data["status"] not in {"closed","flooded","manually_blocked"}
+        assert math.dist(start,end)<=data["length_m"]+1e-5
+        assert (math.dist(start,edge_a)+math.dist(end,edge_b)<=data["length_m"]+1e-4
+                or math.dist(start,edge_b)+math.dist(end,edge_a)<=data["length_m"]+1e-4)
+
+    # A separate scenario closes the road segment underneath a stopped unit;
+    # no synthetic free spur may make that impassable edge traversable.
+    second_dir=tmp_path/"closed-current"
+    second_dir.mkdir()
+    path2,scenarios2,plans2,store2,city2,state2,approved2,mission2=fixture(second_dir,use_real_route=True)
+    mission2=store2.command(mission2.mission_id,"dispatch",mission2.mission_version,idempotency_key="dispatch-on-closed")
+    clock2=store2.clock(state2.id,state2.epoch)
+    clock2,updated2=store2.advance(state2.id,state2.epoch,clock2.version,state2.state_version,20)
+    mission2=updated2[0]
+    with sqlite3.connect(path2) as db:
+        db.execute("INSERT INTO road_closures(scenario_id,epoch,road_id,reason,active) VALUES(?,?,?,?,1)",
+                   (state2.id,state2.epoch,"road-ew-1","current segment closed"))
+        db.execute("UPDATE scenario_infrastructure SET revision=revision+1 WHERE scenario_id=? AND epoch=?",
+                   (state2.id,state2.epoch))
+    rev2,closures2=plans2.infrastructure(state2.id,state2.epoch)
+    store2.infrastructure_changed(state2.id,state2.epoch,rev2,set(closures2))
+    blocked2=store2.get(mission2.mission_id)
+    with pytest.raises(ValueError,match="No safe replacement route"):
+        store2.propose_route(blocked2.mission_id,blocked2.mission_version,city2,state2,closures2,rev2)
 
 
 def test_cancel_and_epoch_reset_preserve_history_and_resource_safety(tmp_path):

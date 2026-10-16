@@ -17,7 +17,7 @@ The request accepts exactly variants A and B, a base scenario ID and expected ve
 
 The route comparison supplies the same reachable route candidates, vehicle compatibility, capacities, destination scores and inventory to both methods. See [BASELINE_COMPARISON_METHOD.md](BASELINE_COMPARISON_METHOD.md) for formulas and limitations.
 
-The guided demo creates a separate operational scenario at seed 2026, applies 90 mm/h rainfall, river stage 1.4 m and 20% drainage for 12 ticks, uses locally installed model inference, waits for real persisted agent traces, closes a road from an assigned route, verifies closure-triggered replanning, and requires an explicit commander decision. Approved reservations remain until reset creates a new epoch; mission completion and automatic release are not simulated.
+The guided demo creates a separate operational scenario at seed 2026, applies 90 mm/h rainfall, river stage 1.4 m and 20% drainage for 12 ticks, uses locally installed model inference, waits for real persisted agent traces, closes a road from an assigned route, verifies closure-triggered replanning, and requires an explicit commander decision. The Part 7 milestone left approved reservations until reset; Part 8 added explicit simulated mission completion and commander return-to-service. Neither release nor completion is automatic.
 
 ## Reproduction
 
@@ -25,4 +25,4 @@ From `backend/`, run `.\.venv\Scripts\python.exe demo_acceptance.py`. From `fron
 
 ## Limits
 
-The city, flood process, exposure labels, travel speeds, occupants and capacities are synthetic. The model score is uncalibrated and does not constitute a forecast. The flood model is a deterministic educational grid, not a hydraulic solver. Ground rescue routing is supported; boat routing and mission completion are not modeled. An experiment interrupted by process restart must be rerun; it is not resumed mid-variant.
+The city, flood process, exposure labels, travel speeds, occupants and capacities are synthetic. The model score is uncalibrated and does not constitute a forecast. The flood model is a deterministic educational grid, not a hydraulic solver. Ground rescue routing and Part 8's simulated mission lifecycle are supported; boat routing is not modeled. An experiment interrupted by process restart must be rerun; it is not resumed mid-variant.

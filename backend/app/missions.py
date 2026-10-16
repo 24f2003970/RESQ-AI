@@ -595,7 +595,7 @@ class MissionStore:
 
     def propose_route(self, mission_id: str, expected_version: int, city, state, closures: list[str], infrastructure_revision: int,
                       idempotency_key: str | None = None):
-        from .rescue import build_road_graph, route
+        from .rescue import build_road_graph, route_from_mission_segment
         db=self._connect()
         try:
             db.execute("BEGIN IMMEDIATE")
@@ -617,8 +617,10 @@ class MissionStore:
             destination=next((b for b in city.buildings if b.id==mission.destination_id),None)
             if destination is None: raise ValueError("Mission destination no longer exists in this city snapshot.")
             current={"x_m":mission.position["x_m"],"y_m":mission.position["y_m"],"elevation_m":mission.position.get("elevation_m",0)}
-            recommendation=route(graph,current,destination.position,mission.unit_type)
-            if not recommendation.get("reachable"): raise ValueError(recommendation.get("reason","No alternative route is available."))
+            recommendation=route_from_mission_segment(graph,mission.route,mission.traversed_distance_m,
+                mission.route_segment_index,current,destination.position,mission.unit_type)
+            if not recommendation.get("reachable"):
+                raise ValueError("No safe replacement route is reachable from the blocked unit: "+recommendation.get("reason","route unavailable."))
             proposal={"route_revision_id":uuid.uuid4().hex,"blocked_mission_version":mission.mission_version,"simulation_version":state.state_version,
               "scenario_epoch":state.epoch,"infrastructure_revision":infrastructure_revision,"route":recommendation}
             mission.mission_version+=1;mission.updated_at=_now()

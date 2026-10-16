@@ -28,6 +28,7 @@ import type { Building, CityState, ScenarioState } from "../api/client";
 import type { ScenarioPredictionSet } from "../api/client";
 import type { Mission, MissionUnitResource } from "../api/client";
 import { toScene } from "./coordinates";
+import { sampleMissionRoute, type MissionRouteGeometry } from "./missionPath";
 
 export type Layers = {
   buildings: boolean;
@@ -57,25 +58,34 @@ function missionRoutePoints(city:CityState,mission:Mission):[number,number,numbe
 function MissionVehicle({mission,resource,selected,onSelect}:{mission:Mission;resource:MissionUnitResource;selected:boolean;onSelect:()=>void}) {
   const group=useRef<Group>(null);
   const position=resource.position;
-  const from=useRef(new Vector3(position.x_m,(position.elevation_m??0)+.4,-position.y_m));
-  const to=useRef(from.current.clone());
+  const displayedDistance=useRef(mission.traversed_distance_m);
+  const startDistance=useRef(mission.traversed_distance_m);
+  const targetDistance=useRef(mission.traversed_distance_m);
   const elapsed=useRef(1);
+  const routeRevision=useRef(mission.route_revision);
   const color=mission.status==="blocked"?"#c95955":mission.status==="arrived"||mission.status==="completed"?"#78c4a3":mission.unit_type==="ambulance"?"#e5e2d3":"#bd9b69";
-  const route=mission.route.polyline as number[][]|undefined;
-  const segment=Math.max(0,Math.min(mission.route_segment_index,Math.max(0,(route?.length??1)-2)));
-  const a=route?.[segment]??[mission.position.x_m,mission.position.y_m];
-  const b=route?.[segment+1]??a;
-  const yaw=Math.atan2(-(b[0]-a[0]),b[1]-a[1]);
   useEffect(()=>{
-    const target=new Vector3(position.x_m,(position.elevation_m??0)+.4,-position.y_m);
-    from.current.copy(group.current?.position??to.current);to.current.copy(target);elapsed.current=0;
-  },[position.x_m,position.y_m,position.elevation_m]);
+    const target=mission.traversed_distance_m;
+    const revised=routeRevision.current!==mission.route_revision;
+    routeRevision.current=mission.route_revision;
+    if(mission.status!=="en_route"||revised){
+      displayedDistance.current=target;startDistance.current=target;targetDistance.current=target;elapsed.current=1;
+    }else{
+      startDistance.current=displayedDistance.current;targetDistance.current=Math.max(displayedDistance.current,target);elapsed.current=0;
+    }
+  },[mission.traversed_distance_m,mission.status,mission.route_revision]);
   useFrame((_,delta)=>{
     if(!group.current)return;
-    elapsed.current=Math.min(1,elapsed.current+delta/.62);
-    const eased=elapsed.current*elapsed.current*(3-2*elapsed.current);
-    group.current.position.lerpVectors(from.current,to.current,eased);
-    group.current.rotation.y=yaw;
+    if(mission.status==="en_route"){
+      elapsed.current=Math.min(1,elapsed.current+delta/.62);
+      const eased=elapsed.current*elapsed.current*(3-2*elapsed.current);
+      displayedDistance.current=startDistance.current+(targetDistance.current-startDistance.current)*eased;
+    }else displayedDistance.current=mission.traversed_distance_m;
+    const sample=sampleMissionRoute(mission.route as unknown as MissionRouteGeometry,displayedDistance.current);
+    if(sample){
+      group.current.position.set(sample.position[0],sample.position[1]+.4,sample.position[2]);
+      group.current.rotation.y=sample.yaw;
+    }else group.current.position.set(position.x_m,(position.elevation_m??0)+.4,-position.y_m);
   });
   return <group ref={group} position={[position.x_m,(position.elevation_m??0)+.4,-position.y_m]}
     onClick={event=>{event.stopPropagation();onSelect();}}>

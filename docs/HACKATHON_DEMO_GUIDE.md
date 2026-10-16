@@ -21,7 +21,7 @@ Open **Guided Demo** from the app navigation and choose **Initialize demo scenar
 
 ## Reset and repeat
 
-Reset returns the demo scenario to its seeded initial state and retains earlier traces as history. If the scenario has approved plans, the UI first warns that reset starts a new epoch and makes approvals historical. Reservations are scoped to the old epoch. The application does not simulate mission completion or automatic release.
+Reset returns the demo scenario to its seeded initial state and retains earlier traces as history. If the scenario has approved plans, the UI first warns that reset starts a new epoch and makes approvals historical. Reservations are scoped to the old epoch. Part 8 supports explicit simulated completion and commander return-to-service; resource release is never automatic.
 
 For an automated, actual-ML acceptance run from `backend/`, execute `.\.venv\Scripts\python.exe demo_acceptance.py`. It prints a JSON PASS/FAIL report with scenario, event and plan IDs, physical exposure, route before/after, infrastructure revision, decision trace and resource conflict evidence.
 
