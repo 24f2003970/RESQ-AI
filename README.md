@@ -161,6 +161,8 @@ Regenerate and commit the OpenAPI schema, JSON Schemas, test fixture, and TypeSc
 
 Two student developers are planned: one owns the service, simulation, and model pipeline; the other owns the web interface and Digital Twin. Both review integration pull requests and jointly rehearse the demo. See [the roadmap](docs/DEVELOPMENT_ROADMAP.md) and [team workflow](docs/TEAM_WORKFLOW.md).
 
-**Status:** Parts 3–9 are merged. The flood, local synthetic model, algorithmic agents, rescue planning, missions, experiments and Guided Demo are local decision-support features. Earthquake scenarios, live-data integration, water rescue, and real-world emergency operations remain outside scope.
+**Status:** Parts 3–10 are merged. The flood, local synthetic model, algorithmic agents, rescue planning, missions, experiments and Guided Demo are local decision-support features. Part 11 adds a presentation mode and judge materials on `feature/part-11-judge-experience`. Earthquake scenarios, live-data integration, water rescue, and real-world emergency operations remain outside scope.
 
 Part 10's startup, readiness, offline audit, acceptance and recovery procedures are documented in `docs/PART_10_IMPLEMENTATION.md`, `docs/PART_10_VERIFICATION.md`, `docs/LOCAL_DEMO_QUICKSTART.md`, `docs/DEMO_PREFLIGHT.md`, `docs/OFFLINE_AUDIT.md`, `docs/END_TO_END_ACCEPTANCE.md`, `docs/DEMO_RECOVERY_RUNBOOK.md`, and `docs/GRAPHICS_PERFORMANCE_PART_10.md`.
+
+Part 11's live Judge Mode, presentation scripts, question guide and visual acceptance checklist are documented in `docs/PART_11_IMPLEMENTATION.md`, `docs/PART_11_VERIFICATION.md`, `docs/JUDGE_MODE_GUIDE.md`, `docs/INNOTECH_5_MINUTE_DEMO.md`, `docs/RESQ_AI_TECHNICAL_PITCH.md`, `docs/JUDGE_QA.md`, and `docs/VISUAL_ACCEPTANCE_PART_11.md`.

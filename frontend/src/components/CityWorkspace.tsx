@@ -200,7 +200,7 @@ export default function CityWorkspace({
               note: "Peak backend-computed cell depth",
             },
             {
-              label: "Buildings reached",
+              label: "Physically exposed buildings",
               value: scenario?.affected_buildings ?? 0,
               unit: "",
               icon: Building2,
@@ -320,6 +320,8 @@ export default function CityWorkspace({
                 <span>Water depth</span>
               </span>
               {layers.predictedRisk && <span><i className="legend-predicted"/> Predicted future exposure</span>}
+              {rescuePlan?.status === "proposed" && rescuePlan.scenario_version === scenario?.state_version && <span><i className="legend-planned-route"/> Proposed rescue route</span>}
+              {missionRecords.some((mission) => ["en_route", "blocked", "arrived"].includes(mission.status)) && <span><i className="legend-current-route"/> Backend mission route</span>}
               <span className="viewport-state">
                 {scenario ? `${scenario.status.toUpperCase()} · T+${String(Math.floor(scenario.simulated_seconds / 3600)).padStart(2, "0")}:${String(Math.floor((scenario.simulated_seconds % 3600) / 60)).padStart(2, "0")} · V${scenario.state_version}` : "LOADING SCENARIO"}
               </span>
@@ -367,10 +369,12 @@ export default function CityWorkspace({
                       rescue_team: "Rescue teams",
                     }[type]
                   }
-                  subtitle="Standby · no active mission"
+                  subtitle={missionUnits.length ? `${missionUnits.filter((unit) => unit.status === "available" && city.rescue_units.some((resource) => resource.id === unit.unit_id && resource.type === type)).length} available · ${missionUnits.filter((unit) => unit.status !== "available" && city.rescue_units.some((resource) => resource.id === unit.unit_id && resource.type === type)).length} committed` : "Loading current resource state"}
                   value={
                     <span className="count-pill">
-                      {city.rescue_units.filter((u) => u.type === type).length}
+                      {missionUnits.length
+                        ? missionUnits.filter((unit) => unit.status === "available" && city.rescue_units.some((resource) => resource.id === unit.unit_id && resource.type === type)).length
+                        : "—"}
                     </span>
                   }
                 />

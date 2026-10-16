@@ -1,6 +1,6 @@
 # System Architecture
 
-> **Implementation status through Part 8:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing and assignment, human review, six durable event-triggered algorithmic agents, isolated reproducible A/B experiments, and persistent fictional rescue mission progression. Coordination uses a SQLite outbox and REST polling; experiments use a separate SQLite database. There is no WebSocket/SSE dependency. Boat navigation remains unsupported.
+> **Implementation status through Part 10:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing and assignment, human review, six durable event-triggered algorithmic agents, isolated reproducible A/B experiments, and persistent fictional rescue mission progression. Windows setup, startup readiness, diagnostics, recovery instructions, and a disposable end-to-end acceptance runner support local demonstrations. Coordination uses a SQLite outbox and REST polling; experiments use a separate SQLite database. There is no WebSocket/SSE dependency. Boat navigation remains unsupported.
 
 ## Design principles
 
@@ -15,7 +15,7 @@
 
 ```text
 React + TypeScript application
-  ├─ Command Center / Studio / Scenario Lab / Decision Explorer / Model Lab / Guided Demo
+  ├─ Command Center / Studio / Scenario Lab / Decision Explorer / Model Lab / Guided Demo / Judge Mode
   ├─ React Three Fiber scene (projection of API state)
   └─ REST commands + safe polling of committed state/events
                  │ localhost only
@@ -121,3 +121,11 @@ The CityScene maps backend metres to Three.js coordinates as `(east, elevation, 
 Static building parts, road furnishings, bridge supports and trees use shared geometry/materials and instanced batches. The low-graphics setting disables shadow maps, caps pixel ratio at 1, reduces terrain subdivision, windows and tree density, omits street lights, and uses cheaper water material settings. Lighting presets change only scene lighting and background. Camera presets target actual scenario hotspot cells, the first backend bridge, selected buildings or selected missions. Camera movement is eased over a short bounded transition; orbit and zoom remain commander-controlled.
 
 Vehicle rendering samples the approved 3D route at backend-authoritative `traversed_distance_m`. It interpolates only between received progress snapshots, stops for blocked/arrived states, and does not create mission progress. Selecting an en-route mission can keep the camera centered on its latest authoritative position. See [DIGITAL_TWIN_RENDERING.md](DIGITAL_TWIN_RENDERING.md), [GRAPHICS_PERFORMANCE.md](GRAPHICS_PERFORMANCE.md), and [PART_09_VERIFICATION.md](PART_09_VERIFICATION.md).
+
+## Part 10 demo reliability
+
+Local PowerShell setup and launch scripts validate runtimes, local dependencies, the trained model artifact, SQLite integrity, service readiness, and loopback binding. A read-only preflight probes API, model, agent, mission, database and frontend readiness. A disposable acceptance runner exercises the actual API contracts and restart recovery; simulated commander actions require an explicit test flag. These tools do not claim browser rendering or host-level packet capture. See [PART_10_IMPLEMENTATION.md](PART_10_IMPLEMENTATION.md) and [DEMO_RECOVERY_RUNBOOK.md](DEMO_RECOVERY_RUNBOOK.md).
+
+## Part 11 Judge Mode
+
+Judge Mode is a presentation route inside the same React application. It receives the same `useScenario` snapshot as Command Center, and reads current model inference, persisted agent status, recommendation, missions and unit resources from the existing APIs. Prediction counts are shown only when scenario ID, state version and tick match; recommendations must match the current epoch, state version and infrastructure revision. The mode contains no approval action. A proposed plan links to the existing commander controls. If WebGL scene rendering throws, a backend-derived building exposure table remains available. See [PART_11_IMPLEMENTATION.md](PART_11_IMPLEMENTATION.md) and [JUDGE_MODE_GUIDE.md](JUDGE_MODE_GUIDE.md).
