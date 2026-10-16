@@ -1,0 +1,248 @@
+{
+  "$defs": {
+    "ExperimentVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "variant_id": {
+          "enum": [
+            "A",
+            "B"
+          ],
+          "title": "Variant Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "preset": {
+          "anyOf": [
+            {
+              "enum": [
+                "mild",
+                "heavy",
+                "extreme"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preset"
+        },
+        "rainfall_mm_h": {
+          "anyOf": [
+            {
+              "maximum": 300,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rainfall Mm H"
+        },
+        "river_level_m": {
+          "anyOf": [
+            {
+              "maximum": 5,
+              "minimum": -2,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "River Level M"
+        },
+        "drainage_effectiveness": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drainage Effectiveness"
+        },
+        "available_ambulances": {
+          "default": 2,
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Available Ambulances",
+          "type": "integer"
+        },
+        "available_ground_teams": {
+          "default": 2,
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Available Ground Teams",
+          "type": "integer"
+        },
+        "closed_road_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Closed Road Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variant_id",
+        "label"
+      ],
+      "title": "ExperimentVariant",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "experiment_id": {
+      "title": "Experiment Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "base_scenario_id": {
+      "title": "Base Scenario Id",
+      "type": "string"
+    },
+    "base_seed": {
+      "title": "Base Seed",
+      "type": "integer"
+    },
+    "base_tick": {
+      "title": "Base Tick",
+      "type": "integer"
+    },
+    "base_state_version": {
+      "title": "Base State Version",
+      "type": "integer"
+    },
+    "base_epoch": {
+      "title": "Base Epoch",
+      "type": "integer"
+    },
+    "base_snapshot_ref": {
+      "title": "Base Snapshot Ref",
+      "type": "string"
+    },
+    "simulation_ticks": {
+      "title": "Simulation Ticks",
+      "type": "integer"
+    },
+    "variants": {
+      "items": {
+        "$ref": "#/$defs/ExperimentVariant"
+      },
+      "title": "Variants",
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "running",
+        "completed",
+        "failed",
+        "cancel_requested",
+        "cancelled",
+        "interrupted"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "progress_percent": {
+      "title": "Progress Percent",
+      "type": "number"
+    },
+    "current_variant": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Current Variant"
+    },
+    "created_at_utc": {
+      "title": "Created At Utc",
+      "type": "string"
+    },
+    "completed_at_utc": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Completed At Utc"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    },
+    "results": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Results"
+    },
+    "reproduction": {
+      "additionalProperties": true,
+      "title": "Reproduction",
+      "type": "object"
+    }
+  },
+  "required": [
+    "experiment_id",
+    "name",
+    "base_scenario_id",
+    "base_seed",
+    "base_tick",
+    "base_state_version",
+    "base_epoch",
+    "base_snapshot_ref",
+    "simulation_ticks",
+    "variants",
+    "status",
+    "progress_percent",
+    "created_at_utc",
+    "reproduction"
+  ],
+  "title": "ExperimentRecord",
+  "type": "object"
+}

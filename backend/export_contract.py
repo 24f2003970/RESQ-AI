@@ -10,6 +10,7 @@ from app.rescue import RescuePlan
 from app.agent_contracts import (AgentDashboard, AgentDefinition, AgentEventAccepted,
                                  AgentEventEnvelope, AgentRunRecord, AgentTrace,
                                  AgentTraceDetail)
+from app.experiments import ExperimentCreate, ExperimentRecord, ExperimentVariant
 from app.city_service import generate_city
 from app.scenarios import ScenarioStore
 
@@ -36,6 +37,9 @@ for name, model in {
     "agent-run.schema.json": AgentRunRecord,
     "agent-trace.schema.json": AgentTrace,
     "agent-trace-detail.schema.json": AgentTraceDetail,
+    "experiment-create.schema.json": ExperimentCreate,
+    "experiment-record.schema.json": ExperimentRecord,
+    "experiment-variant.schema.json": ExperimentVariant,
 }.items():
     (target / name).write_text(json.dumps(model.model_json_schema(), indent=2) + "\n", encoding="utf-8")
 fixtures = target.parent / "test" / "fixtures"

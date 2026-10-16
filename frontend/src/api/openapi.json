@@ -27,6 +27,20 @@
       "get": {
         "summary": "City State",
         "operationId": "city_state_api_v1_city_state_get",
+        "parameters": [
+          {
+            "name": "seed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 0,
+              "default": 2026,
+              "title": "Seed"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -34,6 +48,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CityState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1397,6 +1421,186 @@
           }
         }
       }
+    },
+    "/api/v1/scenarios/{scenario_id}/experiments": {
+      "post": {
+        "summary": "Create Scenario Experiment",
+        "operationId": "create_scenario_experiment_api_v1_scenarios__scenario_id__experiments_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperimentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Scenario Experiments",
+        "operationId": "list_scenario_experiments_api_v1_scenarios__scenario_id__experiments_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExperimentRecord"
+                  },
+                  "title": "Response List Scenario Experiments Api V1 Scenarios  Scenario Id  Experiments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenario-experiments/{experiment_id}": {
+      "get": {
+        "summary": "Get Scenario Experiment",
+        "operationId": "get_scenario_experiment_api_v1_scenario_experiments__experiment_id__get",
+        "parameters": [
+          {
+            "name": "experiment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Experiment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenario-experiments/{experiment_id}/cancel": {
+      "post": {
+        "summary": "Cancel Scenario Experiment",
+        "operationId": "cancel_scenario_experiment_api_v1_scenario_experiments__experiment_id__cancel_post",
+        "parameters": [
+          {
+            "name": "experiment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Experiment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2377,6 +2581,290 @@
         ],
         "title": "District"
       },
+      "ExperimentCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "base_scenario_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Base Scenario Id"
+          },
+          "expected_state_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected State Version"
+          },
+          "simulation_ticks": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 0.0,
+            "title": "Simulation Ticks",
+            "default": 6
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentVariant"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Variants"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "base_scenario_id",
+          "expected_state_version",
+          "variants"
+        ],
+        "title": "ExperimentCreate"
+      },
+      "ExperimentRecord": {
+        "properties": {
+          "experiment_id": {
+            "type": "string",
+            "title": "Experiment Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "base_scenario_id": {
+            "type": "string",
+            "title": "Base Scenario Id"
+          },
+          "base_seed": {
+            "type": "integer",
+            "title": "Base Seed"
+          },
+          "base_tick": {
+            "type": "integer",
+            "title": "Base Tick"
+          },
+          "base_state_version": {
+            "type": "integer",
+            "title": "Base State Version"
+          },
+          "base_epoch": {
+            "type": "integer",
+            "title": "Base Epoch"
+          },
+          "base_snapshot_ref": {
+            "type": "string",
+            "title": "Base Snapshot Ref"
+          },
+          "simulation_ticks": {
+            "type": "integer",
+            "title": "Simulation Ticks"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentVariant"
+            },
+            "type": "array",
+            "title": "Variants"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "completed",
+              "failed",
+              "cancel_requested",
+              "cancelled",
+              "interrupted"
+            ],
+            "title": "Status"
+          },
+          "progress_percent": {
+            "type": "number",
+            "title": "Progress Percent"
+          },
+          "current_variant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Variant"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "completed_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At Utc"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "results": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Results"
+          },
+          "reproduction": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Reproduction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "experiment_id",
+          "name",
+          "base_scenario_id",
+          "base_seed",
+          "base_tick",
+          "base_state_version",
+          "base_epoch",
+          "base_snapshot_ref",
+          "simulation_ticks",
+          "variants",
+          "status",
+          "progress_percent",
+          "created_at_utc",
+          "reproduction"
+        ],
+        "title": "ExperimentRecord"
+      },
+      "ExperimentVariant": {
+        "properties": {
+          "variant_id": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B"
+            ],
+            "title": "Variant Id"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "mild",
+                  "heavy",
+                  "extreme"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          },
+          "rainfall_mm_h": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rainfall Mm H"
+          },
+          "river_level_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 5.0,
+                "minimum": -2.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "River Level M"
+          },
+          "drainage_effectiveness": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drainage Effectiveness"
+          },
+          "available_ambulances": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Available Ambulances",
+            "default": 2
+          },
+          "available_ground_teams": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Available Ground Teams",
+            "default": 2
+          },
+          "closed_road_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Closed Road Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "variant_id",
+          "label"
+        ],
+        "title": "ExperimentVariant"
+      },
       "GreenArea": {
         "properties": {
           "id": {
@@ -3318,6 +3806,11 @@
           "explanation": {
             "type": "string",
             "title": "Explanation"
+          },
+          "timings_ms": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Timings Ms"
           }
         },
         "additionalProperties": false,

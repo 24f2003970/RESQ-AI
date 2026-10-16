@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import math
 import sqlite3
+import time
 import uuid
 from datetime import datetime, timezone
 from typing import Literal
@@ -37,9 +38,12 @@ class RescuePlan(BaseModel):
     solver_status: str
     objective: str
     explanation: str
+    timings_ms: dict = Field(default_factory=dict)
 
 
 def _xy(p):
+    if isinstance(p, dict):
+        return (float(p["x_m"]), float(p["y_m"]))
     return (float(p.x_m), float(p.y_m))
 
 
@@ -230,6 +234,7 @@ def _assign(units, destinations, route_map, optimized=True):
 
 def generate_plan(city, state, prediction_set, closures=(), *, infrastructure_revision=0, reserved_unit_ids=(),
                   priorities_override=None, route_map_override=None, trigger_event_id=None):
+    routing_started = time.perf_counter()
     g=build_road_graph(city,state,closures)
     ranked=priorities_override if priorities_override is not None else priorities(city,state,prediction_set,closures,reserved_unit_ids)
     reserved=set(reserved_unit_ids)
@@ -242,14 +247,26 @@ def generate_plan(city, state, prediction_set, closures=(), *, infrastructure_re
                 b=next(x for x in city.buildings if x.id==d["building_id"])
                 r=route(g,u["position"],b.position,u["type"])
                 if r["reachable"]: route_map[(u["id"],b.id)]=r
+    routing_ms = round((time.perf_counter() - routing_started) * 1000, 3)
+    assignment_started = time.perf_counter()
     optimized=_assign(units,ranked,route_map,True)
     baseline=_assign(units,ranked,route_map,False)
+    assignment_ms = round((time.perf_counter() - assignment_started) * 1000, 3)
     reachable_destinations={destination_id for _,destination_id in route_map}
     unreachable=[{"building_id":d["building_id"],"reason":"No compatible ground unit has a route under current infrastructure conditions."} for d in ranked if d["building_id"] not in reachable_destinations]
     def metrics(missions):
         priority_by_id={d["building_id"]:d["priority_score"] for d in ranked}
         total_priority=sum(priority_by_id[m["destination_id"]]*m["occupants_targeted"]/max(next(d["occupants"] for d in ranked if d["building_id"]==m["destination_id"]),1) for m in missions)
-        return {"destinations_covered":len(missions),"priority_weighted_coverage":round(total_priority,2),"total_distance_m":round(sum(m["route"]["distance_m"] for m in missions),1),"estimated_simulated_minutes":round(sum(m["route"]["simulated_minutes"] for m in missions),1),"resource_utilization":round(len(missions)/len(units),3) if units else 0,"unreachable_destinations":len(unreachable)}
+        total_minutes=sum(m["route"]["simulated_minutes"] for m in missions)
+        total_distance=sum(m["route"]["distance_m"] for m in missions)
+        objective=total_priority-0.15*total_minutes
+        return {"destinations_covered":len(missions),"priority_weighted_coverage":round(total_priority,2),
+                "occupants_targeted":sum(m["occupants_targeted"] for m in missions),
+                "total_distance_m":round(total_distance,1),"total_simulated_travel_minutes":round(total_minutes,1),
+                "maximum_estimated_arrival_minutes":round(max((m["route"]["simulated_minutes"] for m in missions),default=0),1),
+                "resource_utilization":round(len(missions)/len(units),3) if units else 0,
+                "available_unit_count":len(units),"reserved_unit_count":len(reserved),
+                "unreachable_destinations":len(unreachable),"objective_value":round(objective,2)}
     plan_id=str(uuid.uuid4())
     available=[]
     unit_by_id={u["id"]:u for u in units}
@@ -257,7 +274,7 @@ def generate_plan(city, state, prediction_set, closures=(), *, infrastructure_re
     for (uid,did),r in route_map.items():
         u=unit_by_id[uid]; d=destination_by_id[did]
         available.append({"unit_id":uid,"destination_id":did,"unit_capacity":u["capacity"],"occupants_targeted":min(u["capacity"],d["occupants"]),"route":r})
-    return RescuePlan(plan_id=plan_id,scenario_id=state.id,scenario_version=state.state_version,scenario_epoch=state.epoch,infrastructure_revision=infrastructure_revision,trigger_event_id=trigger_event_id,simulation_tick=state.tick,generated_at=datetime.now(timezone.utc).isoformat(),priorities=ranked,missions=optimized,available_assignments=available,unreachable=unreachable,comparison={"baseline":metrics(baseline),"optimized":metrics(optimized),"baseline_missions":baseline},solver_status="optimal_linear_sum_assignment",objective="Maximize sum(priority_score × capacity-covered occupant fraction - 0.15 × synthetic route minutes), with each unit assigned at most once and each destination at most once.",explanation="Assignments are recommendations; unit capacity limits the occupant count targeted in this single mission. Approval reserves assigned units until the scenario is reset into a new epoch; no mission completion or automatic release is simulated.")
+    return RescuePlan(plan_id=plan_id,scenario_id=state.id,scenario_version=state.state_version,scenario_epoch=state.epoch,infrastructure_revision=infrastructure_revision,trigger_event_id=trigger_event_id,simulation_tick=state.tick,generated_at=datetime.now(timezone.utc).isoformat(),priorities=ranked,missions=optimized,available_assignments=available,unreachable=unreachable,comparison={"baseline":metrics(baseline),"optimized":metrics(optimized),"baseline_missions":baseline},solver_status="optimal_linear_sum_assignment",objective="Maximize sum(priority_score × capacity-covered occupant fraction - 0.15 × synthetic route minutes), with each unit assigned at most once and each destination at most once.",explanation="Assignments are recommendations; unit capacity limits the occupant count targeted in this single mission. Approval reserves assigned units until the scenario is reset into a new epoch; no mission completion or automatic release is simulated.",timings_ms={"routing":routing_ms,"assignment":assignment_ms})
 
 
 class PlanStore:

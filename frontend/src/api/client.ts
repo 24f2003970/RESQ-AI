@@ -10,6 +10,7 @@ import agentDashboardSchema from "./agent-dashboard.schema.json";
 import agentEventSchema from "./agent-event.schema.json";
 import agentTraceDetailSchema from "./agent-trace-detail.schema.json";
 import rescuePlanSchema from "./rescue-plan.schema.json";
+import experimentRecordSchema from "./experiment-record.schema.json";
 import type { components } from "./schema";
 
 export type CityState = components["schemas"]["CityState"];
@@ -31,6 +32,8 @@ export type AgentEventEnvelope = components["schemas"]["AgentEventEnvelope"];
 export type AgentTraceDetail = components["schemas"]["AgentTraceDetail"];
 export type AgentRunRecord = components["schemas"]["AgentRunRecord"];
 export type RescueRecommendation = components["schemas"]["RescuePlan"];
+export type ScenarioExperiment = components["schemas"]["ExperimentRecord"];
+export type ScenarioExperimentCreate = components["schemas"]["ExperimentCreate"];
 
 const validate = new Ajv2020({
   strict: false,
@@ -48,6 +51,7 @@ const validateAgentDashboard = ajv.compile<AgentDashboard>(agentDashboardSchema)
 const validateAgentEvent = ajv.compile<AgentEventEnvelope>(agentEventSchema);
 const validateAgentTrace = ajv.compile<AgentTraceDetail>(agentTraceDetailSchema);
 const validateRescuePlan = ajv.compile<RescueRecommendation>(rescuePlanSchema);
+const validateExperiment = ajv.compile<ScenarioExperiment>(experimentRecordSchema);
 
 export function parseCity(value: unknown): CityState {
   if (!validate(value))
@@ -151,6 +155,44 @@ export const resetScenario = (state: ScenarioState) =>
 
 export async function fetchCity(signal?: AbortSignal): Promise<CityState> {
   return parseCity(await request("city/state", signal));
+}
+
+export async function fetchCityForSeed(seed: number, signal?: AbortSignal): Promise<CityState> {
+  return parseCity(await request(`city/state?seed=${encodeURIComponent(seed)}`, signal));
+}
+
+export async function createScenarioExperiment(scenarioId: string, body: ScenarioExperimentCreate): Promise<ScenarioExperiment> {
+  const value = await request(`scenarios/${encodeURIComponent(scenarioId)}/experiments`, undefined, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if (!validateExperiment(value)) throw new Error("The local service returned an invalid experiment contract.");
+  return value;
+}
+
+export async function fetchScenarioExperiment(experimentId: string, signal?: AbortSignal): Promise<ScenarioExperiment> {
+  const value = await request(`scenario-experiments/${encodeURIComponent(experimentId)}`, signal);
+  if (!validateExperiment(value)) throw new Error("The local service returned an invalid experiment result.");
+  return value;
+}
+
+export async function fetchScenarioExperiments(scenarioId: string, signal?: AbortSignal): Promise<ScenarioExperiment[]> {
+  const value: unknown = await request(`scenarios/${encodeURIComponent(scenarioId)}/experiments`, signal);
+  if (!Array.isArray(value) || !value.every((item) => validateExperiment(item))) throw new Error("The local service returned an invalid saved experiments list.");
+  return value as ScenarioExperiment[];
+}
+
+export async function cancelScenarioExperiment(experimentId: string): Promise<ScenarioExperiment> {
+  const value = await request(`scenario-experiments/${encodeURIComponent(experimentId)}/cancel`, undefined, {method:"POST"});
+  if (!validateExperiment(value)) throw new Error("The local service returned an invalid experiment cancellation response.");
+  return value;
+}
+
+export async function closeScenarioRoad(scenarioId: string, roadId: string, reason: string) {
+  return request(`scenarios/${encodeURIComponent(scenarioId)}/road-closures`, undefined, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({road_id:roadId,reason})});
+}
+
+export async function decideRescuePlan(planId: string, action: "approved"|"rejected", expectedVersion: number, reason: string) {
+  const value = await request(`rescue-plans/${encodeURIComponent(planId)}/decision`, undefined, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,expected_version:expectedVersion,reason})});
+  if (!validateRescuePlan(value)) throw new Error("The local service returned an invalid rescue decision.");
+  return value;
 }
 
 export async function fetchHealth(): Promise<Health> {

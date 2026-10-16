@@ -15,7 +15,7 @@ from .city_service import generate_city
 from .flood import SimulationParameters
 from .ml.features import ENGINE_VERSION, FEATURE_NAMES, HORIZON_TICKS, TARGET_NAME, build_feature_rows, feature_matrix
 from .schemas import (BuildingRiskPrediction, MLDatasetInfo, MLEvaluationReport, MLFeatureContribution,
-                      MLFeatureInfo, MLModelInfo, ScenarioPredictionSet)
+                      MLFeatureInfo, MLModelInfo, ScenarioPredictionSet, ScenarioState)
 from .scenarios import ScenarioError, store
 
 ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "ml_artifacts"
@@ -122,8 +122,17 @@ def feature_info() -> list[MLFeatureInfo]:
 
 
 def predictions(scenario_id: str, building_id: str | None = None) -> ScenarioPredictionSet:
-    bundle, metadata, _, evaluation = _load_model_bundle()
     scenario = store.get(scenario_id).state
+    return predict_state(scenario, building_id)
+
+
+def predict_state(scenario: ScenarioState, building_id: str | None = None) -> ScenarioPredictionSet:
+    """Run the installed local model against an explicit immutable snapshot.
+
+    Scenario experiments use this path so predictions never read or overwrite
+    the live ScenarioStore while evaluating an isolated variant.
+    """
+    bundle, metadata, _, evaluation = _load_model_bundle()
     city = generate_city(scenario.seed)
     params = SimulationParameters(**scenario.parameters.model_dump())
     rows = build_feature_rows(city, np.asarray(scenario.depth_m, dtype=np.float64), scenario.seed, params, scenario.tick)

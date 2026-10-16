@@ -3,7 +3,7 @@ import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
-from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .city_service import generate_city
@@ -16,6 +16,7 @@ from .agent_contracts import (
     AgentDashboard, AgentDefinition, AgentEventAccepted, AgentEventEnvelope,
     AgentRunRecord, AgentTraceDetail, persist_agent_event,
 )
+from .experiments import ExperimentCreate, ExperimentRecord, ExperimentRepository, ExperimentRunner
 from .schemas import (
     AdvanceRequest, Building, CityState, Health, ParameterUpdate, ScenarioCreate,
     MLDatasetInfo, MLEvaluationReport, MLFeatureInfo, MLModelInfo, ScenarioEnvelope,
@@ -30,6 +31,8 @@ if not logger.handlers:
 
 rescue_plans = PlanStore(store.path)
 agent_orchestrator = AgentOrchestrator(store,rescue_plans)
+experiment_repository = ExperimentRepository(store.path.with_name("experiments.sqlite3"))
+experiment_runner = ExperimentRunner(experiment_repository)
 
 @asynccontextmanager
 async def lifespan(_app):
@@ -71,8 +74,8 @@ def health():
 
 
 @app.get("/api/v1/city/state", response_model=CityState)
-def city_state():
-    return generate_city(settings.city_seed)
+def city_state(seed: int = Query(default=settings.city_seed, ge=0, le=2_147_483_647)):
+    return generate_city(seed)
 
 
 @app.get("/api/v1/scenarios/default", response_model=ScenarioMetadata)
@@ -191,6 +194,9 @@ def ml_feature_info():
 
 @app.get("/api/v1/scenarios/{scenario_id}/predictions", response_model=ScenarioPredictionSet)
 def scenario_predictions(scenario_id: str):
+    availability = model_info()
+    if availability.status != "ready":
+        raise HTTPException(503, availability.unavailable_reason or "The local model is unavailable.")
     try:
         return _scenario_call(lambda: predictions(scenario_id))
     except ModelUnavailable as exc:
@@ -199,6 +205,9 @@ def scenario_predictions(scenario_id: str):
 
 @app.get("/api/v1/scenarios/{scenario_id}/predictions/{building_id}", response_model=ScenarioPredictionSet)
 def building_prediction(scenario_id: str, building_id: str):
+    availability = model_info()
+    if availability.status != "ready":
+        raise HTTPException(503, availability.unavailable_reason or "The local model is unavailable.")
     try:
         return _scenario_call(lambda: predictions(scenario_id, building_id))
     except ModelUnavailable as exc:
@@ -374,3 +383,38 @@ def retry_agent_event(event_id:str,background_tasks:BackgroundTasks):
     return AgentEventAccepted(event_id=event_id,status="pending",scenario_id=envelope.scenario_id,
         scenario_epoch=envelope.scenario_epoch,simulation_tick=envelope.simulation_tick,
         simulation_state_version=envelope.simulation_state_version)
+
+
+@app.post("/api/v1/scenarios/{scenario_id}/experiments",status_code=202,response_model=ExperimentRecord)
+def create_scenario_experiment(scenario_id: str, request: ExperimentCreate, background_tasks: BackgroundTasks):
+    if request.base_scenario_id != scenario_id:
+        raise HTTPException(422, "Experiment base_scenario_id must match the scenario in the URL.")
+    envelope = _scenario_call(lambda: store.get(scenario_id))
+    try:
+        record = experiment_repository.create(request, envelope.state)
+    except ScenarioError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
+    background_tasks.add_task(experiment_runner.run, record.experiment_id)
+    return record
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/experiments",response_model=list[ExperimentRecord])
+def list_scenario_experiments(scenario_id: str, limit: int = Query(default=20, ge=1, le=100)):
+    _scenario_call(lambda: store.get(scenario_id))
+    return experiment_repository.list(scenario_id, limit)
+
+
+@app.get("/api/v1/scenario-experiments/{experiment_id}",response_model=ExperimentRecord)
+def get_scenario_experiment(experiment_id: str):
+    record = experiment_repository.get(experiment_id)
+    if record is None:
+        raise HTTPException(404, "Scenario experiment does not exist.")
+    return record
+
+
+@app.post("/api/v1/scenario-experiments/{experiment_id}/cancel",response_model=ExperimentRecord)
+def cancel_scenario_experiment(experiment_id: str):
+    record = experiment_repository.cancel(experiment_id)
+    if record is None:
+        raise HTTPException(404, "Scenario experiment does not exist.")
+    return record

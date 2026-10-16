@@ -1,0 +1,154 @@
+{
+  "$defs": {
+    "ExperimentVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "variant_id": {
+          "enum": [
+            "A",
+            "B"
+          ],
+          "title": "Variant Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "preset": {
+          "anyOf": [
+            {
+              "enum": [
+                "mild",
+                "heavy",
+                "extreme"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preset"
+        },
+        "rainfall_mm_h": {
+          "anyOf": [
+            {
+              "maximum": 300,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rainfall Mm H"
+        },
+        "river_level_m": {
+          "anyOf": [
+            {
+              "maximum": 5,
+              "minimum": -2,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "River Level M"
+        },
+        "drainage_effectiveness": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drainage Effectiveness"
+        },
+        "available_ambulances": {
+          "default": 2,
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Available Ambulances",
+          "type": "integer"
+        },
+        "available_ground_teams": {
+          "default": 2,
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Available Ground Teams",
+          "type": "integer"
+        },
+        "closed_road_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Closed Road Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variant_id",
+        "label"
+      ],
+      "title": "ExperimentVariant",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "base_scenario_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Base Scenario Id",
+      "type": "string"
+    },
+    "expected_state_version": {
+      "minimum": 1,
+      "title": "Expected State Version",
+      "type": "integer"
+    },
+    "simulation_ticks": {
+      "default": 6,
+      "maximum": 120,
+      "minimum": 0,
+      "title": "Simulation Ticks",
+      "type": "integer"
+    },
+    "variants": {
+      "items": {
+        "$ref": "#/$defs/ExperimentVariant"
+      },
+      "maxItems": 2,
+      "minItems": 2,
+      "title": "Variants",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "base_scenario_id",
+    "expected_state_version",
+    "variants"
+  ],
+  "title": "ExperimentCreate",
+  "type": "object"
+}
