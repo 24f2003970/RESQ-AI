@@ -11,6 +11,7 @@ from app.agent_contracts import (AgentDashboard, AgentDefinition, AgentEventAcce
                                  AgentEventEnvelope, AgentRunRecord, AgentTrace,
                                  AgentTraceDetail)
 from app.experiments import ExperimentCreate, ExperimentRecord, ExperimentVariant
+from app.missions import Mission, MissionClock, MissionClockAdvance, MissionCommand, MissionEvent, MissionUnitResource, RouteApproval
 from app.city_service import generate_city
 from app.scenarios import ScenarioStore
 
@@ -40,6 +41,13 @@ for name, model in {
     "experiment-create.schema.json": ExperimentCreate,
     "experiment-record.schema.json": ExperimentRecord,
     "experiment-variant.schema.json": ExperimentVariant,
+    "mission.schema.json": Mission,
+    "mission-clock.schema.json": MissionClock,
+    "mission-clock-advance.schema.json": MissionClockAdvance,
+    "mission-command.schema.json": MissionCommand,
+    "mission-event.schema.json": MissionEvent,
+    "mission-unit-resource.schema.json": MissionUnitResource,
+    "mission-route-approval.schema.json": RouteApproval,
 }.items():
     (target / name).write_text(json.dumps(model.model_json_schema(), indent=2) + "\n", encoding="utf-8")
 fixtures = target.parent / "test" / "fixtures"

@@ -28,7 +28,7 @@ AGENTS = [
     AgentDefinition(name="commander_strategy", title="Commander / Strategy", responsibility="Material-change gate and human-review proposal coordination", position=6),
 ]
 AGENT_NAMES = [agent.name for agent in AGENTS]
-TRIGGER_EVENT_TYPES = {"scenario_created", "simulation_advanced", "parameters_changed", "scenario_reset", "infrastructure_changed", "rescue_plan_approved", "rescue_plan_rejected", "manual_assessment"}
+TRIGGER_EVENT_TYPES = {"scenario_created", "simulation_advanced", "parameters_changed", "scenario_reset", "infrastructure_changed", "rescue_plan_approved", "rescue_plan_rejected", "manual_assessment", "mission_dispatched", "mission_blocked", "mission_arrived", "mission_completed", "mission_cancelled", "mission_cancelled_unit_unavailable", "unit_returned_to_service", "mission_route_revision_approved"}
 POLICY = {"minimum_depth_increase_m": 0.05, "minimum_priority_score_change": 3.0, "duplicate_proposal": "same epoch, infrastructure revision, ranked scores, route edges and assignment signature is suppressed", "cooldown": "No time cooldown; deterministic material-change comparison avoids delaying a real route closure or new exposure."}
 
 
@@ -360,7 +360,9 @@ class AgentOrchestrator:
     def _routing(self,c):
         city=c["city"]; state=c["state"]; ranked=c["outputs"]["rescue_priority"]["ranked_destinations"]
         graph=build_road_graph(city,state,c["closures"])
-        units=[unit for unit in city.rescue_units if unit.status=="standby" and unit.type!="boat" and unit.id not in c["reserved"]]
+        positions=self.plans.unit_positions(state.id,state.epoch)
+        units=[unit.model_copy(update={"position":unit.position.model_copy(update=positions[unit.id])}) if unit.id in positions else unit
+               for unit in city.rescue_units if unit.status=="standby" and unit.type!="boat" and unit.id not in c["reserved"]]
         buildings={building.id:building for building in city.buildings}
         options=[]; reachable=set()
         for unit in units:
@@ -415,7 +417,7 @@ class AgentOrchestrator:
             hazard["newly_threatened_building_ids"] or hazard["escalating_depth_building_ids"] or
             impact["changed_road_or_bridge_ids"] or routing["changed_route_keys"] or routing["invalidated_route_keys"] or
             priority["score_changes"] or priority["newly_critical_destination_ids"] or event.event_type=="infrastructure_changed" or
-            event.event_type=="rescue_plan_approved")
+            event.event_type in ("rescue_plan_approved","mission_blocked","mission_cancelled","unit_returned_to_service"))
         if not priority["ranked_destinations"]:
             material=False
         if not material:
@@ -458,6 +460,9 @@ class AgentOrchestrator:
         if p["score_changes"]:pieces.append(f"{len(p['score_changes'])} priority score(s) changed by at least {POLICY['minimum_priority_score_change']:.1f}")
         if event.event_type=="infrastructure_changed":pieces.append("manual infrastructure revision changed")
         if event.event_type=="rescue_plan_approved":pieces.append("commander approval changed resource reservations")
+        if event.event_type=="mission_blocked":pieces.append("a dispatched mission lost access on its remaining route")
+        if event.event_type=="mission_cancelled":pieces.append("a ready mission was cancelled and released its reservation")
+        if event.event_type=="unit_returned_to_service":pieces.append("a commander restored a simulated unit to availability")
         return "; ".join(pieces) or f"{event.event_type} triggered an explicit assessment"
 
     def _equivalent_plan(self,plan):

@@ -83,7 +83,12 @@ def build_road_graph(city, state: ScenarioState | None = None, manual_closures=(
                 dedup.append((t,p))
         for t,p in dedup:
             node = f"j:{p[0]:.3f}:{p[1]:.3f}"
-            g.add_node(node, xy=p, kind="intersection")
+            bridge=bridge_by_road.get(road.id)
+            bridge_half=bridge.length_m/2 if bridge else 0
+            bridge_dist=abs(p[1]-bridge.position.y_m) if bridge and abs(road.end.y_m-road.start.y_m)>1e-9 else (abs(p[0]-bridge.position.x_m) if bridge else float("inf"))
+            deck=bool(bridge and bridge_dist<=bridge_half+1e-4)
+            z=bridge.position.elevation_m if deck else road.start.elevation_m+t*(road.end.elevation_m-road.start.elevation_m)
+            g.add_node(node, xy=p, elevation_m=z, kind="intersection")
         for (t0,p0),(t1,p1) in zip(dedup,dedup[1:]):
             bridge = bridge_by_road.get(road.id)
             is_bridge = bool(bridge and abs((p0[0]+p1[0])/2-bridge.position.x_m) < .01 and abs((p0[1]+p1[1])/2-bridge.position.y_m) < bridge.length_m/2+0.01)
@@ -130,8 +135,8 @@ def route(g, start_position, destination_position, unit_type="ambulance"):
         penalty = 1.0 + data["depth_m"] * 4 + (0.4 if data["status"] == "caution" else 0)
         speed = data["speed_kmh"] * (0.55 if data["status"] == "caution" else 1.0)
         allowed.add_edge(a,b,**data, cost=data["length_m"]*penalty, speed=speed)
-    allowed.add_node(start, xy=(sx,sy), kind="unit_access")
-    allowed.add_node(end, xy=(ex,ey), kind="building_access")
+    allowed.add_node(start, xy=(sx,sy), elevation_m=float(getattr(start_position,"elevation_m",0) if not isinstance(start_position,dict) else start_position.get("elevation_m",0)), kind="unit_access")
+    allowed.add_node(end, xy=(ex,ey), elevation_m=float(getattr(destination_position,"elevation_m",0) if not isinstance(destination_position,dict) else destination_position.get("elevation_m",0)), kind="building_access")
     for node, anchor, point, identity in ((start,start_road,(sx,sy),"unit"),(end,end_road,(ex,ey),"building")):
         length=math.dist(point,g.nodes[anchor]["xy"])
         allowed.add_edge(node,anchor,edge_id=f"access:{identity}",road_id=None,bridge_id=None,length_m=length,
@@ -143,11 +148,14 @@ def route(g, start_position, destination_position, unit_type="ambulance"):
         return {"reachable": False, "reason": "No route is available under this unit's accessibility policy."}
     edges = [allowed.edges[a,b] for a,b in zip(nodes,nodes[1:])]
     polyline = [allowed.nodes[n]["xy"] for n in nodes]
+    polyline_xyz = [[allowed.nodes[n]["xy"][0],allowed.nodes[n]["xy"][1],allowed.nodes[n].get("elevation_m",0)] for n in nodes]
     length = sum(e["length_m"] for e in edges)
     seconds = sum(e["length_m"]/(e["speed"]*1000/3600) for e in edges)
     return {"reachable": True, "distance_m": round(length,1), "simulated_minutes": round(seconds/60,1),
             "road_ids": list(dict.fromkeys(e["road_id"] for e in edges if e["road_id"])), "edge_ids": [e["edge_id"] for e in edges],
-            "polyline": polyline, "accessibility": "caution" if any(e["status"] == "caution" for e in edges) else "open",
+            "polyline": polyline, "polyline_xyz": polyline_xyz, "segment_lengths_m": [round(e["length_m"], 6) for e in edges],
+            "segment_speeds_mps": [round(e["speed"]*1000/3600, 6) for e in edges],
+            "accessibility": "caution" if any(e["status"] == "caution" for e in edges) else "open",
             "explanation": "Dijkstra route on open segments; synthetic speed assumptions are not traffic ETAs."}
 
 
@@ -196,7 +204,7 @@ def _assign(units, destinations, route_map, optimized=True):
             if not candidates:continue
             uid=min(candidates,key=lambda unit_id:(route_map[(unit_id,destination["building_id"])]["simulated_minutes"],unit_id))
             unit=unit_by_id[uid]; route_result=route_map[(uid,destination["building_id"]) ]
-            result.append({"unit_id":uid,"destination_id":destination["building_id"],"unit_capacity":unit["capacity"],"occupants_targeted":min(unit["capacity"],destination["occupants"]),"route":route_result})
+            result.append({"unit_id":uid,"unit_type":unit.get("type","rescue_team"),"destination_id":destination["building_id"],"unit_capacity":unit["capacity"],"occupants_targeted":min(unit["capacity"],destination["occupants"]),"route":route_result})
             remaining.remove(uid)
         return result
     # Rows are units; destination columns plus one zero-utility dummy per unit
@@ -228,7 +236,7 @@ def _assign(units, destinations, route_map, optimized=True):
     for u,did in zip(units,choices):
         if did is None:continue
         destination=next(dest for dest in destinations if dest["building_id"]==did)
-        output.append({"unit_id":u["id"],"destination_id":did,"unit_capacity":u["capacity"],"occupants_targeted":min(u["capacity"],destination["occupants"]),"route":route_map[(u["id"],did)]})
+        output.append({"unit_id":u["id"],"unit_type":u.get("type","rescue_team"),"destination_id":did,"unit_capacity":u["capacity"],"occupants_targeted":min(u["capacity"],destination["occupants"]),"route":route_map[(u["id"],did)]})
     return output
 
 
@@ -293,6 +301,9 @@ class PlanStore:
                 db.execute("CREATE TABLE road_closures (scenario_id TEXT NOT NULL, epoch INTEGER NOT NULL, road_id TEXT NOT NULL, reason TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(scenario_id,epoch,road_id))")
                 db.execute("INSERT INTO road_closures(scenario_id,epoch,road_id,reason,active) SELECT c.scenario_id,s.epoch,c.road_id,c.reason,c.active FROM road_closures_legacy c JOIN scenarios s ON s.id=c.scenario_id")
                 db.execute("DROP TABLE road_closures_legacy")
+            from .missions import ensure_mission_schema, backfill_approved_missions
+            ensure_mission_schema(db)
+            backfill_approved_missions(db)
     def infrastructure(self,scenario_id,epoch):
         with sqlite3.connect(self.path) as db:
             db.execute("INSERT OR IGNORE INTO scenario_infrastructure VALUES(?,?,0)",(scenario_id,epoch))
@@ -301,9 +312,23 @@ class PlanStore:
             return revision,closures
     def reserved_units(self,scenario_id,epoch):
         with sqlite3.connect(self.path) as db:
+            return self._reserved_units_db(db,scenario_id,epoch)
+    @staticmethod
+    def _reserved_units_db(db,scenario_id,epoch):
+        try:
+            rows=db.execute("SELECT unit_id FROM unit_resources WHERE scenario_id=? AND scenario_epoch=? AND status!='available'",(scenario_id,epoch)).fetchall()
+            return {row[0] for row in rows}
+        except sqlite3.OperationalError:
             rows=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(scenario_id,)).fetchall()
             plans=[RescuePlan.model_validate_json(payload) for (payload,) in rows]
             return {mission["unit_id"] for plan in plans if plan.scenario_epoch==epoch for mission in plan.missions}
+    def unit_positions(self,scenario_id,epoch):
+        with sqlite3.connect(self.path) as db:
+            try:
+                return {unit_id:json.loads(position_json) for unit_id,position_json in db.execute(
+                    "SELECT unit_id,position_json FROM unit_resources WHERE scenario_id=? AND scenario_epoch=? AND status='available'",(scenario_id,epoch))}
+            except sqlite3.OperationalError:
+                return {}
     def by_trigger(self,event_id):
         if not event_id:return None
         with sqlite3.connect(self.path) as db:
@@ -345,10 +370,7 @@ class PlanStore:
             infra=db.execute("SELECT revision FROM scenario_infrastructure WHERE scenario_id=? AND epoch=?",(plan.scenario_id,plan.scenario_epoch)).fetchone()
             if not current or current[0]!=plan.scenario_version or current[1]!=plan.scenario_epoch or not infra or infra[0]!=plan.infrastructure_revision:
                 db.rollback();raise ValueError("Scenario changed while the plan was being generated; request a fresh proposal.")
-            approved=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(plan.scenario_id,)).fetchall()
-            committed={mission["unit_id"] for (payload,) in approved
-                       for approved_plan in [RescuePlan.model_validate_json(payload)]
-                       if approved_plan.scenario_epoch==plan.scenario_epoch for mission in approved_plan.missions}
+            committed=self._reserved_units_db(db,plan.scenario_id,plan.scenario_epoch)
             conflict=committed & {mission["unit_id"] for mission in plan.missions}
             if conflict:
                 db.rollback();raise ValueError("Resources became unavailable while the plan was being generated: "+", ".join(sorted(conflict)))
@@ -388,12 +410,14 @@ class PlanStore:
                 db.execute("UPDATE rescue_plans SET payload=?,status='superseded' WHERE plan_id=?",(plan.model_dump_json(),plan_id)); db.commit(); raise ValueError("Plan is stale and cannot be approved or rejected.")
             if row[1]!="proposed": db.rollback(); raise ValueError("Only proposed plans can receive a decision.")
             if action=="approved":
-                approvals=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(plan.scenario_id,)).fetchall()
-                approved_units={m["unit_id"] for (payload,) in approvals for m in RescuePlan.model_validate_json(payload).missions if RescuePlan.model_validate_json(payload).scenario_epoch==plan.scenario_epoch}
+                approved_units=self._reserved_units_db(db,plan.scenario_id,plan.scenario_epoch)
                 overlap=approved_units & {m["unit_id"] for m in plan.missions}
                 if overlap:db.rollback();raise ValueError("Approval conflicts with resources already approved in another plan: "+", ".join(sorted(overlap)))
             plan.status=action
             db.execute("UPDATE rescue_plans SET payload=?,status=? WHERE plan_id=?",(plan.model_dump_json(),action,plan_id))
+            if action=="approved":
+                from .missions import create_approved_missions
+                create_approved_missions(db,plan.model_dump(mode="json"))
             db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,?)",(plan_id,action,json.dumps({"reason":reason}),datetime.now(timezone.utc).isoformat()))
             persist_agent_event(db,event_type=f"rescue_plan_{action}",scenario_id=plan.scenario_id,scenario_epoch=plan.scenario_epoch,
                 simulation_tick=plan.simulation_tick,state_version=current[0],infrastructure_revision=infra[0],
@@ -415,8 +439,7 @@ class PlanStore:
             if row[1]!="proposed":db.rollback();raise ValueError("Only proposed plans can be modified.")
             pairs=[(item.unit_id,item.destination_id) for item in assignments]
             if len({u for u,_ in pairs})!=len(pairs) or len({d for _,d in pairs})!=len(pairs):db.rollback();raise ValueError("A unit and destination can each appear only once.")
-            approvals=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(plan.scenario_id,)).fetchall()
-            approved_units={m["unit_id"] for (payload,) in approvals for m in RescuePlan.model_validate_json(payload).missions if RescuePlan.model_validate_json(payload).scenario_epoch==plan.scenario_epoch}
+            approved_units=self._reserved_units_db(db,plan.scenario_id,plan.scenario_epoch)
             if approved_units & {unit_id for unit_id,_ in pairs}:db.rollback();raise ValueError("Assignment uses a resource already approved in another plan.")
             allowed={(item["unit_id"],item["destination_id"]):item for item in plan.available_assignments}
             if any(pair not in allowed for pair in pairs):db.rollback();raise ValueError("Assignment is infeasible under the plan's saved routes and capacities.")

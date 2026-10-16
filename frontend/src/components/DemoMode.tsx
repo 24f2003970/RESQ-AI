@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, CircleDot, LoaderCircle, RotateCcw, ShieldCheck, Waves } from "lucide-react";
 import {
@@ -9,8 +9,12 @@ import {
   updateScenarioParameters,
   type AgentTraceDetail, type RescueRecommendation, type ScenarioEnvelope,
   type ScenarioExperiment, type ScenarioState,
+  type CityState, type Mission, type MissionClock, type MissionUnitResource,
 } from "../api/client";
 import { Badge, Panel } from "./ui";
+import MissionOperations from "./MissionOperations";
+
+const LazyDemoCityScene=lazy(()=>import("../scene/CityScene"));
 
 const STAGES=[
   {title:"Initial city",intro:"Introduce the seeded fictional city, facilities and response inventory."},
@@ -33,7 +37,7 @@ function freshRoads(plan:RescueRecommendation,unitId:string,destinationId:string
   return assignments.find(item=>item.unit_id===unitId&&item.destination_id===destinationId)?.route.road_ids??null;
 }
 
-export default function DemoMode({scenario,onChange}:{scenario:ScenarioState|null;onChange:(envelope:ScenarioEnvelope)=>void}){
+export default function DemoMode({scenario,city,onChange}:{scenario:ScenarioState|null;city?:CityState;onChange:(envelope:ScenarioEnvelope)=>void}){
   const navigate=useNavigate();
   const [demo,setDemo]=useState<ScenarioState|null>(null);const active=demo??scenario;
   const [stage,setStage]=useState(0);const [busy,setBusy]=useState(false);const [error,setError]=useState("");const [message,setMessage]=useState("");
@@ -41,13 +45,17 @@ export default function DemoMode({scenario,onChange}:{scenario:ScenarioState|nul
   const [assessmentEventId,setAssessmentEventId]=useState("");const [currentPlan,setCurrentPlan]=useState<RescueRecommendation|null>(null);
   const [closure,setClosure]=useState<ClosureEvidence|null>(null);const [trace,setTrace]=useState<AgentTraceDetail|null>(null);
   const [comparison,setComparison]=useState<ScenarioExperiment|null>(null);const [decision,setDecision]=useState("");
+  const [missionSnapshot,setMissionSnapshot]=useState<{missions:Mission[];units:MissionUnitResource[];clock:MissionClock|null}>({missions:[],units:[],clock:null});
+  const [selectedMissionId,setSelectedMissionId]=useState<string|null>(null);const [missionClosureRoad,setMissionClosureRoad]=useState("");
+  const acceptMissionSnapshot=useCallback((snapshot:{missions:Mission[];units:MissionUnitResource[];clock:MissionClock|null})=>setMissionSnapshot(snapshot),[]);
+  const selectMission=useCallback((id:string|null)=>setSelectedMissionId(id),[]);
   const progress=useMemo(()=>STAGES.map((_,index)=>index<stage?"complete":index===stage?"current":"upcoming"),[stage]);
   async function run(action:()=>Promise<void>){if(busy)return;setBusy(true);setError("");setMessage("");try{await action()}catch(reason){setError(reason instanceof Error?reason.message:"The guided demo action failed. Check the local service and retry this stage.")}finally{setBusy(false)}}
   async function updateScenario(next:ScenarioEnvelope){setDemo(next.state);onChange(next)}
 
   async function initialize(){
     const envelope=await createScenario("RESQ-AI Guided Demo · Seed 2026","mild");
-    await updateScenario(envelope);setStage(1);setCurrentPlan(null);setClosure(null);setTrace(null);setComparison(null);setDecision("");
+    await updateScenario(envelope);setStage(1);setCurrentPlan(null);setClosure(null);setTrace(null);setComparison(null);setDecision("");setMissionClosureRoad("");setMissionSnapshot({missions:[],units:[],clock:null});setSelectedMissionId(null);
     setMessage("Created a new isolated operational scenario from seed 2026. Existing scenarios remain unchanged.");
   }
   async function flood(){
@@ -134,8 +142,20 @@ export default function DemoMode({scenario,onChange}:{scenario:ScenarioState|nul
   async function restart(){
     if(!active) {setStage(0);return}
     const dashboard=await fetchAgentDashboard(active.id);
-    if((dashboard.reserved_ground_units?.length??0)>0&&!window.confirm("This scenario has approved rescue plans reserving units. Reset starts a new epoch and makes those approvals historical; no mission completion is simulated. Reset the demo scenario?"))return;
-    const envelope=await resetScenario(active);await updateScenario(envelope);setStage(0);setCurrentPlan(null);setClosure(null);setTrace(null);setComparison(null);setDecision("");setAssessmentEventId("");setModelStatus(null);setMessage("Demo scenario returned to its initial seeded conditions. Prior traces remain historical.");
+    if((dashboard.reserved_ground_units?.length??0)>0&&!window.confirm("This scenario has mission or plan reservations. Reset starts a new isolated epoch; mission history stays available in the prior epoch. Continue?"))return;
+    const envelope=await resetScenario(active);await updateScenario(envelope);setStage(0);setCurrentPlan(null);setClosure(null);setTrace(null);setComparison(null);setDecision("");setAssessmentEventId("");setModelStatus(null);setMissionClosureRoad("");setMissionSnapshot({missions:[],units:[],clock:null});setSelectedMissionId(null);setMessage("Demo scenario returned to its initial seeded conditions. Prior traces remain historical.");
+  }
+  const selectedMission=missionSnapshot.missions.find(item=>item.mission_id===selectedMissionId)??null;
+  async function closeMissionRoad(){
+    if(!active||!selectedMission||selectedMission.status!=="en_route")throw new Error("Dispatch a mission before disrupting its remaining route.");
+    const dashboard=await fetchAgentDashboard(active.id);
+    const edges=Array.isArray(selectedMission.route.edge_ids)?selectedMission.route.edge_ids.filter((edge):edge is string=>typeof edge==="string"):[];
+    const manualClosures=new Set(dashboard.manual_closure_road_ids??[]);
+    const candidates=edges.slice(selectedMission.route_segment_index).map(edge=>edge.startsWith("access:")?null:edge.split(":",1)[0]).filter((road):road is string=>road!==null&&!manualClosures.has(road));
+    const roadId=candidates[0];
+    if(!roadId)throw new Error("No open road segment remains ahead on this route to close in the guided example.");
+    await closeScenarioRoad(active.id,roadId,"Guided Part 8 demonstration: close an untraversed route segment.");
+    setMissionClosureRoad(roadId);setMessage(`Closed ${roadId} from the remaining route. The backend should mark the mission blocked if this road lies ahead of the current unit position.`);
   }
   const actions=[initialize,flood,assessRisk,coordinate,inspectRecommendation,disruptRoad,waitForReplan,()=>review("approved"),compareImpact,explain];
   const actionLabels=["Initialize demo scenario","Apply severe flood · advance 12 ticks","Run local model inference","Run six-agent assessment","Load rescue proposal","Close route-relevant road","Wait for verified replan","Review and decide","Run isolated A/B impact comparison","Open persisted decision trace"];
@@ -159,7 +179,23 @@ export default function DemoMode({scenario,onChange}:{scenario:ScenarioState|nul
         {stage!==7&&<div className="demo-action-row"><button className="primary-button" disabled={busy||(!active&&stage>0)} onClick={()=>void run(actions[stage])}>{busy?<><LoaderCircle className="spin" size={15}/> Working…</>:<>{stage===0?<Waves size={15}/>:<ArrowRight size={15}/>} {actionLabels[stage]}</>}</button>{stage>0&&<button className="secondary-button" disabled={busy} onClick={()=>setStage(value=>Math.max(0,value-1))}><ArrowLeft size={15}/> Previous stage</button>}</div>}
         {stage===9&&<div className="demo-action-row"><button className="secondary-button" disabled={busy} onClick={()=>void run(restart)}><RotateCcw size={15}/> Reset and run again</button></div>}
       </Panel>
-      {active&&<p className="scenario-note">Active scenario is a separate record. Approved reservations last until an epoch reset; the system does not simulate mission completion or automatic resource release.</p>}
+      {stage===9&&decision==="approved"&&active&&city&&<section className="mission-demo-chapter">
+        <div className="mission-demo-intro"><span className="eyebrow">OPTIONAL CHAPTER · PART 8 MISSION OPERATIONS</span><h2>Approval becomes a persistent simulation</h2><p>Each control below calls the local mission API. The 3D vehicle, status, route and position come from persisted backend records; no real emergency response is initiated.</p>
+          <div className="mission-demo-steps"><span>1 <b>Dispatch</b> explicitly</span><span>2 <b>Advance</b> the independent mission clock</span><span>3 <b>Disrupt</b> an untraversed road</span><span>4 <b>Review</b> and approve a replacement route</span><span>5 <b>Complete</b> only after arrival</span></div>
+        </div>
+        <div className="mission-demo-live">
+          <div className="mission-demo-twin"><Suspense fallback={<div className="scene-loading">Loading the local mission twin…</div>}>
+            <LazyDemoCityScene city={city} scenario={active} selected={null} onSelect={()=>{}}
+              layers={{buildings:true,greenery:false,facilities:true,districts:false,units:true,flood:true,infrastructure:true,predictedRisk:false}}
+              lowGraphics predictions={null} routeLines={[]} manualClosureIds={missionClosureRoad?[missionClosureRoad]:[]}
+              missions={missionSnapshot.missions} missionUnits={missionSnapshot.units} selectedMissionId={selectedMissionId} onSelectMission={selectMission}/>
+          </Suspense></div>
+          <MissionOperations scenario={active} city={city} onSnapshot={acceptMissionSnapshot} onSelectMission={selectMission} selectedMissionId={selectedMissionId}/>
+        </div>
+        {selectedMission?.status==="en_route"&&<div className="mission-demo-closure"><button className="secondary-button" disabled={busy} onClick={()=>void run(closeMissionRoad)}><AlertTriangle size={14}/> Close a road ahead on this mission</button>{missionClosureRoad&&<span>Closure submitted: {missionClosureRoad}. Check whether the vehicle stopped before that segment.</span>}</div>}
+        <p className="mission-synthetic-note">A completed mission remains historical. The unit becomes available again only after the explicit return-to-service action, at its persisted current location. No return journey or rescue outcome is fabricated.</p>
+      </section>}
+      {active&&<p className="scenario-note">Approved missions reserve units; ready cancellations release them. Completed or dispatched-cancelled units remain unavailable until an explicit return-to-service action. Reset starts a new resource epoch and retains prior mission history.</p>}
       {comparison?.status==="failed"&&<div className="demo-error" role="alert">Comparison failed: {comparison.error}</div>}
     </section></div>
   </main>;

@@ -161,7 +161,7 @@ export default function App() {
             >
               <RefreshCw size={16} />
             </button>
-            <span className="part-label">PART 07</span>
+            <span className="part-label">PART 08</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -241,7 +241,7 @@ export default function App() {
                   element={<AgentExplorer scenario={simulation.scenario} />}
                 />
                 <Route path="/model" element={<ModelLab scenario={simulation.scenario} />} />
-                <Route path="/demo" element={<DemoMode scenario={simulation.scenario} onChange={simulation.accept} />} />
+                <Route path="/demo" element={<DemoMode city={city} scenario={simulation.scenario} onChange={simulation.accept} />} />
                 <Route
                   path="*"
                   element={

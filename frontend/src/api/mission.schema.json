@@ -1,0 +1,202 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "mission_id": {
+      "title": "Mission Id",
+      "type": "string"
+    },
+    "plan_id": {
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "scenario_epoch": {
+      "title": "Scenario Epoch",
+      "type": "integer"
+    },
+    "simulation_version": {
+      "title": "Simulation Version",
+      "type": "integer"
+    },
+    "infrastructure_revision": {
+      "title": "Infrastructure Revision",
+      "type": "integer"
+    },
+    "mission_version": {
+      "title": "Mission Version",
+      "type": "integer"
+    },
+    "unit_id": {
+      "title": "Unit Id",
+      "type": "string"
+    },
+    "unit_type": {
+      "title": "Unit Type",
+      "type": "string"
+    },
+    "destination_id": {
+      "title": "Destination Id",
+      "type": "string"
+    },
+    "unit_capacity": {
+      "title": "Unit Capacity",
+      "type": "integer"
+    },
+    "occupants_targeted": {
+      "title": "Occupants Targeted",
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "en_route",
+        "blocked",
+        "arrived",
+        "completed",
+        "cancelled"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "route": {
+      "additionalProperties": true,
+      "title": "Route",
+      "type": "object"
+    },
+    "route_revision": {
+      "title": "Route Revision",
+      "type": "integer"
+    },
+    "traversed_distance_m": {
+      "title": "Traversed Distance M",
+      "type": "number"
+    },
+    "total_distance_m": {
+      "title": "Total Distance M",
+      "type": "number"
+    },
+    "remaining_distance_m": {
+      "title": "Remaining Distance M",
+      "type": "number"
+    },
+    "route_segment_index": {
+      "title": "Route Segment Index",
+      "type": "integer"
+    },
+    "position": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Position",
+      "type": "object"
+    },
+    "operational_seconds": {
+      "title": "Operational Seconds",
+      "type": "integer"
+    },
+    "estimated_remaining_seconds": {
+      "title": "Estimated Remaining Seconds",
+      "type": "integer"
+    },
+    "dispatch_clock_seconds": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dispatch Clock Seconds"
+    },
+    "arrival_clock_seconds": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Arrival Clock Seconds"
+    },
+    "completion_clock_seconds": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Completion Clock Seconds"
+    },
+    "block_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Block Reason"
+    },
+    "route_proposal": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Route Proposal"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    },
+    "updated_at": {
+      "title": "Updated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "mission_id",
+    "plan_id",
+    "scenario_id",
+    "scenario_epoch",
+    "simulation_version",
+    "infrastructure_revision",
+    "mission_version",
+    "unit_id",
+    "unit_type",
+    "destination_id",
+    "unit_capacity",
+    "occupants_targeted",
+    "status",
+    "route",
+    "route_revision",
+    "traversed_distance_m",
+    "total_distance_m",
+    "remaining_distance_m",
+    "route_segment_index",
+    "position",
+    "operational_seconds",
+    "estimated_remaining_seconds",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "Mission",
+  "type": "object"
+}

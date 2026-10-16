@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Canvas, type ThreeEvent, useThree } from "@react-three/fiber";
+import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Edges, Line, OrbitControls } from "@react-three/drei";
 import {
   BoxGeometry,
@@ -19,12 +19,14 @@ import {
   Matrix4,
   MeshStandardMaterial,
   PCFShadowMap,
+  type Group,
   Vector3,
 } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { Compass, Focus, Minus, Plus, RotateCcw, View } from "lucide-react";
 import type { Building, CityState, ScenarioState } from "../api/client";
 import type { ScenarioPredictionSet } from "../api/client";
+import type { Mission, MissionUnitResource } from "../api/client";
 import { toScene } from "./coordinates";
 
 export type Layers = {
@@ -43,6 +45,56 @@ function routePointToScene(city: CityState, point: number[]): [number,number,num
   const ix=city.terrain.x_centers_m.reduce((best,value,index)=>Math.abs(value-x)<Math.abs(city.terrain.x_centers_m[best]-x)?index:best,0);
   const iy=city.terrain.y_centers_m.reduce((best,value,index)=>Math.abs(value-y)<Math.abs(city.terrain.y_centers_m[best]-y)?index:best,0);
   return [x,city.terrain.elevation_m[iy][ix]+1.5,-y];
+}
+function missionRoutePoints(city:CityState,mission:Mission):[number,number,number][] {
+  const xyz=mission.route.polyline_xyz;
+  if(Array.isArray(xyz)&&xyz.every(point=>Array.isArray(point)&&point.length>=3&&point.slice(0,3).every(Number.isFinite)))
+    return (xyz as number[][]).map(([x,y,z])=>[x,z+1.4,-y]);
+  const xy=mission.route.polyline;
+  return Array.isArray(xy)?(xy as number[][]).map(point=>routePointToScene(city,point)):[];
+}
+
+function MissionVehicle({mission,resource,selected,onSelect}:{mission:Mission;resource:MissionUnitResource;selected:boolean;onSelect:()=>void}) {
+  const group=useRef<Group>(null);
+  const position=resource.position;
+  const from=useRef(new Vector3(position.x_m,(position.elevation_m??0)+.4,-position.y_m));
+  const to=useRef(from.current.clone());
+  const elapsed=useRef(1);
+  const color=mission.status==="blocked"?"#c95955":mission.status==="arrived"||mission.status==="completed"?"#78c4a3":mission.unit_type==="ambulance"?"#e5e2d3":"#bd9b69";
+  const route=mission.route.polyline as number[][]|undefined;
+  const segment=Math.max(0,Math.min(mission.route_segment_index,Math.max(0,(route?.length??1)-2)));
+  const a=route?.[segment]??[mission.position.x_m,mission.position.y_m];
+  const b=route?.[segment+1]??a;
+  const yaw=Math.atan2(-(b[0]-a[0]),b[1]-a[1]);
+  useEffect(()=>{
+    const target=new Vector3(position.x_m,(position.elevation_m??0)+.4,-position.y_m);
+    from.current.copy(group.current?.position??to.current);to.current.copy(target);elapsed.current=0;
+  },[position.x_m,position.y_m,position.elevation_m]);
+  useFrame((_,delta)=>{
+    if(!group.current)return;
+    elapsed.current=Math.min(1,elapsed.current+delta/.62);
+    const eased=elapsed.current*elapsed.current*(3-2*elapsed.current);
+    group.current.position.lerpVectors(from.current,to.current,eased);
+    group.current.rotation.y=yaw;
+  });
+  return <group ref={group} position={[position.x_m,(position.elevation_m??0)+.4,-position.y_m]}
+    onClick={event=>{event.stopPropagation();onSelect();}}>
+    <mesh position={[0,.04,0]} rotation={[-Math.PI/2,0,0]}>
+      <torusGeometry args={[selected?4.2:3.4,.12,6,28]}/>
+      <meshBasicMaterial color={selected?"#91e3d1":mission.status==="blocked"?"#e46b65":"#8bc8b1"} transparent opacity={selected ? .88 : .45}/>
+    </mesh>
+    <group position={[0,.35,0]}>
+      <mesh castShadow position={[0,.5,0]}><boxGeometry args={[2.15,1.25,4.8]}/><meshStandardMaterial color={color} roughness={.55} metalness={.16}/></mesh>
+      <mesh position={[0,1.13,-.05]}><boxGeometry args={[1.72,.58,2.25]}/><meshStandardMaterial color={mission.unit_type==="ambulance"?"#d9e2df":"#35434a"} roughness={.35} metalness={.2}/></mesh>
+      {mission.unit_type==="ambulance"&&<mesh position={[0,.64,-.65]}><boxGeometry args={[2.19,.24,.32]}/><meshStandardMaterial color="#bc5b55" roughness={.62}/></mesh>}
+      {[-1,1].map(side=>[-1.45,1.45].map(z=><mesh key={`${side}:${z}`} position={[side*1.1,.32,z]} rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.39,.39,.2,12]}/><meshStandardMaterial color="#252b2c" roughness={.9}/></mesh>))}
+      {(mission.status==="en_route"||mission.status==="blocked")&&<group position={[0,1.52,-.18]}>
+        <mesh><boxGeometry args={[.78,.16,.32]}/><meshStandardMaterial color="#d8615c" emissive="#6f211e" emissiveIntensity={.32}/></mesh>
+        <mesh position={[.28,.02,0]}><boxGeometry args={[.14,.09,.34]}/><meshStandardMaterial color="#7aabcf" emissive="#315b7b" emissiveIntensity={.18}/></mesh>
+      </group>}
+      <mesh position={[0,1.82,0]}><sphereGeometry args={[.18,10,8]}/><meshBasicMaterial color={mission.status==="blocked"?"#d9635e":mission.status==="arrived"?"#85d0a6":"#e7c57a"}/></mesh>
+    </group>
+  </group>;
 }
 type Instance = {
   position: [number, number, number];
@@ -509,9 +561,11 @@ function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState;
 
 function Camera({
   target,
+  mission,
   action,
 }: {
   target: Building | null;
+  mission: Mission | null;
   action: { type: string; key: number };
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
@@ -533,7 +587,12 @@ function Camera({
     const commandKey = `${action.key}:${size.width}:${size.height}`;
     if (lastCommand.current === commandKey) return;
     lastCommand.current = commandKey;
-    if (action.type === "focus" && target) {
+    if (action.type === "focus-mission" && mission) {
+      const center=new Vector3(mission.position.x_m,(mission.position.elevation_m??0)+2,-mission.position.y_m);
+      controls.current.target.copy(center);
+      camera.position.copy(center.clone().add(new Vector3(105,105,125)));
+      camera.zoom=2.6;
+    } else if (action.type === "focus" && target) {
       const center = new Vector3(
         target.position.x_m,
         target.height_m / 2,
@@ -554,7 +613,7 @@ function Camera({
     camera.updateProjectionMatrix();
     controls.current.update();
     invalidate();
-  }, [action, camera, target, invalidate, size]);
+  }, [action, camera, target, mission, invalidate, size]);
   return (
     <OrbitControls
       ref={controls}
@@ -591,6 +650,10 @@ export default function CityScene({
   predictions,
   routeLines,
   manualClosureIds,
+  missions,
+  missionUnits,
+  selectedMissionId,
+  onSelectMission,
 }: {
   city: CityState;
   scenario: ScenarioState | null;
@@ -601,9 +664,21 @@ export default function CityScene({
   predictions: ScenarioPredictionSet | null;
   routeLines: number[][][];
   manualClosureIds:string[];
+  missions: Mission[];
+  missionUnits: MissionUnitResource[];
+  selectedMissionId: string | null;
+  onSelectMission: (missionId:string)=>void;
 }) {
   const [action, setAction] = useState({ type: "reset", key: 0 });
   const [mapMode, setMapMode] = useState(false);
+  const focusedMission=missions.find(item=>item.mission_id===selectedMissionId)??null;
+  const isMoving=missions.some(item=>item.status==="en_route");
+  const resourceById=new Map(missionUnits.map(item=>[item.unit_id,item]));
+  const latestMissionByUnit=new Map<string,Mission>();
+  for(const mission of missions)latestMissionByUnit.set(mission.unit_id,mission);
+  useEffect(()=>{
+    if(selectedMissionId)setAction(current=>({type:"focus-mission",key:current.key+1}));
+  },[selectedMissionId]);
   const command = (type: string) =>
     setAction((a) => ({ type, key: a.key + 1 }));
   const fallback = (
@@ -643,13 +718,13 @@ export default function CityScene({
           >
             <Canvas
               orthographic
+              frameloop={isMoving?"always":"demand"}
               camera={{
                 position: [520, 500, 570],
                 zoom: 0.9,
                 near: 1,
                 far: 3000,
               }}
-              frameloop="demand"
               shadows={lowGraphics ? false : { type: PCFShadowMap }}
               dpr={lowGraphics ? 1 : [1, 1.5]}
               gl={{ antialias: true, powerPreference: "high-performance" }}
@@ -670,6 +745,16 @@ export default function CityScene({
               />
               <Ground city={city} layers={layers} scenario={scenario} manualClosureIds={manualClosureIds} />
               {routeLines.map((route,index)=><Line key={`planned-route-${index}`} points={route.map(point=>routePointToScene(city,point))} color="#57d7cf" lineWidth={3} transparent opacity={0.9}/>) }
+              {missions.filter(mission=>mission.status==="ready"||mission.status==="en_route"||mission.status==="blocked"||mission.status==="arrived"||mission.mission_id===selectedMissionId).map(mission=>{
+                const points=missionRoutePoints(city,mission);
+                if(points.length<2)return null;
+                const color=mission.status==="blocked"?"#e36c65":mission.mission_id===selectedMissionId?"#9ce1cf":"#56bcb0";
+                const last=points[points.length-1];
+                return <group key={`mission-route-${mission.mission_id}`}>
+                  <Line points={points} color={color} lineWidth={mission.mission_id===selectedMissionId?4:2.2} transparent opacity={mission.status==="ready" ? .46 : .82}/>
+                  <mesh position={last} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[3.6,.22,8,24]}/><meshBasicMaterial color={color}/></mesh>
+                </group>;
+              })}
               {layers.buildings && (
                 <BuildingBlocks
                   city={city}
@@ -680,7 +765,18 @@ export default function CityScene({
                   showPredictions={layers.predictedRisk}
                 />
               )}
-              <Camera target={selected} action={action} />
+              {layers.units&&missionUnits.map(resource=>{
+                const mission=resource.mission_id?missions.find(item=>item.mission_id===resource.mission_id):latestMissionByUnit.get(resource.unit_id);
+                if(!mission)return null;
+                return <MissionVehicle key={`mission-unit-${resource.unit_id}`} mission={mission} resource={resource} selected={mission.mission_id===selectedMissionId} onSelect={()=>onSelectMission(mission.mission_id)}/>;
+              })}
+              {layers.units&&city.rescue_units.filter(unit=>!resourceById.has(unit.id)).map(unit=>(
+                <group key={unit.id} position={toScene(unit.position)}>
+                  <mesh position={[0,1.8,0]} castShadow><boxGeometry args={[unit.type==="boat"?4:2.8,1.65,unit.type==="boat"?9:5.8]}/><meshStandardMaterial color={unit.type==="ambulance"?"#deded1":"#b99a67"} roughness={.68}/></mesh>
+                  <mesh position={[0,2.8,0]}><boxGeometry args={[1.2,.14,.45]}/><meshBasicMaterial color="#73bfa9"/></mesh>
+                </group>
+              ))}
+              <Camera target={selected} mission={focusedMission} action={action} />
             </Canvas>
           </Suspense>
         </SceneBoundary>
