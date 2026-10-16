@@ -1,0 +1,183 @@
+{
+  "version": "feature-support-v1",
+  "feature_schema": [
+    "current_depth_max_m",
+    "current_depth_mean_m",
+    "current_exposed_fraction",
+    "neighborhood_depth_max_m",
+    "neighborhood_depth_mean_m",
+    "neighborhood_wet_fraction_005m",
+    "neighborhood_wet_fraction_030m",
+    "terrain_elevation_m",
+    "terrain_neighborhood_mean_m",
+    "distance_to_canal_m",
+    "river_level_m",
+    "terrain_minus_river_m",
+    "rainfall_mm_h",
+    "drainage_effectiveness",
+    "simulation_tick",
+    "building_height_m",
+    "building_floors",
+    "building_width_m",
+    "building_depth_m",
+    "x_m",
+    "y_m",
+    "use_residential",
+    "use_commercial",
+    "use_hospital",
+    "use_shelter"
+  ],
+  "source": "Final estimator development scenarios only (train plus validation); final test groups excluded.",
+  "per_feature": {
+    "current_depth_max_m": {
+      "min": 0.0,
+      "max": 1.124,
+      "q005": 0.0,
+      "q995": 0.8950264999999985
+    },
+    "current_depth_mean_m": {
+      "min": 0.0,
+      "max": 1.1028,
+      "q005": 0.0,
+      "q995": 0.8855404999999998
+    },
+    "current_exposed_fraction": {
+      "min": 0.0,
+      "max": 1.0,
+      "q005": 0.0,
+      "q995": 1.0
+    },
+    "neighborhood_depth_max_m": {
+      "min": 0.0,
+      "max": 1.9518736093494289,
+      "q005": 0.0,
+      "q995": 1.8131284603724325
+    },
+    "neighborhood_depth_mean_m": {
+      "min": 0.0,
+      "max": 1.180930152477802,
+      "q005": 0.0,
+      "q995": 1.0010529510819612
+    },
+    "neighborhood_wet_fraction_005m": {
+      "min": 0.0,
+      "max": 1.0,
+      "q005": 0.0,
+      "q995": 1.0
+    },
+    "neighborhood_wet_fraction_030m": {
+      "min": 0.0,
+      "max": 1.0,
+      "q005": 0.0,
+      "q995": 1.0
+    },
+    "terrain_elevation_m": {
+      "min": 0.2962590528664339,
+      "max": 2.135610145408447,
+      "q005": 0.363028712575219,
+      "q995": 2.0717425664775853
+    },
+    "terrain_neighborhood_mean_m": {
+      "min": 0.29287940111859817,
+      "max": 2.0589225624274388,
+      "q005": 0.3177419999086417,
+      "q995": 2.0307197484305384
+    },
+    "distance_to_canal_m": {
+      "min": 17.0,
+      "max": 141.0,
+      "q005": 17.0,
+      "q995": 141.0
+    },
+    "river_level_m": {
+      "min": -0.6989539637732949,
+      "max": 1.7940809769315804,
+      "q005": -0.6989539637732949,
+      "q995": 1.7940809769315804
+    },
+    "terrain_minus_river_m": {
+      "min": -1.4214261893994764,
+      "max": 2.7866572977979347,
+      "q005": -1.256707119214373,
+      "q995": 2.6514503573437898
+    },
+    "rainfall_mm_h": {
+      "min": 15.22147551159647,
+      "max": 249.7099537921956,
+      "q005": 15.22147551159647,
+      "q995": 249.7099537921956
+    },
+    "drainage_effectiveness": {
+      "min": 0.07937120441051618,
+      "max": 0.9877238365691107,
+      "q005": 0.07937120441051618,
+      "q995": 0.9877238365691107
+    },
+    "simulation_tick": {
+      "min": 0.0,
+      "max": 12.0,
+      "q005": 0.0,
+      "q995": 12.0
+    },
+    "building_height_m": {
+      "min": 7.2,
+      "max": 43.2,
+      "q005": 7.2,
+      "q995": 43.2
+    },
+    "building_floors": {
+      "min": 2.0,
+      "max": 12.0,
+      "q005": 2.0,
+      "q995": 12.0
+    },
+    "building_width_m": {
+      "min": 22.004579556416545,
+      "max": 31.99994876920762,
+      "q005": 22.051056587201025,
+      "q995": 31.94451720477221
+    },
+    "building_depth_m": {
+      "min": 19.003678943640033,
+      "max": 25.998856068762812,
+      "q005": 19.034853778160688,
+      "q995": 25.963706771151493
+    },
+    "x_m": {
+      "min": -231.0,
+      "max": 231.0,
+      "q005": -231.0,
+      "q995": 231.0
+    },
+    "y_m": {
+      "min": -167.0,
+      "max": 167.0,
+      "q005": -167.0,
+      "q995": 167.0
+    },
+    "use_residential": {
+      "min": 0.0,
+      "max": 1.0,
+      "q005": 0.0,
+      "q995": 1.0
+    },
+    "use_commercial": {
+      "min": 0.0,
+      "max": 1.0,
+      "q005": 0.0,
+      "q995": 1.0
+    },
+    "use_hospital": {
+      "min": 0.0,
+      "max": 1.0,
+      "q005": 0.0,
+      "q995": 1.0
+    },
+    "use_shelter": {
+      "min": 0.0,
+      "max": 1.0,
+      "q005": 0.0,
+      "q995": 1.0
+    }
+  }
+}

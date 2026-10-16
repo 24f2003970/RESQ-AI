@@ -31,6 +31,8 @@ export type MLEvaluationReport = components["schemas"]["MLEvaluationReport"];
 export type MLFeatureInfo = components["schemas"]["MLFeatureInfo"];
 export type BuildingRiskPrediction = components["schemas"]["BuildingRiskPrediction"];
 export type ScenarioPredictionSet = components["schemas"]["ScenarioPredictionSet"];
+export type ReliabilityEvidence = { status: string; warnings: string[]; report: Record<string, unknown> | null };
+export type SensitivityEvidence = { status: string; reason?: string; report: Record<string, unknown> | null };
 export type AgentDashboard = components["schemas"]["AgentDashboard"];
 export type AgentEventEnvelope = components["schemas"]["AgentEventEnvelope"];
 export type AgentTraceDetail = components["schemas"]["AgentTraceDetail"];
@@ -111,6 +113,16 @@ async function validatedML<T>(path: string, validator: (value: unknown) => value
 export const fetchMLModel = (signal?: AbortSignal) => validatedML("ml/model", validateModel, signal);
 export const fetchMLDataset = (signal?: AbortSignal) => validatedML("ml/dataset", validateDataset, signal);
 export const fetchMLEvaluation = (signal?: AbortSignal) => validatedML("ml/evaluation", validateEvaluation, signal);
+export async function fetchMLReliability(signal?: AbortSignal): Promise<ReliabilityEvidence> {
+  const value = await request("ml/reliability", signal) as ReliabilityEvidence;
+  if (!value || typeof value.status !== "string" || !Array.isArray(value.warnings)) throw new Error("Reliability evidence response is invalid.");
+  return value;
+}
+export async function fetchMLSensitivity(signal?: AbortSignal): Promise<SensitivityEvidence> {
+  const value = await request("ml/sensitivity", signal) as SensitivityEvidence;
+  if (!value || typeof value.status !== "string") throw new Error("Sensitivity evidence response is invalid.");
+  return value;
+}
 export async function fetchMLFeatures(signal?: AbortSignal): Promise<MLFeatureInfo[]> {
   const value: unknown = await request("ml/features", signal);
   if (!Array.isArray(value) || !value.every((feature) => validateFeature(feature)))

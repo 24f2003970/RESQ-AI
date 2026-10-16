@@ -59,6 +59,18 @@
     "provenance": {
       "title": "Provenance",
       "type": "string"
+    },
+    "csv_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Csv Sha256"
     }
   },
   "required": [

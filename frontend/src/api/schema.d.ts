@@ -327,6 +327,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ml/reliability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ml Reliability Info */
+        get: operations["ml_reliability_info_api_v1_ml_reliability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ml/sensitivity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ml Sensitivity Info */
+        get: operations["ml_sensitivity_info_api_v1_ml_sensitivity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ml/features": {
         parameters: {
             query?: never;
@@ -1261,6 +1295,19 @@ export interface components {
             predicted_category: "predicted_exposed" | "predicted_not_exposed";
             /** Uncalibrated Model Score */
             uncalibrated_model_score: number;
+            /** Calibrated Synthetic Probability */
+            calibrated_synthetic_probability?: number | null;
+            /**
+             * Distribution Support Status
+             * @default unavailable
+             * @enum {string}
+             */
+            distribution_support_status: "within_observed_support" | "edge_of_observed_support" | "outside_observed_support" | "missing_features" | "invalid_features" | "incompatible_schema" | "unavailable";
+            /**
+             * Reliability Warnings
+             * @default []
+             */
+            reliability_warnings: string[];
             /** Influential Features */
             influential_features: components["schemas"]["MLFeatureContribution"][];
         };
@@ -1537,6 +1584,8 @@ export interface components {
             };
             /** Provenance */
             provenance: string;
+            /** Csv Sha256 */
+            csv_sha256?: string | null;
         };
         /** MLEvaluationReport */
         MLEvaluationReport: {
@@ -1652,6 +1701,22 @@ export interface components {
              * @default false
              */
             probabilities_calibrated: boolean;
+            /**
+             * Reliability Status
+             * @default degraded
+             * @enum {string}
+             */
+            reliability_status: "available" | "degraded" | "unavailable";
+            /**
+             * Calibration Status
+             * @default not_evaluated
+             */
+            calibration_status: string;
+            /**
+             * Reliability Warnings
+             * @default []
+             */
+            reliability_warnings: string[];
             /** Unavailable Reason */
             unavailable_reason?: string | null;
         };
@@ -2064,6 +2129,11 @@ export interface components {
             scenario_state_version: number;
             /** Scenario Tick */
             scenario_tick: number;
+            /**
+             * Scenario Epoch
+             * @default 0
+             */
+            scenario_epoch: number;
             /** Horizon Ticks */
             horizon_ticks: number;
             /** Horizon Minutes */
@@ -2075,6 +2145,22 @@ export interface components {
              * @default false
              */
             probabilities_calibrated: boolean;
+            /**
+             * Reliability Status
+             * @default degraded
+             * @enum {string}
+             */
+            reliability_status: "available" | "degraded" | "unavailable";
+            /**
+             * Calibration Status
+             * @default not_evaluated
+             */
+            calibration_status: string;
+            /**
+             * Reliability Warnings
+             * @default []
+             */
+            reliability_warnings: string[];
             /** Predictions */
             predictions: components["schemas"]["BuildingRiskPrediction"][];
         };
@@ -2771,6 +2857,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MLEvaluationReport"];
+                };
+            };
+        };
+    };
+    ml_reliability_info_api_v1_ml_reliability_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    ml_sensitivity_info_api_v1_ml_sensitivity_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

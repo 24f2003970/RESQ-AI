@@ -18,7 +18,7 @@ def _system(tmp_path, monkeypatch, *, model=True, preset="extreme"):
     plans=PlanStore(path)
     city=generate_city(state.seed)
     if model:
-        pred=SimpleNamespace(model_version="test-local",predictions=[SimpleNamespace(building_id=b.id,predicted_future_exposed=True,uncalibrated_model_score=.8) for b in city.buildings[:8]])
+        pred=SimpleNamespace(model_version="test-local",reliability_status="available",calibration_status="adopted",reliability_warnings=[],predictions=[SimpleNamespace(building_id=b.id,predicted_future_exposed=True,uncalibrated_model_score=.8,distribution_support_status="within_observed_support") for b in city.buildings[:8]])
         monkeypatch.setattr("app.agents.predictions",lambda _scenario_id:pred)
     else:
         def unavailable(_scenario_id):raise ModelUnavailable("test model unavailable")
@@ -45,6 +45,8 @@ def test_ordered_pipeline_persists_explainable_human_review_proposal_and_is_idem
     assert detail.trace.evidence["ml_inference_ms"] is not None
     assert detail.trace.evidence["routing_duration_ms"] is not None
     assert detail.trace.evidence["resource_allocation_duration_ms"] is not None
+    assert detail.trace.evidence["model_reliability_status"]=="available"
+    assert detail.trace.evidence["model_calibration_status"]=="adopted"
     assert elapsed_ms < 5000
     if detail.related_plan:
         assert detail.related_plan["status"]=="proposed"
@@ -199,3 +201,21 @@ def test_repeated_ticks_keep_one_current_trigger_and_audit_superseded_pending_ev
     prior=[item for item in orchestrator.events(state.id) if item.event_type=="scenario_created"]
     assert orchestrator.get_trace(prior[0].event_id).event_status=="superseded"
     assert orchestrator.get_trace(prior[0].event_id).trace.evidence["superseded_by_state_version"]==advanced.state_version
+
+
+def test_out_of_support_ml_labels_are_excluded_and_disclosed_in_agent_trace(tmp_path,monkeypatch):
+    _,_,plans,state,orchestrator=_system(tmp_path,monkeypatch)
+    city=generate_city(state.seed)
+    predictions=SimpleNamespace(model_version="synthetic-v1",reliability_status="available",calibration_status="adopted",reliability_warnings=[],predictions=[
+        SimpleNamespace(building_id=city.buildings[0].id,predicted_future_exposed=True,uncalibrated_model_score=.9,distribution_support_status="outside_observed_support"),
+        SimpleNamespace(building_id=city.buildings[1].id,predicted_future_exposed=True,uncalibrated_model_score=.8,distribution_support_status="within_observed_support"),
+    ])
+    monkeypatch.setattr("app.agents.predictions",lambda _scenario_id:predictions)
+    event=_event(orchestrator,state,plans)
+    orchestrator.process_event(event.event_id)
+    detail=orchestrator.get_trace(event.event_id)
+    hazard=next(run for run in detail.agents if run.agent_name=="hazard_intelligence")
+    assert hazard.status=="degraded"
+    assert hazard.output_summary["predicted_exposed_building_ids"]==[city.buildings[1].id]
+    assert detail.trace.evidence["distribution_support_counts"]["outside_observed_support"]==1
+    assert any("excluded from forecast-based planning eligibility" in warning for warning in detail.trace.evidence["model_reliability_warnings"])

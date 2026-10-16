@@ -63,6 +63,40 @@
       "title": "Uncalibrated Model Score",
       "type": "number"
     },
+    "calibrated_synthetic_probability": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Calibrated Synthetic Probability"
+    },
+    "distribution_support_status": {
+      "default": "unavailable",
+      "enum": [
+        "within_observed_support",
+        "edge_of_observed_support",
+        "outside_observed_support",
+        "missing_features",
+        "invalid_features",
+        "incompatible_schema",
+        "unavailable"
+      ],
+      "title": "Distribution Support Status",
+      "type": "string"
+    },
+    "reliability_warnings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Reliability Warnings",
+      "type": "array"
+    },
     "influential_features": {
       "items": {
         "$ref": "#/$defs/MLFeatureContribution"

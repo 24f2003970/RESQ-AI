@@ -165,7 +165,7 @@ export default function App() {
               <RefreshCw size={16} />
             </button>
             <Link className="judge-entry-link" to="/judge"><Presentation size={14}/> Judge Mode</Link>
-            <span className="part-label">PART 11</span>
+            <span className="part-label">PART 12</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>

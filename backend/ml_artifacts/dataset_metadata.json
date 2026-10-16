@@ -801,5 +801,6 @@
     }
   ],
   "provenance": "Generated locally from the RESQ-AI synthetic city generator and deterministic Part 3 flood engine; not collected from real incidents or observations.",
-  "csv_file": "flood_exposure.csv"
+  "csv_file": "flood_exposure.csv",
+  "csv_sha256": "c560bdb345ad083f3f8e1d9d8a2d4928d2705bd7787f4e9640567a439040387d"
 }

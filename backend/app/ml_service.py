@@ -14,6 +14,7 @@ import sklearn
 from .city_service import generate_city
 from .flood import SimulationParameters
 from .ml.features import ENGINE_VERSION, FEATURE_NAMES, HORIZON_TICKS, TARGET_NAME, build_feature_rows, feature_matrix
+from .ml.reliability import check_distribution_support
 from .schemas import (BuildingRiskPrediction, MLDatasetInfo, MLEvaluationReport, MLFeatureContribution,
                       MLFeatureInfo, MLModelInfo, ScenarioPredictionSet, ScenarioState)
 from .scenarios import ScenarioError, store
@@ -23,6 +24,10 @@ MODEL_PATH = ARTIFACT_DIR / "flood_exposure_v1.joblib"
 MODEL_METADATA_PATH = ARTIFACT_DIR / "model_metadata.json"
 DATASET_METADATA_PATH = ARTIFACT_DIR / "dataset_metadata.json"
 EVALUATION_PATH = ARTIFACT_DIR / "evaluation.json"
+RELIABILITY_PATH = ARTIFACT_DIR / "reliability_evaluation.json"
+SUPPORT_PATH = ARTIFACT_DIR / "distribution_support_v1.json"
+CALIBRATOR_PATH = ARTIFACT_DIR / "flood_exposure_platt_v1.joblib"
+SENSITIVITY_PATH = ARTIFACT_DIR / "sensitivity_evaluation.json"
 
 FEATURE_INFO = [
     MLFeatureInfo(name="current_depth_max_m", description="Maximum current water depth over the building footprint.", units="m", role="numeric"),
@@ -89,16 +94,58 @@ def _load_model_bundle() -> tuple[dict, dict, dict, dict]:
     return bundle, metadata, dataset, evaluation
 
 
+@lru_cache(maxsize=1)
+def _load_reliability_bundle() -> dict:
+    """Reliability artifacts degrade explicitly without disabling the physics model."""
+    warnings: list[str] = []
+    try:
+        _, metadata, _, _ = _load_model_bundle()
+        report = _read_json(RELIABILITY_PATH)
+        support = _read_json(SUPPORT_PATH)
+        if report.get("model_artifact_sha256") != metadata.get("artifact_sha256"):
+            raise ModelUnavailable("Reliability evidence was produced for a different model artifact.")
+        if report.get("feature_schema") != FEATURE_NAMES or support.get("feature_schema") != FEATURE_NAMES:
+            raise ModelUnavailable("Reliability evidence has an incompatible feature schema.")
+        calibrator = None
+        calibration = report.get("calibration", {})
+        calibration_status = calibration.get("status", "unavailable")
+        if calibration_status == "adopted":
+            if not CALIBRATOR_PATH.is_file():
+                warnings.append("Validated calibration metadata is present but its local artifact is missing.")
+                calibration_status = "unavailable_missing_artifact"
+            else:
+                digest = hashlib.sha256(CALIBRATOR_PATH.read_bytes()).hexdigest()
+                if digest != calibration.get("calibrator_sha256"):
+                    warnings.append("The calibration artifact checksum does not match its evidence.")
+                    calibration_status = "unavailable_checksum_mismatch"
+                else:
+                    calibrator = joblib.load(CALIBRATOR_PATH)
+        elif calibration_status != "not_adopted_development_gate_failed":
+            warnings.append("Calibration evidence is unavailable; raw model scores are not probabilities.")
+        if calibrator is None and calibration_status == "adopted":
+            calibration_status = "unavailable"
+        return {"status": "available" if not warnings else "degraded", "report": report,
+                "support": support, "calibrator": calibrator, "calibration_status": calibration_status,
+                "warnings": warnings}
+    except Exception as exc:
+        return {"status": "degraded", "report": None, "support": None, "calibrator": None,
+                "calibration_status": "unavailable", "warnings": [str(exc)]}
+
+
 def model_info() -> MLModelInfo:
     try:
         _, metadata, _, _ = _load_model_bundle()
+        reliability = _load_reliability_bundle()
         return MLModelInfo(status="ready", model_name=metadata["model_name"],
             model_version=metadata["model_version"], algorithm=metadata["algorithm"],
             trained_at_utc=metadata["created_at_utc"], training_scenarios=metadata["training_scenarios"],
             observation_count=metadata["sample_count"], horizon_ticks=metadata["prediction_horizon_ticks"],
             horizon_minutes=metadata["prediction_horizon_minutes"], target=metadata["target"],
             artifact_sha256=metadata["artifact_sha256"], sklearn_version=metadata["scikit_learn_version"],
-            probabilities_calibrated=False)
+            probabilities_calibrated=reliability["calibrator"] is not None,
+            reliability_status=reliability["status"],
+            calibration_status=reliability["calibration_status"],
+            reliability_warnings=reliability["warnings"])
     except ModelUnavailable as exc:
         try:
             metadata = _read_json(MODEL_METADATA_PATH)
@@ -115,6 +162,24 @@ def dataset_info() -> MLDatasetInfo:
 
 def evaluation_info() -> MLEvaluationReport:
     return MLEvaluationReport.model_validate(_read_json(EVALUATION_PATH))
+
+
+def reliability_info() -> dict:
+    reliability = _load_reliability_bundle()
+    if reliability["report"] is None:
+        return {"status": "unavailable", "warnings": reliability["warnings"], "report": None}
+    return {"status": reliability["status"], "warnings": reliability["warnings"], "report": reliability["report"]}
+
+
+def sensitivity_info() -> dict:
+    try:
+        data = _read_json(SENSITIVITY_PATH)
+        _, metadata, _, _ = _load_model_bundle()
+        if data.get("model_version") != metadata.get("model_version"):
+            raise ModelUnavailable("Sensitivity evidence belongs to a different model version.")
+        return {"status": "available", "report": data}
+    except (ModelUnavailable, OSError, json.JSONDecodeError) as exc:
+        return {"status": "unavailable", "reason": str(exc), "report": None}
 
 
 def feature_info() -> list[MLFeatureInfo]:
@@ -137,9 +202,15 @@ def predict_state(scenario: ScenarioState, building_id: str | None = None) -> Sc
     params = SimulationParameters(**scenario.parameters.model_dump())
     rows = build_feature_rows(city, np.asarray(scenario.depth_m, dtype=np.float64), scenario.seed, params, scenario.tick)
     estimator = bundle["estimator"]
+    reliability = _load_reliability_bundle()
+    calibrator = reliability["calibrator"]
+    support = reliability["support"]
     matrix = feature_matrix(rows)
     labels = estimator.predict(matrix).astype(int)
     scores = estimator.predict_proba(matrix)[:, 1] if hasattr(estimator, "predict_proba") else estimator.decision_function(matrix)
+    calibrated_scores = calibrator.predict_proba(
+        (np.log(np.clip(scores, 1e-6, 1 - 1e-6) / np.clip(1 - scores, 1e-6, 1))).reshape(-1, 1)
+    )[:, 1] if calibrator is not None else None
     current_by_id = {item.entity_id: item for item in scenario.impacts.buildings}
     importance = {item["feature"]: max(0.0, float(item["importance_mean"]))
                   for item in evaluation.get("permutation_importance", [])}
@@ -157,15 +228,23 @@ def predict_state(scenario: ScenarioState, building_id: str | None = None) -> Sc
         current = current_by_id[building.id]
         features = [MLFeatureContribution(name=name, value=float(rows[index][name]),
             global_permutation_importance=importance.get(name, 0.0)) for name in top_features]
+        support_result = check_distribution_support(rows[index], support) if support is not None else {
+            "status": "unavailable", "warnings": ["Training-support metadata is unavailable; no support claim is made."],
+        }
         output.append(BuildingRiskPrediction(building_id=building.id,
             current_exposed=current.water_reaches_building, current_exposure_category=current.category,
             current_max_depth_m=current.max_depth_m, predicted_future_exposed=bool(labels[index]),
             predicted_category="predicted_exposed" if labels[index] else "predicted_not_exposed",
-            uncalibrated_model_score=float(scores[index]), influential_features=features))
+            uncalibrated_model_score=float(scores[index]),
+            calibrated_synthetic_probability=float(calibrated_scores[index]) if calibrated_scores is not None else None,
+            distribution_support_status=support_result["status"],
+            reliability_warnings=list(reliability["warnings"])+list(support_result.get("warnings", [])),
+            influential_features=features))
     return ScenarioPredictionSet(model_version=metadata["model_version"], scenario_id=scenario.id,
-        scenario_state_version=scenario.state_version, scenario_tick=scenario.tick, horizon_ticks=HORIZON_TICKS,
+        scenario_state_version=scenario.state_version, scenario_tick=scenario.tick, scenario_epoch=scenario.epoch, horizon_ticks=HORIZON_TICKS,
         horizon_minutes=HORIZON_TICKS * 5, target_definition=dataset_label(),
-        probabilities_calibrated=False, predictions=output)
+        probabilities_calibrated=calibrator is not None, reliability_status=reliability["status"],
+        calibration_status=reliability["calibration_status"], reliability_warnings=reliability["warnings"], predictions=output)
 
 
 def dataset_label() -> str:

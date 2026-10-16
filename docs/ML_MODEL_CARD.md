@@ -1,5 +1,7 @@
 # Model card: future synthetic building exposure
 
+> Part 12 reliability/calibration supplement: [`ML_RELIABILITY_MODEL_CARD.md`](ML_RELIABILITY_MODEL_CARD.md). Calibrated outputs describe only held-out synthetic scenario behavior. Feature support is a warning, not an accuracy guarantee.
+
 ## Intended use
 
 Demonstrate a local ML inference path alongside the RESQ-AI synthetic Digital Twin. Given a generated city's current simulated state, estimate whether each building's footprint reaches at least 0.05 m of water six five-minute ticks (30 simulated minutes) later.
@@ -10,7 +12,7 @@ Demonstrate a local ML inference path alongside the RESQ-AI synthetic Digital Tw
 - Algorithm: scikit-learn RandomForestClassifier, 64 trees, bounded tree depth and leaf size.
 - Artifact: `backend/ml_artifacts/flood_exposure_v1.joblib` (SHA-256 recorded in `model_metadata.json`).
 - Features: current flood grid and local terrain, scenario forcing, simulation tick, and generated building attributes.
-- Output: binary predicted exposure and an explicitly uncalibrated model score.
+- Output: binary predicted exposure and raw score; when validated Part 12 artifacts load, a separately labeled Platt-calibrated synthetic estimate is also available.
 
 ## Data
 
@@ -22,7 +24,7 @@ Scenario-grouped split: 42 training groups, 15 validation groups, 15 held-out te
 
 ## Limitations and risks
 
-The model learns a deterministic synthetic simulator and its assumptions. A high test score over generated scenarios does not show performance on real weather, terrain, infrastructure, or disasters. Spatially correlated buildings and repeated configurations can make this synthetic task easier than deployment. The score is not calibrated, feature importance is global and noncausal, and a false negative or positive is possible. The physical simulator remains authoritative for water state; the estimate must not be used as operational dispatch or public warning advice.
+The model learns a deterministic synthetic simulator and its assumptions. A high test score over generated scenarios does not show performance on real weather, terrain, infrastructure, or disasters. Spatially correlated buildings and repeated configurations can make this synthetic task easier than deployment. Raw scores are uncalibrated; the separate Part 12 transformation is calibrated only against held-out synthetic scenarios. Feature importance is global and noncausal, and false negatives or positives remain possible. The physical simulator remains authoritative for water state; the estimate must not be used as operational dispatch or public warning advice.
 
 ## Maintenance
 

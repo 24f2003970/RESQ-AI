@@ -10,7 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .city_service import generate_city
 from .config import settings
-from .ml_service import ModelUnavailable, dataset_info, evaluation_info, feature_info, model_info, predictions
+from .ml_service import (ModelUnavailable, dataset_info, evaluation_info, feature_info,
+                         model_info, predictions, reliability_info, sensitivity_info)
 from .scenarios import ScenarioError, store
 from .rescue import PlanStore, RescuePlan, generate_plan
 from .agents import AgentOrchestrator
@@ -222,6 +223,16 @@ def ml_evaluation_info():
         return evaluation_info()
     except ModelUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
+
+
+@app.get("/api/v1/ml/reliability")
+def ml_reliability_info():
+    return reliability_info()
+
+
+@app.get("/api/v1/ml/sensitivity")
+def ml_sensitivity_info():
+    return sensitivity_info()
 
 
 @app.get("/api/v1/ml/features", response_model=list[MLFeatureInfo])

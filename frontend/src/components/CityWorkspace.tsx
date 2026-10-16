@@ -84,6 +84,8 @@ export default function CityWorkspace({
   const selectMission=useCallback((missionId:string|null)=>setSelectedMissionId(missionId),[]);
   const [searchParams]=useSearchParams();
   const scenarioId=scenario?.id;
+  const currentPredictions = scenario && predictions?.scenario_id === scenario.id && predictions.scenario_epoch === scenario.epoch && predictions.scenario_state_version === scenario.state_version && predictions.scenario_tick === scenario.tick && predictions.model_version === model?.model_version ? predictions : null;
+  const supportedPredictions = currentPredictions ? { ...currentPredictions, predictions: currentPredictions.predictions.filter((item) => item.distribution_support_status === "within_observed_support" || item.distribution_support_status === "edge_of_observed_support") } : null;
   const [layerOpen, setLayerOpen] = useState(false);
   const [lowGraphics, setLowGraphics] = useState(false);
   const [layers, setLayers] = useState<Layers>({
@@ -257,7 +259,7 @@ export default function CityWorkspace({
                 onSelect={setSelectedId}
                 layers={layers}
                 lowGraphics={lowGraphics}
-                predictions={predictions}
+                predictions={supportedPredictions}
                 routeLines={rescuePlan?.status === "proposed" && rescuePlan.scenario_version === scenario?.state_version ? rescuePlan.missions.map(m=>m.route.polyline) : []}
                 manualClosureIds={manualClosureIds}
                 missions={missionRecords}
@@ -414,7 +416,7 @@ export default function CityWorkspace({
             error={detailError}
             close={() => setSelectedId(null)}
             choose={setSelectedId}
-            predictions={predictions}
+                predictions={currentPredictions}
           />
           <Panel
             title="Critical facilities"
@@ -454,12 +456,13 @@ export default function CityWorkspace({
             </span>
             <div>
               <h2>Flood risk intelligence</h2>
-              <p>{predictions ? `${predictions.predictions.filter((p) => p.predicted_future_exposed).length} buildings estimated exposed in ${predictions.horizon_minutes} minutes. Current exposure remains based on simulated water depth.` : "Predictions are loading for the active scenario."}</p>
-              {predictions?.predictions.filter((p) => p.predicted_future_exposed).slice(0, 3).map((prediction) => {
+              <p>{currentPredictions ? `${supportedPredictions?.predictions.filter((p) => p.predicted_future_exposed).length ?? 0} supported model labels estimate future exposure within ${currentPredictions.horizon_minutes} simulated minutes. Current exposure remains based on simulated water depth.` : "Current model prediction is unavailable, stale, or still loading; simulated physical exposure remains available."}</p>
+              {supportedPredictions?.predictions.filter((p) => p.predicted_future_exposed).slice(0, 3).map((prediction) => {
                 const building = city.buildings.find((item) => item.id === prediction.building_id);
                 return building ? <button key={building.id} className="predicted-building-link" onClick={() => setSelectedId(building.id)}>{building.name} <span>predicted exposed</span></button> : null;
               })}
-              <Badge tone={model?.status === "ready" ? "green" : "amber"}>{model?.status === "ready" ? `Local model · ${model.model_version}` : model?.unavailable_reason ?? "Model unavailable"}</Badge>
+              <Badge tone={model?.status === "ready" && model.reliability_status === "available" ? "green" : "amber"}>{model?.status !== "ready" ? model?.unavailable_reason ?? "Model unavailable" : `Local model · ${model.model_version} · ${model.reliability_status}`}</Badge>
+              {model?.reliability_warnings.map((warning) => <small className="reliability-warning" key={warning}>{warning}</small>)}
               <Link className="risk-lab-link" to="/model">Open Model Intelligence Lab <ArrowRight size={14}/></Link>
             </div>
           </section>
