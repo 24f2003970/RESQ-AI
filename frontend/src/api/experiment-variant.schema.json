@@ -1,0 +1,106 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "variant_id": {
+      "enum": [
+        "A",
+        "B"
+      ],
+      "title": "Variant Id",
+      "type": "string"
+    },
+    "label": {
+      "maxLength": 60,
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "preset": {
+      "anyOf": [
+        {
+          "enum": [
+            "mild",
+            "heavy",
+            "extreme"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Preset"
+    },
+    "rainfall_mm_h": {
+      "anyOf": [
+        {
+          "maximum": 300,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rainfall Mm H"
+    },
+    "river_level_m": {
+      "anyOf": [
+        {
+          "maximum": 5,
+          "minimum": -2,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "River Level M"
+    },
+    "drainage_effectiveness": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Drainage Effectiveness"
+    },
+    "available_ambulances": {
+      "default": 2,
+      "maximum": 2,
+      "minimum": 0,
+      "title": "Available Ambulances",
+      "type": "integer"
+    },
+    "available_ground_teams": {
+      "default": 2,
+      "maximum": 2,
+      "minimum": 0,
+      "title": "Available Ground Teams",
+      "type": "integer"
+    },
+    "closed_road_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 10,
+      "title": "Closed Road Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "variant_id",
+    "label"
+  ],
+  "title": "ExperimentVariant",
+  "type": "object"
+}

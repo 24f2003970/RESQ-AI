@@ -616,6 +616,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/scenarios/{scenario_id}/experiments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Scenario Experiments */
+        get: operations["list_scenario_experiments_api_v1_scenarios__scenario_id__experiments_get"];
+        put?: never;
+        /** Create Scenario Experiment */
+        post: operations["create_scenario_experiment_api_v1_scenarios__scenario_id__experiments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-experiments/{experiment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Scenario Experiment */
+        get: operations["get_scenario_experiment_api_v1_scenario_experiments__experiment_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-experiments/{experiment_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Scenario Experiment */
+        post: operations["cancel_scenario_experiment_api_v1_scenario_experiments__experiment_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -987,6 +1039,98 @@ export interface components {
             /** Depth M */
             depth_m: number;
         };
+        /** ExperimentCreate */
+        ExperimentCreate: {
+            /** Name */
+            name: string;
+            /** Base Scenario Id */
+            base_scenario_id: string;
+            /** Expected State Version */
+            expected_state_version: number;
+            /**
+             * Simulation Ticks
+             * @default 6
+             */
+            simulation_ticks: number;
+            /** Variants */
+            variants: components["schemas"]["ExperimentVariant"][];
+        };
+        /** ExperimentRecord */
+        ExperimentRecord: {
+            /** Experiment Id */
+            experiment_id: string;
+            /** Name */
+            name: string;
+            /** Base Scenario Id */
+            base_scenario_id: string;
+            /** Base Seed */
+            base_seed: number;
+            /** Base Tick */
+            base_tick: number;
+            /** Base State Version */
+            base_state_version: number;
+            /** Base Epoch */
+            base_epoch: number;
+            /** Base Snapshot Ref */
+            base_snapshot_ref: string;
+            /** Simulation Ticks */
+            simulation_ticks: number;
+            /** Variants */
+            variants: components["schemas"]["ExperimentVariant"][];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "running" | "completed" | "failed" | "cancel_requested" | "cancelled" | "interrupted";
+            /** Progress Percent */
+            progress_percent: number;
+            /** Current Variant */
+            current_variant?: string | null;
+            /** Created At Utc */
+            created_at_utc: string;
+            /** Completed At Utc */
+            completed_at_utc?: string | null;
+            /** Error */
+            error?: string | null;
+            /** Results */
+            results?: {
+                [key: string]: unknown;
+            } | null;
+            /** Reproduction */
+            reproduction: {
+                [key: string]: unknown;
+            };
+        };
+        /** ExperimentVariant */
+        ExperimentVariant: {
+            /**
+             * Variant Id
+             * @enum {string}
+             */
+            variant_id: "A" | "B";
+            /** Label */
+            label: string;
+            /** Preset */
+            preset?: ("mild" | "heavy" | "extreme") | null;
+            /** Rainfall Mm H */
+            rainfall_mm_h?: number | null;
+            /** River Level M */
+            river_level_m?: number | null;
+            /** Drainage Effectiveness */
+            drainage_effectiveness?: number | null;
+            /**
+             * Available Ambulances
+             * @default 2
+             */
+            available_ambulances: number;
+            /**
+             * Available Ground Teams
+             * @default 2
+             */
+            available_ground_teams: number;
+            /** Closed Road Ids */
+            closed_road_ids?: string[];
+        };
         /** GreenArea */
         GreenArea: {
             /** Id */
@@ -1327,6 +1471,10 @@ export interface components {
             objective: string;
             /** Explanation */
             explanation: string;
+            /** Timings Ms */
+            timings_ms?: {
+                [key: string]: unknown;
+            };
         };
         /** RescuePlanDecision */
         RescuePlanDecision: {
@@ -1657,7 +1805,9 @@ export interface operations {
     };
     city_state_api_v1_city_state_get: {
         parameters: {
-            query?: never;
+            query?: {
+                seed?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1671,6 +1821,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CityState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -2688,6 +2847,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentEventAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_scenario_experiments_api_v1_scenarios__scenario_id__experiments_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentRecord"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_scenario_experiment_api_v1_scenarios__scenario_id__experiments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_scenario_experiment_api_v1_scenario_experiments__experiment_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experiment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_scenario_experiment_api_v1_scenario_experiments__experiment_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experiment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentRecord"];
                 };
             };
             /** @description Validation Error */

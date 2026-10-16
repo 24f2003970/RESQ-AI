@@ -151,6 +151,44 @@ class ScenarioStore:
             db.commit()
             return result
 
+    def import_snapshot(self, state: ScenarioState, scenario_id: str) -> ScenarioEnvelope:
+        """Create an isolated scenario from an exact physical snapshot.
+
+        Used by analytical experiments so variants start from the same depth,
+        mass balance, parameters, tick, seed, epoch, and state version.
+        This writes only to the ScenarioStore database it was called on.
+        """
+        depth = np.asarray(state.depth_m, dtype=np.float64)
+        if depth.shape != (GRID_HEIGHT, GRID_WIDTH) or not np.isfinite(depth).all() or (depth < 0).any():
+            raise ScenarioError(422, "The experiment starting flood snapshot is invalid.")
+        with self.lock, self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            existing = db.execute("SELECT 1 FROM scenarios WHERE id=?", (scenario_id,)).fetchone()
+            if existing:
+                db.rollback()
+                raise ScenarioError(409, "The isolated experiment scenario already exists.")
+            params = state.parameters
+            db.execute(
+                "INSERT INTO scenarios(id,name,seed,preset,status,tick,epoch,state_version,simulated_seconds,parameters_json,initial_parameters_json,depth_blob,mass_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (scenario_id, state.name, state.seed, state.preset, "paused", state.tick,
+                 state.epoch, state.state_version, state.simulated_seconds,
+                 _json(params.model_dump()), _json(params.model_dump()),
+                 zlib.compress(depth.tobytes()), _json(state.mass_balance.model_dump())),
+            )
+            row = db.execute("SELECT * FROM scenarios WHERE id=?", (scenario_id,)).fetchone()
+            self._event(db, row, "experiment_snapshot_imported", {
+                "source_scenario_id": state.id,
+                "source_state_version": state.state_version,
+                "source_epoch": state.epoch,
+            }, version=state.state_version, tick=state.tick, epoch=state.epoch)
+            if state.tick % 12 == 0:
+                db.execute("INSERT OR REPLACE INTO checkpoints VALUES(?,?,?,?,?,?)",
+                    (scenario_id, state.epoch, state.tick, zlib.compress(depth.tobytes()),
+                     _json(state.mass_balance.model_dump()), state.state_version))
+            result = self._envelope(db, row)
+            db.commit()
+            return result
+
     def active_id(self) -> str:
         with self._connect() as db:
             row = db.execute("SELECT id FROM scenarios ORDER BY created_at DESC, rowid DESC LIMIT 1").fetchone()

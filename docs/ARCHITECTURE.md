@@ -1,6 +1,6 @@
 # System Architecture
 
-> **Implementation status through Part 6:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing and assignment, human review, and six durable event-triggered algorithmic agents. Coordination uses a SQLite outbox and REST polling; there is no WebSocket/SSE dependency. Boat navigation and mission execution remain future work.
+> **Implementation status through Part 7:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing and assignment, human review, six durable event-triggered algorithmic agents, and isolated reproducible A/B experiments. Coordination uses a SQLite outbox and REST polling; experiments use a separate SQLite database. There is no WebSocket/SSE dependency. Boat navigation and mission execution remain future work.
 
 ## Design principles
 
@@ -15,7 +15,7 @@
 
 ```text
 React + TypeScript application
-  ├─ Command Center / Studio / Scenario Lab / Decision Explorer / Model Lab
+  ├─ Command Center / Studio / Scenario Lab / Decision Explorer / Model Lab / Guided Demo
   ├─ React Three Fiber scene (projection of API state)
   └─ REST commands + safe polling of committed state/events
                  │ localhost only
@@ -26,7 +26,8 @@ FastAPI modular monolith
   ├─ Risk model adapter + transparent baseline
   ├─ SQLite outbox / ordered agent coordinator
   ├─ Prioritization, routing, assignment, and approval services
-  └─ SQLite event and scenario persistence
+  ├─ SQLite operational event and scenario persistence
+  └─ Isolated experiment snapshot/results database and worker
                  │
        Local model artifact + configuration
 ```
@@ -51,6 +52,7 @@ Initial API surface:
 - `GET /api/v1/scenarios/{id}/agent-status`, `/agent-events`, `/agent-runs`, and `/recommendations/latest`
 - `GET /api/v1/agent-traces/{event_id}`
 - `POST /api/v1/scenarios/{id}/intelligence-assessments`
+- `POST /api/v1/scenarios/{id}/experiments`, `GET /api/v1/scenarios/{id}/experiments`, `GET /api/v1/scenario-experiments/{experiment_id}`, and `POST /api/v1/scenario-experiments/{experiment_id}/cancel`
 
 Use request IDs and monotonically increasing state versions. Reject stale commands when a client submits a version that no longer matches the server state.
 
@@ -98,3 +100,9 @@ For the hackathon, run a local FastAPI process and Vite-built frontend on one la
 The browser requests the generated city and active scenario over versioned local REST endpoints. `ScenarioStore` serializes mutations with a process lock and SQLite `BEGIN IMMEDIATE`, checks `expected_version`, applies a fixed flood tick in Python/NumPy, updates derived impacts, records compact transition events, and commits state and events together. The frontend renders returned terrain/depth/impact values; it does not implement hydraulic calculations. Each scenario persists its own seed, parameters, compressed depth array, tick, epoch, version, accounting totals, events, and periodic depth checkpoints. Replay is read-only and reconstructs from the nearest checkpoint plus deterministic tick events.
 
 See [PART_03_IMPLEMENTATION.md](PART_03_IMPLEMENTATION.md) for REST contracts and [FLOOD_SIMULATION_METHOD.md](FLOOD_SIMULATION_METHOD.md) for numerical details.
+
+## Part 7 analytical experiments
+
+`ExperimentRepository` stores a canonical starting snapshot and request in a separate `experiments.sqlite3` file. `ExperimentRunner` imports that snapshot into per-variant scenario namespaces in the same dedicated file, runs the existing `ScenarioStore` stepper for equal durations, applies manual road closures only to the experiment `PlanStore`, and computes the Part 5 route/assignment functions in memory. It never invokes the operational outbox coordinator or persists operational approvals/reservations. ML inference receives the explicit variant `ScenarioState` through `predict_state`.
+
+The Scenario Lab renders chart points from saved result data and lazily reuses one `CityScene` canvas while switching variants. The Guided Demo creates a separate operational scenario because its real event pipeline and commander decision must be observable; its reset preserves old traces as historical and starts a new scenario epoch. See [SCENARIO_COMPARISON.md](SCENARIO_COMPARISON.md), [PART_07_IMPLEMENTATION.md](PART_07_IMPLEMENTATION.md), and [HACKATHON_DEMO_GUIDE.md](HACKATHON_DEMO_GUIDE.md).

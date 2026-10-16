@@ -12,6 +12,8 @@ RESQ-AI is an offline-first disaster response command center for a deterministic
 4. Compare current exposure with a separately labeled 30-minute synthetic ML estimate in the Model Intelligence Lab.
 5. Generate a flood-aware rescue plan, compare exact constrained assignment with a nearest-unit baseline, review ranked destinations, and explicitly approve or reject a proposal.
 6. Observe six persisted algorithmic agents replan after measured flood/access changes or a manual road closure, review a replacement in the 3D command center, then make an explicit human decision.
+7. Run a reproducible isolated A/B experiment from one saved snapshot, compare actual flood and resource-allocation outcomes, inspect source metrics, and switch the single Digital Twin canvas between variants.
+8. Use **Guided Demo** for the ten-stage flood-to-replanning journey, including local ML, event traces, road closure, human decision, and saved baseline-versus-optimized comparison.
 
 Every displayed metric must come from backend state or a recorded experiment. Simulated data, assumptions, and model results will be labeled as such. No hosted AI inference or external AI API key is part of the design. Once dependencies and any optional data are installed, the application must run locally without network access.
 
@@ -24,13 +26,15 @@ Every displayed metric must come from backend state or a recorded experiment. Si
 
 The backend owns scenario state, simulation steps, predictions, agent decisions, assignments, and event history. The 3D scene renders a read-only projection of that state and sends user commands back through the API.
 
-## Current implementation — Parts 3–6
+## Current implementation — Parts 3–7
 
 The local full-stack foundation renders backend-generated city geometry and inventory. Command Center and Digital Twin Studio include building selection, an API-backed inspector, camera reset/focus/orbit/zoom/pan, map layers, snapshot export, and a building-inventory fallback. The other three routes explain their future scope. Connection status is based on successful local API requests, with retries and a stale-snapshot warning when the service disconnects.
 
 The seeded baseline contains 72 buildings, four districts, ten road corridors, six bridge crossings, one hospital, one shelter, two parks, and five response units. Part 3 adds a deterministic 20 m flood grid, SQLite scenarios/events/checkpoints, replay, and exposure modeling. Part 4 provides offline training/inference and a predicted exposure layer. Part 5 adds an intersection-connected NetworkX route graph, bridge segments, flood-aware ground routes, transparent destination priorities, constrained assignment with a baseline comparison, persistent plan proposals, commander approval/rejection, manual closure overlays, and 3D route display. All simulation and ML data are synthetic and are not validated for real disasters. Boat routing remains unsupported.
 
 Part 6 adds six deterministic local agents, a transaction-backed SQLite event outbox, durable run/decision traces, stale-state rejection, automatic route-aware proposal updates, and a polling AI Decision Explorer. It reuses the Part 5 ML, priority, route and SciPy assignment contracts. Recommendations remain subject to commander approval. There is no hosted AI, mission execution, or completion/release simulation. Details: `docs/PART_06_IMPLEMENTATION.md`, `docs/AGENT_ARCHITECTURE.md`, `docs/EVENT_ORCHESTRATION.md`, `docs/DECISION_TRACE_CONTRACT.md`, `docs/REPLANNING_POLICY.md`, and `docs/PART_06_VERIFICATION.md`.
+
+Part 7 adds isolated SQLite-backed A/B experiments from one exact scenario snapshot, existing-engine flood variations, resource and manual-road interventions, measured conventional-nearest versus priority-weighted SciPy assignment, saved result charts/JSON export, a one-canvas A/B Digital Twin view, and the guided ten-stage demo. Experiments do not mutate operational scenarios, plans, outboxes, traces or reservations. The demo uses seed 2026, 90 mm/h rain, 1.4 m river stage, 20% drainage and 12 ticks; its acceptance script verifies actual ML inference, six-agent traces, route closure invalidation, replanning, approval and reservation safety. See `docs/PART_07_IMPLEMENTATION.md`, `docs/SCENARIO_COMPARISON.md`, `docs/BASELINE_COMPARISON_METHOD.md`, `docs/HACKATHON_DEMO_GUIDE.md`, `docs/DEMO_ACCEPTANCE_REPORT.md`, and `docs/PART_07_VERIFICATION.md`.
 
 Part 5 assumptions and verification are documented in `docs/PART_05_IMPLEMENTATION.md`, `docs/PART_05_VERIFICATION.md`, `docs/ROUTING_MODEL.md`, `docs/RESOURCE_OPTIMIZATION.md`, and `docs/RESCUE_PLAN_CONTRACT.md`.
 
@@ -39,6 +43,7 @@ Part 5 assumptions and verification are documented in `docs/PART_05_IMPLEMENTATI
 ```text
 backend/
   app/             # Configuration, Pydantic schemas, seed service, FastAPI routes
+  demo_acceptance.py # Real local-ML flood-to-replanning acceptance run
   tests/           # Determinism, relationships, schemas, endpoints and CORS
   export_contract.py
   requirements.txt # Exact installed dependency versions
@@ -50,6 +55,12 @@ frontend/
 docs/
   ARCHITECTURE.md
   PART_06_IMPLEMENTATION.md
+  PART_07_IMPLEMENTATION.md
+  PART_07_VERIFICATION.md
+  SCENARIO_COMPARISON.md
+  BASELINE_COMPARISON_METHOD.md
+  HACKATHON_DEMO_GUIDE.md
+  DEMO_ACCEPTANCE_REPORT.md
   PART_06_VERIFICATION.md
   AGENT_ARCHITECTURE.md
   EVENT_ORCHESTRATION.md

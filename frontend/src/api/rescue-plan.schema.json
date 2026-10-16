@@ -102,6 +102,11 @@
     "explanation": {
       "title": "Explanation",
       "type": "string"
+    },
+    "timings_ms": {
+      "additionalProperties": true,
+      "title": "Timings Ms",
+      "type": "object"
     }
   },
   "required": [

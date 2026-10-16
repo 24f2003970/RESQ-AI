@@ -10,9 +10,11 @@ import {
   type ScenarioState,
   type SimulationEvent,
   type SimulationParameters,
+  type CityState,
 } from "../api/client";
 import type { ScenarioEnvelope } from "../api/client";
 import { Badge, Panel } from "./ui";
+import ScenarioComparison from "./ScenarioComparison";
 
 const presetText = {
   mild: "Mild rainfall · 8 mm/h",
@@ -53,12 +55,14 @@ function Metric({ label, value, suffix = "" }: { label: string; value: string | 
 }
 
 export default function ScenarioLab({
+  city,
   envelope,
   scenario,
   error: parentError,
   onChange,
   onRetry,
 }: {
+  city?: CityState;
   envelope: ScenarioEnvelope | null;
   scenario: ScenarioState | null;
   error: string;
@@ -212,6 +216,7 @@ export default function ScenarioLab({
           </Panel>
         </section>
       </div>
+      {city ? <ScenarioComparison scenario={scenario} city={city}/> : <p className="scenario-note">Connect to the local city service to load road options for reproducible A/B experiments.</p>}
       <p className="scenario-disclaimer"><span className="live-dot"/> RESQ-AI FLOOD SIMULATION · EDUCATIONAL FICTIONAL SCENARIO · NOT AN OPERATIONAL WARNING SYSTEM</p>
     </main>
   );

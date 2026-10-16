@@ -21,6 +21,7 @@ import { Badge } from "./components/ui";
 import CityWorkspace from "./components/CityWorkspace";
 import AgentExplorer from "./components/AgentExplorer";
 import ScenarioLab from "./components/ScenarioLab";
+import DemoMode from "./components/DemoMode";
 import ModelLab from "./components/ModelLab";
 import { useRisk } from "./api/useRisk";
 
@@ -30,6 +31,7 @@ const nav = [
   { path: "/scenarios", name: "Scenario Lab", icon: SlidersHorizontal },
   { path: "/decisions", name: "AI Decision Explorer", icon: Activity },
   { path: "/model", name: "Model Intelligence Lab", icon: Cpu },
+  { path: "/demo", name: "Guided Demo", icon: Siren },
 ];
 
 export default function App() {
@@ -159,7 +161,7 @@ export default function App() {
             >
               <RefreshCw size={16} />
             </button>
-            <span className="part-label">PART 06</span>
+            <span className="part-label">PART 07</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -232,13 +234,14 @@ export default function App() {
                 />
                 <Route
                   path="/scenarios"
-                  element={<ScenarioLab envelope={simulation.envelope} scenario={simulation.scenario} error={simulation.error} onChange={simulation.accept} onRetry={simulation.retry} />}
+                  element={<ScenarioLab city={city} envelope={simulation.envelope} scenario={simulation.scenario} error={simulation.error} onChange={simulation.accept} onRetry={simulation.retry} />}
                 />
                 <Route
                   path="/decisions"
                   element={<AgentExplorer scenario={simulation.scenario} />}
                 />
                 <Route path="/model" element={<ModelLab scenario={simulation.scenario} />} />
+                <Route path="/demo" element={<DemoMode scenario={simulation.scenario} onChange={simulation.accept} />} />
                 <Route
                   path="*"
                   element={
