@@ -42,6 +42,8 @@ class RescuePlan(BaseModel):
 
 
 def _xy(p):
+    if isinstance(p,(tuple,list)):
+        return (float(p[0]),float(p[1]))
     if isinstance(p, dict):
         return (float(p["x_m"]), float(p["y_m"]))
     return (float(p.x_m), float(p.y_m))
@@ -83,7 +85,12 @@ def build_road_graph(city, state: ScenarioState | None = None, manual_closures=(
                 dedup.append((t,p))
         for t,p in dedup:
             node = f"j:{p[0]:.3f}:{p[1]:.3f}"
-            g.add_node(node, xy=p, kind="intersection")
+            bridge=bridge_by_road.get(road.id)
+            bridge_half=bridge.length_m/2 if bridge else 0
+            bridge_dist=abs(p[1]-bridge.position.y_m) if bridge and abs(road.end.y_m-road.start.y_m)>1e-9 else (abs(p[0]-bridge.position.x_m) if bridge else float("inf"))
+            deck=bool(bridge and bridge_dist<=bridge_half+1e-4)
+            z=bridge.position.elevation_m if deck else road.start.elevation_m+t*(road.end.elevation_m-road.start.elevation_m)
+            g.add_node(node, xy=p, elevation_m=z, kind="intersection")
         for (t0,p0),(t1,p1) in zip(dedup,dedup[1:]):
             bridge = bridge_by_road.get(road.id)
             is_bridge = bool(bridge and abs((p0[0]+p1[0])/2-bridge.position.x_m) < .01 and abs((p0[1]+p1[1])/2-bridge.position.y_m) < bridge.length_m/2+0.01)
@@ -110,14 +117,7 @@ def _nearest_node(g, position):
     return min(g.nodes, key=lambda n: (math.dist(g.nodes[n]["xy"], (x,y)), n))
 
 
-def route(g, start_position, destination_position, unit_type="ambulance"):
-    if unit_type == "boat":
-        return {"reachable": False, "reason": "Boat routing is unsupported: no waterway navigation or docking graph exists."}
-    start_road, end_road = _nearest_node(g, start_position), _nearest_node(g, destination_position)
-    start, end = "access:unit", "access:destination"
-    sx, sy = _xy(start_position); ex, ey = _xy(destination_position)
-    if math.dist((sx,sy),g.nodes[start_road]["xy"]) > 90 or math.dist((ex,ey),g.nodes[end_road]["xy"]) > 90:
-        return {"reachable": False, "reason": "Unit or destination is beyond the documented 90 m road-access spur limit."}
+def _allowed_graph(g, unit_type):
     allowed = nx.Graph()
     allowed.add_nodes_from(g.nodes(data=True))
     for a,b,data in g.edges(data=True):
@@ -129,26 +129,146 @@ def route(g, start_position, destination_position, unit_type="ambulance"):
             continue
         penalty = 1.0 + data["depth_m"] * 4 + (0.4 if data["status"] == "caution" else 0)
         speed = data["speed_kmh"] * (0.55 if data["status"] == "caution" else 1.0)
-        allowed.add_edge(a,b,**data, cost=data["length_m"]*penalty, speed=speed)
-    allowed.add_node(start, xy=(sx,sy), kind="unit_access")
-    allowed.add_node(end, xy=(ex,ey), kind="building_access")
+        allowed.add_edge(a,b,**data, speed=speed*1000/3600, cost=data["length_m"]*penalty)
+    return allowed
+
+
+def _route_result(allowed, nodes):
+    edges = [allowed.edges[a,b] for a,b in zip(nodes,nodes[1:])]
+    polyline = [allowed.nodes[n]["xy"] for n in nodes]
+    polyline_xyz = [[allowed.nodes[n]["xy"][0],allowed.nodes[n]["xy"][1],allowed.nodes[n].get("elevation_m",0)] for n in nodes]
+    length = sum(e["length_m"] for e in edges)
+    seconds = sum(e["length_m"]/max(e["speed"],1e-9) for e in edges)
+    return {"reachable": True, "distance_m": round(length,1), "simulated_minutes": round(seconds/60,1),
+            "road_ids": list(dict.fromkeys(e["road_id"] for e in edges if e["road_id"])), "edge_ids": [e["edge_id"] for e in edges],
+            "polyline": polyline, "polyline_xyz": polyline_xyz, "segment_lengths_m": [round(e["length_m"], 6) for e in edges],
+            "segment_speeds_mps": [round(e["speed"], 6) for e in edges],
+            "accessibility": "caution" if any(e["status"] == "caution" for e in edges) else "open",
+            "explanation": "Dijkstra route on open segments; synthetic speed assumptions are not traffic ETAs."}
+
+
+def _nearest_node_within(g, point, limit):
+    node = _nearest_node(g, point)
+    return node if math.dist(g.nodes[node]["xy"], point) <= limit else None
+
+
+def route(g, start_position, destination_position, unit_type="ambulance"):
+    if unit_type == "boat":
+        return {"reachable": False, "reason": "Boat routing is unsupported: no waterway navigation or docking graph exists."}
+    allowed = _allowed_graph(g, unit_type)
+    sx, sy = _xy(start_position); ex, ey = _xy(destination_position)
+    start_road, end_road = _nearest_node_within(allowed, (sx,sy), 90), _nearest_node_within(allowed, (ex,ey), 90)
+    start, end = "access:unit", "access:destination"
+    if start_road is None or end_road is None:
+        return {"reachable": False, "reason": "Unit or destination is beyond the documented 90 m road-access spur limit."}
+    allowed.add_node(start, xy=(sx,sy), elevation_m=float(getattr(start_position,"elevation_m",0) if not isinstance(start_position,dict) else start_position.get("elevation_m",0)), kind="unit_access")
+    allowed.add_node(end, xy=(ex,ey), elevation_m=float(getattr(destination_position,"elevation_m",0) if not isinstance(destination_position,dict) else destination_position.get("elevation_m",0)), kind="building_access")
     for node, anchor, point, identity in ((start,start_road,(sx,sy),"unit"),(end,end_road,(ex,ey),"building")):
         length=math.dist(point,g.nodes[anchor]["xy"])
         allowed.add_edge(node,anchor,edge_id=f"access:{identity}",road_id=None,bridge_id=None,length_m=length,
                          xy=[point,g.nodes[anchor]["xy"]],status="open",depth_m=0.0,speed_kmh=5.0,
-                         speed=5.0,cost=length*1.5)
+                         speed=5.0*1000/3600,cost=length*1.5)
     try:
         nodes = nx.shortest_path(allowed, start, end, weight="cost", method="dijkstra")
     except (nx.NetworkXNoPath, nx.NodeNotFound):
         return {"reachable": False, "reason": "No route is available under this unit's accessibility policy."}
-    edges = [allowed.edges[a,b] for a,b in zip(nodes,nodes[1:])]
-    polyline = [allowed.nodes[n]["xy"] for n in nodes]
-    length = sum(e["length_m"] for e in edges)
-    seconds = sum(e["length_m"]/(e["speed"]*1000/3600) for e in edges)
-    return {"reachable": True, "distance_m": round(length,1), "simulated_minutes": round(seconds/60,1),
-            "road_ids": list(dict.fromkeys(e["road_id"] for e in edges if e["road_id"])), "edge_ids": [e["edge_id"] for e in edges],
-            "polyline": polyline, "accessibility": "caution" if any(e["status"] == "caution" for e in edges) else "open",
-            "explanation": "Dijkstra route on open segments; synthetic speed assumptions are not traffic ETAs."}
+    return _route_result(allowed, nodes)
+
+
+def route_from_mission_segment(g, saved_route, traversed_distance_m, segment_index,
+                               current_position, destination_position, unit_type="ambulance"):
+    """Reroute from an existing route edge without a new unconstrained access spur.
+
+    A mid-edge mission may egress only along the remainder of that same edge,
+    if it remains traversable. At an exact graph node, a zero-length attachment
+    is allowed. The ordinary building destination retains its documented
+    90 m access spur.
+    """
+    if unit_type == "boat":
+        return {"reachable":False,"reason":"Boat routing is unsupported: no waterway navigation or docking graph exists."}
+    points=saved_route.get("polyline",[])
+    edge_ids=saved_route.get("edge_ids",[])
+    lengths=[float(x) for x in saved_route.get("segment_lengths_m",[])]
+    if len(points)<2 or len(edge_ids)!=len(points)-1:
+        return {"reachable":False,"reason":"The saved mission route has no verifiable graph-edge geometry for safe egress."}
+    if len(lengths)!=len(points)-1:
+        lengths=[math.dist(points[i],points[i+1]) for i in range(len(points)-1)]
+    index=max(0,min(int(segment_index),len(lengths)-1))
+    segment_start=sum(lengths[:index]); segment_length=lengths[index]
+    progress=max(0.0,min(segment_length,float(traversed_distance_m)-segment_start))
+    ratio=progress/max(segment_length,1e-9)
+    expected=(points[index][0]+(points[index+1][0]-points[index][0])*ratio,
+              points[index][1]+(points[index+1][1]-points[index][1])*ratio)
+    sx,sy=_xy(current_position)
+    if math.dist(expected,(sx,sy))>0.05:
+        return {"reachable":False,"reason":"Stored position does not match the saved route progress; safe road egress cannot be verified."}
+
+    allowed=_allowed_graph(g,unit_type)
+    start="access:mission-current"
+    start_z=float(current_position.get("elevation_m",0) if isinstance(current_position,dict) else getattr(current_position,"elevation_m",0))
+    allowed.add_node(start,xy=(sx,sy),elevation_m=start_z,kind="mission_position")
+    edge_id=edge_ids[index]
+
+    # If the unit is exactly on a graph node, joining there costs zero distance;
+    # no position adjustment or hidden movement is introduced.
+    exact_nodes=sorted((n for n,data in allowed.nodes(data=True) if n!=start
+                        if math.dist(data.get("xy",(float("inf"),float("inf"))),(sx,sy))<=0.02),key=str)
+    for node in exact_nodes:
+        allowed.add_edge(start,node,edge_id="access:mission-node",road_id=None,bridge_id=None,
+                         length_m=0.0,xy=[(sx,sy),allowed.nodes[node]["xy"]],status="open",
+                         depth_m=0.0,speed_kmh=5.0,speed=5.0,cost=0.0)
+
+    if not exact_nodes and edge_id.startswith("access:"):
+        # Only the stored mission edge can reach the road network. For the
+        # original unit spur, the road-network endpoint is its second point.
+        network_endpoint=points[index+1] if edge_id.endswith(":unit") or edge_id.startswith("access:mission") else None
+        if network_endpoint is None:
+            return {"reachable":False,"reason":"The current position is on a non-road access spur with no supported safe egress."}
+        anchors=[n for n,data in allowed.nodes(data=True) if math.dist(data.get("xy",()),network_endpoint)<=0.02]
+        remaining=segment_length-progress
+        if anchors and remaining>=-1e-6:
+            anchor=min(anchors,key=str)
+            allowed.add_edge(start,anchor,edge_id=edge_id,road_id=None,bridge_id=None,
+                             length_m=max(0.0,remaining),xy=[(sx,sy),allowed.nodes[anchor]["xy"]],
+                             status="open",depth_m=0.0,speed_kmh=5.0,speed=5.0*1000/3600,
+                             cost=max(0.0,remaining)*1.5)
+    elif not exact_nodes:
+        matches=[(a,b,data) for a,b,data in allowed.edges(data=True) if data.get("edge_id")==edge_id]
+        if not matches:
+            return {"reachable":False,"reason":"The unit is stopped on a closed, flooded, or inaccessible route segment; safe egress is unavailable."}
+        a,b,data=matches[0]
+        # The saved segment's endpoint coordinates identify graph orientation.
+        point_a,point_b=points[index],points[index+1]
+        def node_for(point):
+            candidates=[node for node in (a,b) if math.dist(allowed.nodes[node]["xy"],point)<=0.02]
+            return candidates[0] if candidates else None
+        from_node,to_node=node_for(point_a),node_for(point_b)
+        if from_node is None or to_node is None:
+            return {"reachable":False,"reason":"Saved route edge coordinates no longer match the traversable road graph."}
+        remaining_by_node=((from_node,progress),(to_node,max(0.0,segment_length-progress)))
+        for node,partial in remaining_by_node:
+            endpoint=allowed.nodes[node]["xy"]
+            allowed.add_edge(start,node,edge_id=edge_id,road_id=data.get("road_id"),bridge_id=data.get("bridge_id"),
+                             length_m=partial,xy=[(sx,sy),endpoint],status=data["status"],depth_m=data["depth_m"],
+                             speed_kmh=data["speed_kmh"],speed=data["speed"],
+                             cost=partial*data["cost"]/max(data["length_m"],1e-9))
+
+    ex,ey=_xy(destination_position)
+    end_road=_nearest_node_within(g,(ex,ey),90)
+    if end_road is None:
+        return {"reachable":False,"reason":"Destination is beyond the documented 90 m building-access spur limit."}
+    end="access:destination"
+    end_z=float(getattr(destination_position,"elevation_m",0) if not isinstance(destination_position,dict) else destination_position.get("elevation_m",0))
+    allowed.add_node(end,xy=(ex,ey),elevation_m=end_z,kind="building_access")
+    length=math.dist((ex,ey),allowed.nodes[end_road]["xy"])
+    allowed.add_edge(end,end_road,edge_id="access:building",road_id=None,bridge_id=None,length_m=length,
+                     xy=[(ex,ey),allowed.nodes[end_road]["xy"]],status="open",depth_m=0.0,
+                     speed_kmh=5.0,speed=5.0*1000/3600,cost=length*1.5)
+    try:
+        nodes=nx.shortest_path(allowed,start,end,weight="cost",method="dijkstra")
+    except (nx.NetworkXNoPath,nx.NodeNotFound):
+        return {"reachable":False,"reason":"No safe route is connected to the unit's current traversable road segment."}
+    return _route_result(allowed,nodes)
 
 
 def priorities(city, state, predictions, closures=(), reserved_unit_ids=()):
@@ -196,7 +316,7 @@ def _assign(units, destinations, route_map, optimized=True):
             if not candidates:continue
             uid=min(candidates,key=lambda unit_id:(route_map[(unit_id,destination["building_id"])]["simulated_minutes"],unit_id))
             unit=unit_by_id[uid]; route_result=route_map[(uid,destination["building_id"]) ]
-            result.append({"unit_id":uid,"destination_id":destination["building_id"],"unit_capacity":unit["capacity"],"occupants_targeted":min(unit["capacity"],destination["occupants"]),"route":route_result})
+            result.append({"unit_id":uid,"unit_type":unit.get("type","rescue_team"),"destination_id":destination["building_id"],"unit_capacity":unit["capacity"],"occupants_targeted":min(unit["capacity"],destination["occupants"]),"route":route_result})
             remaining.remove(uid)
         return result
     # Rows are units; destination columns plus one zero-utility dummy per unit
@@ -228,7 +348,7 @@ def _assign(units, destinations, route_map, optimized=True):
     for u,did in zip(units,choices):
         if did is None:continue
         destination=next(dest for dest in destinations if dest["building_id"]==did)
-        output.append({"unit_id":u["id"],"destination_id":did,"unit_capacity":u["capacity"],"occupants_targeted":min(u["capacity"],destination["occupants"]),"route":route_map[(u["id"],did)]})
+        output.append({"unit_id":u["id"],"unit_type":u.get("type","rescue_team"),"destination_id":did,"unit_capacity":u["capacity"],"occupants_targeted":min(u["capacity"],destination["occupants"]),"route":route_map[(u["id"],did)]})
     return output
 
 
@@ -274,7 +394,7 @@ def generate_plan(city, state, prediction_set, closures=(), *, infrastructure_re
     for (uid,did),r in route_map.items():
         u=unit_by_id[uid]; d=destination_by_id[did]
         available.append({"unit_id":uid,"destination_id":did,"unit_capacity":u["capacity"],"occupants_targeted":min(u["capacity"],d["occupants"]),"route":r})
-    return RescuePlan(plan_id=plan_id,scenario_id=state.id,scenario_version=state.state_version,scenario_epoch=state.epoch,infrastructure_revision=infrastructure_revision,trigger_event_id=trigger_event_id,simulation_tick=state.tick,generated_at=datetime.now(timezone.utc).isoformat(),priorities=ranked,missions=optimized,available_assignments=available,unreachable=unreachable,comparison={"baseline":metrics(baseline),"optimized":metrics(optimized),"baseline_missions":baseline},solver_status="optimal_linear_sum_assignment",objective="Maximize sum(priority_score × capacity-covered occupant fraction - 0.15 × synthetic route minutes), with each unit assigned at most once and each destination at most once.",explanation="Assignments are recommendations; unit capacity limits the occupant count targeted in this single mission. Approval reserves assigned units until the scenario is reset into a new epoch; no mission completion or automatic release is simulated.",timings_ms={"routing":routing_ms,"assignment":assignment_ms})
+    return RescuePlan(plan_id=plan_id,scenario_id=state.id,scenario_version=state.state_version,scenario_epoch=state.epoch,infrastructure_revision=infrastructure_revision,trigger_event_id=trigger_event_id,simulation_tick=state.tick,generated_at=datetime.now(timezone.utc).isoformat(),priorities=ranked,missions=optimized,available_assignments=available,unreachable=unreachable,comparison={"baseline":metrics(baseline),"optimized":metrics(optimized),"baseline_missions":baseline},solver_status="optimal_linear_sum_assignment",objective="Maximize sum(priority_score × capacity-covered occupant fraction - 0.15 × synthetic route minutes), with each unit assigned at most once and each destination at most once.",explanation="Assignments are recommendations; unit capacity limits the occupant count targeted in this single mission. Approval reserves assigned units. Part 8 supports explicit simulated completion and commander return-to-service; units are never released automatically.",timings_ms={"routing":routing_ms,"assignment":assignment_ms})
 
 
 class PlanStore:
@@ -293,6 +413,9 @@ class PlanStore:
                 db.execute("CREATE TABLE road_closures (scenario_id TEXT NOT NULL, epoch INTEGER NOT NULL, road_id TEXT NOT NULL, reason TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(scenario_id,epoch,road_id))")
                 db.execute("INSERT INTO road_closures(scenario_id,epoch,road_id,reason,active) SELECT c.scenario_id,s.epoch,c.road_id,c.reason,c.active FROM road_closures_legacy c JOIN scenarios s ON s.id=c.scenario_id")
                 db.execute("DROP TABLE road_closures_legacy")
+            from .missions import ensure_mission_schema, backfill_approved_missions
+            ensure_mission_schema(db)
+            backfill_approved_missions(db)
     def infrastructure(self,scenario_id,epoch):
         with sqlite3.connect(self.path) as db:
             db.execute("INSERT OR IGNORE INTO scenario_infrastructure VALUES(?,?,0)",(scenario_id,epoch))
@@ -301,9 +424,23 @@ class PlanStore:
             return revision,closures
     def reserved_units(self,scenario_id,epoch):
         with sqlite3.connect(self.path) as db:
+            return self._reserved_units_db(db,scenario_id,epoch)
+    @staticmethod
+    def _reserved_units_db(db,scenario_id,epoch):
+        try:
+            rows=db.execute("SELECT unit_id FROM unit_resources WHERE scenario_id=? AND scenario_epoch=? AND status!='available'",(scenario_id,epoch)).fetchall()
+            return {row[0] for row in rows}
+        except sqlite3.OperationalError:
             rows=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(scenario_id,)).fetchall()
             plans=[RescuePlan.model_validate_json(payload) for (payload,) in rows]
             return {mission["unit_id"] for plan in plans if plan.scenario_epoch==epoch for mission in plan.missions}
+    def unit_positions(self,scenario_id,epoch):
+        with sqlite3.connect(self.path) as db:
+            try:
+                return {unit_id:json.loads(position_json) for unit_id,position_json in db.execute(
+                    "SELECT unit_id,position_json FROM unit_resources WHERE scenario_id=? AND scenario_epoch=? AND status='available'",(scenario_id,epoch))}
+            except sqlite3.OperationalError:
+                return {}
     def by_trigger(self,event_id):
         if not event_id:return None
         with sqlite3.connect(self.path) as db:
@@ -345,10 +482,7 @@ class PlanStore:
             infra=db.execute("SELECT revision FROM scenario_infrastructure WHERE scenario_id=? AND epoch=?",(plan.scenario_id,plan.scenario_epoch)).fetchone()
             if not current or current[0]!=plan.scenario_version or current[1]!=plan.scenario_epoch or not infra or infra[0]!=plan.infrastructure_revision:
                 db.rollback();raise ValueError("Scenario changed while the plan was being generated; request a fresh proposal.")
-            approved=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(plan.scenario_id,)).fetchall()
-            committed={mission["unit_id"] for (payload,) in approved
-                       for approved_plan in [RescuePlan.model_validate_json(payload)]
-                       if approved_plan.scenario_epoch==plan.scenario_epoch for mission in approved_plan.missions}
+            committed=self._reserved_units_db(db,plan.scenario_id,plan.scenario_epoch)
             conflict=committed & {mission["unit_id"] for mission in plan.missions}
             if conflict:
                 db.rollback();raise ValueError("Resources became unavailable while the plan was being generated: "+", ".join(sorted(conflict)))
@@ -388,12 +522,14 @@ class PlanStore:
                 db.execute("UPDATE rescue_plans SET payload=?,status='superseded' WHERE plan_id=?",(plan.model_dump_json(),plan_id)); db.commit(); raise ValueError("Plan is stale and cannot be approved or rejected.")
             if row[1]!="proposed": db.rollback(); raise ValueError("Only proposed plans can receive a decision.")
             if action=="approved":
-                approvals=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(plan.scenario_id,)).fetchall()
-                approved_units={m["unit_id"] for (payload,) in approvals for m in RescuePlan.model_validate_json(payload).missions if RescuePlan.model_validate_json(payload).scenario_epoch==plan.scenario_epoch}
+                approved_units=self._reserved_units_db(db,plan.scenario_id,plan.scenario_epoch)
                 overlap=approved_units & {m["unit_id"] for m in plan.missions}
                 if overlap:db.rollback();raise ValueError("Approval conflicts with resources already approved in another plan: "+", ".join(sorted(overlap)))
             plan.status=action
             db.execute("UPDATE rescue_plans SET payload=?,status=? WHERE plan_id=?",(plan.model_dump_json(),action,plan_id))
+            if action=="approved":
+                from .missions import create_approved_missions
+                create_approved_missions(db,plan.model_dump(mode="json"))
             db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,?)",(plan_id,action,json.dumps({"reason":reason}),datetime.now(timezone.utc).isoformat()))
             persist_agent_event(db,event_type=f"rescue_plan_{action}",scenario_id=plan.scenario_id,scenario_epoch=plan.scenario_epoch,
                 simulation_tick=plan.simulation_tick,state_version=current[0],infrastructure_revision=infra[0],
@@ -415,8 +551,7 @@ class PlanStore:
             if row[1]!="proposed":db.rollback();raise ValueError("Only proposed plans can be modified.")
             pairs=[(item.unit_id,item.destination_id) for item in assignments]
             if len({u for u,_ in pairs})!=len(pairs) or len({d for _,d in pairs})!=len(pairs):db.rollback();raise ValueError("A unit and destination can each appear only once.")
-            approvals=db.execute("SELECT payload FROM rescue_plans WHERE scenario_id=? AND status='approved'",(plan.scenario_id,)).fetchall()
-            approved_units={m["unit_id"] for (payload,) in approvals for m in RescuePlan.model_validate_json(payload).missions if RescuePlan.model_validate_json(payload).scenario_epoch==plan.scenario_epoch}
+            approved_units=self._reserved_units_db(db,plan.scenario_id,plan.scenario_epoch)
             if approved_units & {unit_id for unit_id,_ in pairs}:db.rollback();raise ValueError("Assignment uses a resource already approved in another plan.")
             allowed={(item["unit_id"],item["destination_id"]):item for item in plan.available_assignments}
             if any(pair not in allowed for pair in pairs):db.rollback();raise ValueError("Assignment is infeasible under the plan's saved routes and capacities.")

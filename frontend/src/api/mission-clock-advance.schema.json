@@ -1,0 +1,28 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "expected_version": {
+      "minimum": 1,
+      "title": "Expected Version",
+      "type": "integer"
+    },
+    "expected_state_version": {
+      "minimum": 1,
+      "title": "Expected State Version",
+      "type": "integer"
+    },
+    "seconds": {
+      "maximum": 30,
+      "minimum": 1,
+      "title": "Seconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "expected_version",
+    "expected_state_version",
+    "seconds"
+  ],
+  "title": "MissionClockAdvance",
+  "type": "object"
+}

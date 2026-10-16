@@ -99,7 +99,7 @@ function ExperimentTwin({record,variant}:{record:ScenarioExperiment;variant:Expe
   if(error)return <p className="experiment-error" role="alert">{error}</p>;
   if(!city)return <p className="scenario-note">Loading the local Digital Twin…</p>;
   const routes=variant.optimized_missions.map(mission=>mission.route.polyline);
-  const props:ComponentProps<typeof LazyScene>={city,scenario:result,selected:null,onSelect:()=>{},layers:sceneLayers,lowGraphics:true,predictions:null,routeLines:routes,manualClosureIds:variant.manual_closure_road_ids};
+  const props:ComponentProps<typeof LazyScene>={city,scenario:result,selected:null,onSelect:()=>{},layers:sceneLayers,lowGraphics:true,predictions:null,routeLines:routes,manualClosureIds:variant.manual_closure_road_ids,missions:[],missionUnits:[],selectedMissionId:null,onSelectMission:()=>{}};
   return <div className="experiment-twin"><div className="experiment-twin-label"><Badge>{variant.variant_id} · {variant.label}</Badge><span>Tick {result.tick} · {result.parameters.rainfall_mm_h} mm/h · river {result.parameters.river_level_m.toFixed(2)} m</span></div><Suspense fallback={<div className="scene-loading">Preparing the saved flood snapshot…</div>}><LazyScene {...props}/></Suspense></div>;
 }
 

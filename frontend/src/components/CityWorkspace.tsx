@@ -1,6 +1,7 @@
 import {
   lazy,
   Suspense,
+  useCallback,
   useEffect,
   useState,
   type ComponentProps,
@@ -33,6 +34,8 @@ import Inspector from "./Inspector";
 import RescuePlanning from "./RescuePlanning";
 import { AgentCommandPanel } from "./AgentExplorer";
 import type { Plan } from "./RescuePlanning";
+import MissionOperations from "./MissionOperations";
+import type { Mission, MissionClock, MissionUnitResource } from "../api/client";
 
 const LazyCityScene = lazy(() => import("../scene/CityScene"));
 function CityScene(props: ComponentProps<typeof LazyCityScene>) {
@@ -72,6 +75,13 @@ export default function CityWorkspace({
   const [detailError, setDetailError] = useState("");
   const [rescuePlan, setRescuePlan] = useState<Plan|null>(null);
   const [manualClosureIds,setManualClosureIds]=useState<string[]>([]);
+  const [missionRecords,setMissionRecords]=useState<Mission[]>([]);
+  const [missionUnits,setMissionUnits]=useState<MissionUnitResource[]>([]);
+  const [selectedMissionId,setSelectedMissionId]=useState<string|null>(null);
+  const acceptMissions=useCallback((snapshot:{missions:Mission[];units:MissionUnitResource[];clock:MissionClock|null})=>{
+    setMissionRecords(snapshot.missions);setMissionUnits(snapshot.units);
+  },[]);
+  const selectMission=useCallback((missionId:string|null)=>setSelectedMissionId(missionId),[]);
   const [searchParams]=useSearchParams();
   const scenarioId=scenario?.id;
   const [layerOpen, setLayerOpen] = useState(false);
@@ -250,6 +260,10 @@ export default function CityWorkspace({
                 predictions={predictions}
                 routeLines={rescuePlan?.status === "proposed" && rescuePlan.scenario_version === scenario?.state_version ? rescuePlan.missions.map(m=>m.route.polyline) : []}
                 manualClosureIds={manualClosureIds}
+                missions={missionRecords}
+                missionUnits={missionUnits}
+                selectedMissionId={selectedMissionId}
+                onSelectMission={selectMission}
               />
               <AnimatePresence>
                 {layerOpen && (
@@ -386,6 +400,7 @@ export default function CityWorkspace({
           </Panel>
         </div>
         <aside className="right-column">
+          <MissionOperations scenario={scenario} city={city} onSnapshot={acceptMissions} onSelectMission={selectMission} selectedMissionId={selectedMissionId}/>
           <RescuePlanning city={city} scenario={scenario} onPlan={setRescuePlan}/>
           <AgentCommandPanel scenarioId={scenario?.id??null}/>
           <Inspector

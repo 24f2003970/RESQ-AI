@@ -1,0 +1,50 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "sequence": {
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "mission_id": {
+      "title": "Mission Id",
+      "type": "string"
+    },
+    "event_type": {
+      "title": "Event Type",
+      "type": "string"
+    },
+    "mission_version": {
+      "title": "Mission Version",
+      "type": "integer"
+    },
+    "clock_seconds": {
+      "title": "Clock Seconds",
+      "type": "integer"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "sequence",
+    "event_id",
+    "mission_id",
+    "event_type",
+    "mission_version",
+    "clock_seconds",
+    "payload",
+    "created_at"
+  ],
+  "title": "MissionEvent",
+  "type": "object"
+}

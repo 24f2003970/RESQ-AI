@@ -17,6 +17,8 @@ from .agent_contracts import (
     AgentRunRecord, AgentTraceDetail, persist_agent_event,
 )
 from .experiments import ExperimentCreate, ExperimentRecord, ExperimentRepository, ExperimentRunner
+from .missions import (MissionStore, MissionCommand, MissionClockAdvance, RouteApproval,
+                       Mission, MissionClock, MissionEvent, MissionAdvanceResult, MissionUnitResource)
 from .schemas import (
     AdvanceRequest, Building, CityState, Health, ParameterUpdate, ScenarioCreate,
     MLDatasetInfo, MLEvaluationReport, MLFeatureInfo, MLModelInfo, ScenarioEnvelope,
@@ -30,6 +32,7 @@ if not logger.handlers:
     logger.addHandler(logging.StreamHandler())
 
 rescue_plans = PlanStore(store.path)
+missions = MissionStore(store.path)
 agent_orchestrator = AgentOrchestrator(store,rescue_plans)
 experiment_repository = ExperimentRepository(store.path.with_name("experiments.sqlite3"))
 experiment_runner = ExperimentRunner(experiment_repository)
@@ -98,6 +101,23 @@ def _scenario_call(action):
         raise HTTPException(exc.status_code, str(exc)) from exc
 
 
+def _mission_call(action):
+    try:
+        return action()
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+def _disrupted_route_roads(state):
+    bad={item.entity_id for group in (state.impacts.roads,state.impacts.bridges)
+         for item in group if item.status in ("closed","flooded","manually_blocked")}
+    city=generate_city(state.seed)
+    return ({road.id for road in city.roads if road.id in bad}
+            |{f"bridge:{bridge.road_id}" for bridge in city.bridges if bridge.id in bad})
+
+
 @app.get("/api/v1/scenarios/active", response_model=ScenarioEnvelope)
 def active_scenario():
     return _scenario_call(lambda: store.get(store.active_id()))
@@ -118,6 +138,8 @@ def get_scenario(scenario_id: str):
 @app.patch("/api/v1/scenarios/{scenario_id}/parameters", response_model=ScenarioEnvelope)
 def update_scenario_parameters(scenario_id: str, request: ParameterUpdate, background_tasks: BackgroundTasks):
     result=_scenario_call(lambda: store.update_parameters(scenario_id, request))
+    revision,manual=rescue_plans.infrastructure(scenario_id,result.state.epoch)
+    missions.infrastructure_changed(scenario_id,result.state.epoch,revision,_disrupted_route_roads(result.state)|set(manual),result.state.state_version)
     agent_orchestrator.schedule_pending(background_tasks,scenario_id,result.state.state_version,result.state.epoch)
     return result
 
@@ -140,6 +162,8 @@ def resume_scenario(scenario_id: str, request: VersionRequest):
 @app.post("/api/v1/scenarios/{scenario_id}/advance", response_model=ScenarioEnvelope)
 def advance_scenario(scenario_id: str, request: AdvanceRequest, background_tasks: BackgroundTasks):
     result=_scenario_call(lambda: store.advance(scenario_id, request))
+    revision,manual=rescue_plans.infrastructure(scenario_id,result.state.epoch)
+    missions.infrastructure_changed(scenario_id,result.state.epoch,revision,_disrupted_route_roads(result.state)|set(manual),result.state.state_version)
     agent_orchestrator.schedule_pending(background_tasks,scenario_id,result.state.state_version,result.state.epoch)
     return result
 
@@ -221,7 +245,11 @@ def create_rescue_plan(scenario_id: str):
         prediction_set = predictions(scenario_id)
         infrastructure_revision, closures = rescue_plans.infrastructure(scenario_id, envelope.state.epoch)
         reserved = rescue_plans.reserved_units(scenario_id, envelope.state.epoch)
-        plan = generate_plan(generate_city(envelope.state.seed), envelope.state, prediction_set, closures,
+        city=generate_city(envelope.state.seed)
+        positions=rescue_plans.unit_positions(scenario_id,envelope.state.epoch)
+        if positions:
+            city=city.model_copy(update={"rescue_units":[unit.model_copy(update={"position":unit.position.model_copy(update=positions[unit.id])}) if unit.id in positions else unit for unit in city.rescue_units]})
+        plan = generate_plan(city, envelope.state, prediction_set, closures,
                              infrastructure_revision=infrastructure_revision, reserved_unit_ids=reserved)
         try:
             return rescue_plans.save(plan)
@@ -247,6 +275,140 @@ def decide_rescue_plan(plan_id: str, decision: RescuePlanDecision, background_ta
         return plan
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/missions",response_model=list[Mission])
+def list_missions(scenario_id: str, epoch: int | None = Query(default=None, ge=0)):
+    _scenario_call(lambda: store.get(scenario_id))
+    return _mission_call(lambda: missions.list(scenario_id,epoch))
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/missions/units",response_model=list[MissionUnitResource])
+def mission_unit_positions(scenario_id: str):
+    state=_scenario_call(lambda:store.get(scenario_id)).state
+    return missions.units(scenario_id,state.epoch)
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/missions/clock",response_model=MissionClock)
+def mission_clock(scenario_id: str):
+    state=_scenario_call(lambda:store.get(scenario_id)).state
+    return missions.clock(scenario_id,state.epoch)
+
+
+@app.post("/api/v1/scenarios/{scenario_id}/missions/clock/advance")
+def advance_mission_clock(scenario_id: str, request: MissionClockAdvance, background_tasks: BackgroundTasks,
+                          idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    state=_scenario_call(lambda:store.get(scenario_id)).state
+    closed=_disrupted_route_roads(state)
+    revision,manual=rescue_plans.infrastructure(scenario_id,state.epoch)
+    try:
+        clock,updated=missions.advance(scenario_id,state.epoch,request.expected_version,request.expected_state_version,
+            request.seconds,closed|set(manual),idempotency_key)
+    except ValueError as exc:
+        raise HTTPException(409,str(exc)) from exc
+    agent_orchestrator.schedule_pending(background_tasks,scenario_id,state.state_version,state.epoch)
+    return MissionAdvanceResult(clock=clock,missions=updated,infrastructure_revision=revision)
+
+
+@app.post("/api/v1/scenarios/{scenario_id}/missions/clock/{action}",response_model=MissionClock)
+def control_mission_clock(scenario_id: str, action: str, request: MissionCommand,
+                          idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    if action not in ("pause","resume"):
+        raise HTTPException(404,"Mission clock action does not exist.")
+    state=_scenario_call(lambda:store.get(scenario_id)).state
+    return _mission_call(lambda:missions.set_paused(scenario_id,state.epoch,request.expected_version,action=="pause",idempotency_key))
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/missions/clock/events")
+def mission_clock_events(scenario_id: str):
+    state=_scenario_call(lambda:store.get(scenario_id)).state
+    return missions.clock_events(scenario_id,state.epoch)
+
+
+@app.get("/api/v1/missions/{mission_id}",response_model=Mission)
+def get_mission(mission_id: str):
+    return _mission_call(lambda:missions.get(mission_id))
+
+
+def _schedule_mission_agents(background_tasks: BackgroundTasks, scenario_id: str):
+    state=_scenario_call(lambda:store.get(scenario_id)).state
+    agent_orchestrator.schedule_pending(background_tasks,scenario_id,state.state_version,state.epoch)
+
+
+def _mission_action(mission_id: str, action: str, request: MissionCommand, background_tasks: BackgroundTasks,
+                    idempotency_key: str, reason: str):
+    mission=_mission_call(lambda:missions.command(mission_id,action,request.expected_version,idempotency_key=idempotency_key,reason=reason))
+    if action in ("dispatch","complete","cancel","restore"):
+        _schedule_mission_agents(background_tasks,mission.scenario_id)
+    return mission
+
+
+@app.post("/api/v1/missions/{mission_id}/dispatch",response_model=Mission)
+def dispatch_mission(mission_id: str, request: MissionCommand, background_tasks: BackgroundTasks,
+                     idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    return _mission_action(mission_id,"dispatch",request,background_tasks,idempotency_key,"")
+
+
+@app.post("/api/v1/missions/{mission_id}/pause",response_model=Mission)
+def pause_mission(mission_id: str, request: MissionCommand, background_tasks: BackgroundTasks,
+                  idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    return _mission_action(mission_id,"pause",request,background_tasks,idempotency_key,"")
+
+
+@app.post("/api/v1/missions/{mission_id}/resume",response_model=Mission)
+def resume_mission(mission_id: str, request: MissionCommand, background_tasks: BackgroundTasks,
+                   idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    return _mission_action(mission_id,"resume",request,background_tasks,idempotency_key,"")
+
+
+@app.post("/api/v1/missions/{mission_id}/complete",response_model=Mission)
+def complete_mission(mission_id: str, request: MissionCommand, background_tasks: BackgroundTasks,
+                     idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    return _mission_action(mission_id,"complete",request,background_tasks,idempotency_key,"")
+
+
+@app.post("/api/v1/missions/{mission_id}/cancel",response_model=Mission)
+def cancel_mission(mission_id: str, request: MissionCommand, background_tasks: BackgroundTasks,
+                   idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128),
+                   reason: str = Query(default="", max_length=500)):
+    return _mission_action(mission_id,"cancel",request,background_tasks,idempotency_key,reason)
+
+
+@app.post("/api/v1/missions/{mission_id}/restore",response_model=Mission)
+def restore_mission_unit(mission_id: str, request: MissionCommand, background_tasks: BackgroundTasks,
+                         idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    return _mission_action(mission_id,"restore",request,background_tasks,idempotency_key,"")
+
+
+@app.post("/api/v1/missions/{mission_id}/route-proposal",response_model=Mission)
+def propose_mission_route(mission_id: str, request: MissionCommand,
+                          idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    mission=_mission_call(lambda:missions.get(mission_id))
+    state=_scenario_call(lambda:store.get(mission.scenario_id)).state
+    revision,closures=rescue_plans.infrastructure(mission.scenario_id,state.epoch)
+    return _mission_call(lambda:missions.propose_route(mission_id,request.expected_version,generate_city(state.seed),state,closures,revision,idempotency_key))
+
+
+@app.post("/api/v1/missions/{mission_id}/route-approval",response_model=Mission)
+def approve_mission_route(mission_id: str, request: RouteApproval, background_tasks: BackgroundTasks,
+                          idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
+    mission=_mission_call(lambda:missions.get(mission_id))
+    state=_scenario_call(lambda:store.get(mission.scenario_id)).state
+    revision,_=rescue_plans.infrastructure(mission.scenario_id,state.epoch)
+    updated=_mission_call(lambda:missions.approve_route(mission_id,request.expected_version,request.route_revision_id,state,revision,idempotency_key))
+    _schedule_mission_agents(background_tasks,updated.scenario_id)
+    return updated
+
+
+@app.get("/api/v1/missions/{mission_id}/events",response_model=list[MissionEvent])
+def mission_events(mission_id: str):
+    return _mission_call(lambda:missions.events(mission_id))
+
+
+@app.get("/api/v1/missions/{mission_id}/replay")
+def replay_mission(mission_id: str):
+    _mission_call(lambda:missions.get(mission_id))
+    return {"mission_id":mission_id,"read_only":True,"events":missions.replay(mission_id)}
 
 
 @app.patch("/api/v1/rescue-plans/{plan_id}/assignments", response_model=RescuePlan)
@@ -285,6 +447,7 @@ def close_road(scenario_id: str, request: RoadClosureRequest, background_tasks: 
         db.execute("INSERT INTO rescue_events(plan_id,event_type,detail,created_at) VALUES(?,?,?,CURRENT_TIMESTAMP)", ("scenario:"+scenario_id,"road_manually_closed",json.dumps({"road_id":road_id,"reason":reason})))
         db.commit()
     _,closures=rescue_plans.infrastructure(scenario_id,epoch)
+    missions.infrastructure_changed(scenario_id,epoch,revision,set(closures),scenario_row[2])
     agent_orchestrator.schedule_pending(background_tasks,scenario_id,scenario_row[2],epoch)
     return {"scenario_id":scenario_id,"road_id":road_id,"status":"manually_blocked","reason":reason,"infrastructure_revision":revision,"closures":closures}
 

@@ -11,6 +11,10 @@ import agentEventSchema from "./agent-event.schema.json";
 import agentTraceDetailSchema from "./agent-trace-detail.schema.json";
 import rescuePlanSchema from "./rescue-plan.schema.json";
 import experimentRecordSchema from "./experiment-record.schema.json";
+import missionSchema from "./mission.schema.json";
+import missionClockSchema from "./mission-clock.schema.json";
+import missionUnitResourceSchema from "./mission-unit-resource.schema.json";
+import missionEventSchema from "./mission-event.schema.json";
 import type { components } from "./schema";
 
 export type CityState = components["schemas"]["CityState"];
@@ -34,6 +38,10 @@ export type AgentRunRecord = components["schemas"]["AgentRunRecord"];
 export type RescueRecommendation = components["schemas"]["RescuePlan"];
 export type ScenarioExperiment = components["schemas"]["ExperimentRecord"];
 export type ScenarioExperimentCreate = components["schemas"]["ExperimentCreate"];
+export type Mission = components["schemas"]["Mission"];
+export type MissionClock = components["schemas"]["MissionClock"];
+export type MissionUnitResource = components["schemas"]["MissionUnitResource"];
+export type MissionEvent = components["schemas"]["MissionEvent"];
 
 const validate = new Ajv2020({
   strict: false,
@@ -52,6 +60,10 @@ const validateAgentEvent = ajv.compile<AgentEventEnvelope>(agentEventSchema);
 const validateAgentTrace = ajv.compile<AgentTraceDetail>(agentTraceDetailSchema);
 const validateRescuePlan = ajv.compile<RescueRecommendation>(rescuePlanSchema);
 const validateExperiment = ajv.compile<ScenarioExperiment>(experimentRecordSchema);
+const validateMission = ajv.compile<Mission>(missionSchema);
+const validateMissionClock = ajv.compile<MissionClock>(missionClockSchema);
+const validateMissionUnit = ajv.compile<MissionUnitResource>(missionUnitResourceSchema);
+const validateMissionEvent = ajv.compile<MissionEvent>(missionEventSchema);
 
 export function parseCity(value: unknown): CityState {
   if (!validate(value))
@@ -177,6 +189,53 @@ export async function fetchScenarioExperiments(scenarioId: string, signal?: Abor
   const value: unknown = await request(`scenarios/${encodeURIComponent(scenarioId)}/experiments`, signal);
   if (!Array.isArray(value) || !value.every((item) => validateExperiment(item))) throw new Error("The local service returned an invalid saved experiments list.");
   return value as ScenarioExperiment[];
+}
+
+export async function fetchMissions(scenarioId:string,signal?:AbortSignal):Promise<Mission[]> {
+  const value:unknown=await request(`scenarios/${encodeURIComponent(scenarioId)}/missions`,signal);
+  if(!Array.isArray(value)||!value.every(item=>validateMission(item)))throw new Error("The local service returned invalid mission records.");
+  return value as Mission[];
+}
+export async function fetchMissionClock(scenarioId:string,signal?:AbortSignal):Promise<MissionClock> {
+  const value=await request(`scenarios/${encodeURIComponent(scenarioId)}/missions/clock`,signal);
+  if(!validateMissionClock(value))throw new Error("The local service returned an invalid mission clock.");
+  return value;
+}
+export async function fetchMissionUnits(scenarioId:string,signal?:AbortSignal):Promise<MissionUnitResource[]> {
+  const value:unknown=await request(`scenarios/${encodeURIComponent(scenarioId)}/missions/units`,signal);
+  if(!Array.isArray(value)||!value.every(item=>validateMissionUnit(item)))throw new Error("The local service returned invalid unit lifecycle records.");
+  return value as MissionUnitResource[];
+}
+export async function missionCommand(missionId:string,action:"dispatch"|"pause"|"resume"|"complete"|"cancel"|"restore",expectedVersion:number,reason="") {
+  const suffix=reason?`?reason=${encodeURIComponent(reason)}`:"";
+  const value=await request(`missions/${encodeURIComponent(missionId)}/${action}${suffix}`,undefined,{method:"POST",headers:{"Content-Type":"application/json","Idempotency-Key":crypto.randomUUID()},body:JSON.stringify({expected_version:expectedVersion})});
+  if(!validateMission(value))throw new Error("The local service returned an invalid mission after the command.");
+  return value;
+}
+export async function advanceMissionClock(scenarioId:string,clock:MissionClock,stateVersion:number,seconds:number) {
+  const value=await request(`scenarios/${encodeURIComponent(scenarioId)}/missions/clock/advance`,undefined,{method:"POST",headers:{"Content-Type":"application/json","Idempotency-Key":crypto.randomUUID()},body:JSON.stringify({expected_version:clock.version,expected_state_version:stateVersion,seconds})});
+  if(!value||typeof value!=="object"||!("clock" in value)||!validateMissionClock(value.clock)||!("missions" in value)||!Array.isArray(value.missions)||!value.missions.every(item=>validateMission(item)))throw new Error("The local service returned an invalid mission progress response.");
+  return value as {clock:MissionClock;missions:Mission[];infrastructure_revision:number};
+}
+export async function controlMissionClock(scenarioId:string,clock:MissionClock,action:"pause"|"resume") {
+  const value=await request(`scenarios/${encodeURIComponent(scenarioId)}/missions/clock/${action}`,undefined,{method:"POST",headers:{"Content-Type":"application/json","Idempotency-Key":crypto.randomUUID()},body:JSON.stringify({expected_version:clock.version})});
+  if(!validateMissionClock(value))throw new Error("The local service returned an invalid mission clock response.");
+  return value;
+}
+export async function requestMissionRoute(missionId:string,expectedVersion:number) {
+  const value=await request(`missions/${encodeURIComponent(missionId)}/route-proposal`,undefined,{method:"POST",headers:{"Content-Type":"application/json","Idempotency-Key":crypto.randomUUID()},body:JSON.stringify({expected_version:expectedVersion})});
+  if(!validateMission(value))throw new Error("The local service returned an invalid route proposal.");
+  return value;
+}
+export async function approveMissionRoute(missionId:string,expectedVersion:number,routeRevisionId:string) {
+  const value=await request(`missions/${encodeURIComponent(missionId)}/route-approval`,undefined,{method:"POST",headers:{"Content-Type":"application/json","Idempotency-Key":crypto.randomUUID()},body:JSON.stringify({expected_version:expectedVersion,route_revision_id:routeRevisionId})});
+  if(!validateMission(value))throw new Error("The local service returned an invalid route approval response.");
+  return value;
+}
+export async function fetchMissionEvents(missionId:string,signal?:AbortSignal):Promise<MissionEvent[]> {
+  const value:unknown=await request(`missions/${encodeURIComponent(missionId)}/events`,signal);
+  if(!Array.isArray(value)||!value.every(item=>validateMissionEvent(item)))throw new Error("The local service returned an invalid mission event timeline.");
+  return value as MissionEvent[];
 }
 
 export async function cancelScenarioExperiment(experimentId: string): Promise<ScenarioExperiment> {

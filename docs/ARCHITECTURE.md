@@ -1,6 +1,6 @@
 # System Architecture
 
-> **Implementation status through Part 7:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing and assignment, human review, six durable event-triggered algorithmic agents, and isolated reproducible A/B experiments. Coordination uses a SQLite outbox and REST polling; experiments use a separate SQLite database. There is no WebSocket/SSE dependency. Boat navigation and mission execution remain future work.
+> **Implementation status through Part 8:** The local FastAPI service owns flood scenario state, local ML inference, rescue routing and assignment, human review, six durable event-triggered algorithmic agents, isolated reproducible A/B experiments, and persistent fictional rescue mission progression. Coordination uses a SQLite outbox and REST polling; experiments use a separate SQLite database. There is no WebSocket/SSE dependency. Boat navigation remains unsupported.
 
 ## Design principles
 
@@ -26,6 +26,7 @@ FastAPI modular monolith
   ├─ Risk model adapter + transparent baseline
   ├─ SQLite outbox / ordered agent coordinator
   ├─ Prioritization, routing, assignment, and approval services
+  ├─ Mission state machine, operational clock, route movement, and resource lifecycle
   ├─ SQLite operational event and scenario persistence
   └─ Isolated experiment snapshot/results database and worker
                  │
@@ -106,3 +107,9 @@ See [PART_03_IMPLEMENTATION.md](PART_03_IMPLEMENTATION.md) for REST contracts an
 `ExperimentRepository` stores a canonical starting snapshot and request in a separate `experiments.sqlite3` file. `ExperimentRunner` imports that snapshot into per-variant scenario namespaces in the same dedicated file, runs the existing `ScenarioStore` stepper for equal durations, applies manual road closures only to the experiment `PlanStore`, and computes the Part 5 route/assignment functions in memory. It never invokes the operational outbox coordinator or persists operational approvals/reservations. ML inference receives the explicit variant `ScenarioState` through `predict_state`.
 
 The Scenario Lab renders chart points from saved result data and lazily reuses one `CityScene` canvas while switching variants. The Guided Demo creates a separate operational scenario because its real event pipeline and commander decision must be observable; its reset preserves old traces as historical and starts a new scenario epoch. See [SCENARIO_COMPARISON.md](SCENARIO_COMPARISON.md), [PART_07_IMPLEMENTATION.md](PART_07_IMPLEMENTATION.md), and [HACKATHON_DEMO_GUIDE.md](HACKATHON_DEMO_GUIDE.md).
+
+## Part 8 mission operations
+
+Approval creates reserved `ready` missions; dispatch remains an explicit command. The mission clock is independent of the five-minute flood clock, and only backend progression changes mission position or arrival. `unit_resources` is authoritative for availability and current unit position; `missions` is authoritative for mission state and route progress. Scenario epoch, flood state version, mission version, and infrastructure revision are checked at operational boundaries.
+
+A committed road closure blocks a dispatched mission only when it intersects a not-yet-traversed route segment. The Routing Agent can calculate a replacement proposal from a blocked unit's verified current route segment; only commander approval of a current proposal resumes travel. Arrival is distinct from explicit simulated completion. Completion and dispatched cancellation leave units unavailable until an explicit restore at their persisted location. Reset starts a new epoch while retaining prior mission history. The frontend follows the approved route polyline for display only, interpolating no farther than authoritative backend traversed-distance snapshots; it cannot progress mission state. See [MISSION_LIFECYCLE.md](MISSION_LIFECYCLE.md) and [MISSION_CLOCK_MODEL.md](MISSION_CLOCK_MODEL.md).

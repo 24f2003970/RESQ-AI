@@ -32,7 +32,7 @@ Verified in the local Codex in-app browser against `http://127.0.0.1:5173/demo` 
 
 One local severe 12-tick progression took 119 ms. The actual 0-tick resource comparison from a 30-minute snapshot completed in 357.4 ms with 111,294 serialized result bytes in that run. The model timing is sensitive to whether the local artifact is already loaded. The browser build already lazily imports `CityScene`, so pages that do not render the Digital Twin avoid its heavy canvas chunk. The guided demo does not run a second WebGL canvas. The 3D chunk still exceeds Vite's 500 kB advisory; do not split Three.js vendor code further without a measured rendering/startup benefit because the canvas route is the 3D product itself and this would not reduce its total transferred code.
 
-The model outputs and scenario measurements are synthetic. No browser walkthrough proves emergency-response fitness. The backend has no mission completion or automatic resource-release behavior.
+The model outputs and scenario measurements are synthetic. No browser walkthrough proves emergency-response fitness. This Part 7 verification predates Part 8's explicit simulated mission completion and commander-controlled return-to-service; neither behavior implies automatic resource release.
 
 ## CI and delivery
 

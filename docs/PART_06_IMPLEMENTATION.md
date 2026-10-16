@@ -42,4 +42,4 @@ Follow `PART_06_VERIFICATION.md` and `AGENT_DEMO_SCENARIO.md`. The benchmark use
 
 ## Scope limits
 
-This is a fictional educational decision-support prototype. It does not provide calibrated flood prediction, casualties/survivors, structural damage, boats/water rescue, live data, communications, real dispatch, crew movement, mission completion or automatic resource release. Approved units remain reserved for the rest of that scenario epoch; reset begins a new epoch and makes them available in the new scenario state. Do not use this system to make real emergency decisions.
+This was the Part 6 scope: it did not provide calibrated flood prediction, casualties/survivors, structural damage, boats/water rescue, live data, communications, real dispatch, crew movement, mission completion or resource release. Part 8 later added simulated mission lifecycle, explicit completion and commander return-to-service. Units are not released automatically; reset starts a new epoch. Do not use this system to make real emergency decisions.
