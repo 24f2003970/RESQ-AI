@@ -92,6 +92,25 @@ docs/
 
 Use Python 3.12 and Node.js 22.12+ (Node 24 is recommended). Internet access is needed to install dependencies. Fonts and geometry are local after installation. Commands below work in PowerShell and do not require activating a script or changing execution policy.
 
+### Local demo quickstart
+
+From the repository root, run first-time setup once, then launch the development demo:
+
+```powershell
+.\scripts\setup-resq-ai.ps1
+.\scripts\start-resq-ai.ps1
+```
+
+Open **http://127.0.0.1:5173**. The launcher checks the local Python 3.12 environment, Node.js, installed dependencies and model artifact, waits for backend health, then starts Vite. Press Ctrl+C in that terminal to stop the local services. `scripts\demo-preflight.ps1` checks readiness without changing existing scenarios. Setup needs Python 3.12 and Node.js 22.12 or newer already installed; it installs packages only into `backend/.venv` and `frontend/node_modules`. See [Local Demo Quickstart](docs/LOCAL_DEMO_QUICKSTART.md) and [Demo Preflight](docs/DEMO_PREFLIGHT.md).
+
+For an acceptance run against a temporary database, use the explicit test commander flag:
+
+```powershell
+.\backend\.venv\Scripts\python.exe .\backend\demo_acceptance_part10.py --test-commander-actions
+```
+
+It writes JSON and Markdown evidence under the ignored `artifacts/part10-acceptance/` directory and deletes its temporary database after the run. The flag authorizes simulated approval and dispatch only inside this local test workflow.
+
 From the repository root, prepare and start the backend:
 
 ```powershell
@@ -142,4 +161,6 @@ Regenerate and commit the OpenAPI schema, JSON Schemas, test fixture, and TypeSc
 
 Two student developers are planned: one owns the service, simulation, and model pipeline; the other owns the web interface and Digital Twin. Both review integration pull requests and jointly rehearse the demo. See [the roadmap](docs/DEVELOPMENT_ROADMAP.md) and [team workflow](docs/TEAM_WORKFLOW.md).
 
-**Status:** Parts 3–6 implemented on the Part 6 feature branch. Earthquake scenarios, live-data integration, water rescue, and mission execution remain future work.
+**Status:** Parts 3–9 are merged. The flood, local synthetic model, algorithmic agents, rescue planning, missions, experiments and Guided Demo are local decision-support features. Earthquake scenarios, live-data integration, water rescue, and real-world emergency operations remain outside scope.
+
+Part 10's startup, readiness, offline audit, acceptance and recovery procedures are documented in `docs/PART_10_IMPLEMENTATION.md`, `docs/PART_10_VERIFICATION.md`, `docs/LOCAL_DEMO_QUICKSTART.md`, `docs/DEMO_PREFLIGHT.md`, `docs/OFFLINE_AUDIT.md`, `docs/END_TO_END_ACCEPTANCE.md`, `docs/DEMO_RECOVERY_RUNBOOK.md`, and `docs/GRAPHICS_PERFORMANCE_PART_10.md`.

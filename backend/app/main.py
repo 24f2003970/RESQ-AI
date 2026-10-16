@@ -1,8 +1,10 @@
 import json
 import logging
+import re
 import time
 import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -51,15 +53,26 @@ app.add_middleware(CORSMiddleware, allow_origins=list(settings.allowed_origins),
 async def request_log(request: Request, call_next):
     request_id = uuid.uuid4().hex
     start = time.perf_counter()
+    scenario_match = re.search(r"/scenarios/([^/]+)", request.url.path)
+    mission_match = re.search(r"/api/v1/missions/([^/]+)", request.url.path)
+    event_match = re.search(r"/agent-traces/([^/]+)", request.url.path)
     try:
         response = await call_next(request)
-    except Exception:
-        logger.exception(json.dumps({"event": "request_failed", "request_id": request_id}))
+    except Exception as exc:
+        logger.error(json.dumps({"event": "request_failed", "timestamp": datetime.now(timezone.utc).isoformat(),
+            "request_id": request_id, "scenario_id": scenario_match.group(1) if scenario_match and scenario_match.group(1)!="active" else None,
+            "mission_id": mission_match.group(1) if mission_match else None,
+            "event_id": event_match.group(1) if event_match else None, "error_category": type(exc).__name__}))
         response = JSONResponse(status_code=500, content={"error": {"code": "internal_error",
             "message": "The local service could not complete this request.", "request_id": request_id}})
     response.headers["X-Request-ID"] = request_id
-    logger.info(json.dumps({"event": "http_request", "method": request.method, "path": request.url.path,
+    logger.info(json.dumps({"event": "http_request", "timestamp": datetime.now(timezone.utc).isoformat(),
+                           "method": request.method, "path": request.url.path,
                            "status": response.status_code, "request_id": request_id,
+                           "scenario_id": scenario_match.group(1) if scenario_match and scenario_match.group(1)!="active" else None,
+                           "mission_id": mission_match.group(1) if mission_match else None,
+                           "event_id": event_match.group(1) if event_match else None,
+                           "error_category": "server_error" if response.status_code >= 500 else None,
                            "elapsed_ms": round((time.perf_counter() - start) * 1000, 2)}))
     return response
 
