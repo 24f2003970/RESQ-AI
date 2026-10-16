@@ -101,10 +101,10 @@ describe("connected application", () => {
     );
     await screen.findByTestId("mock-city");
     fireEvent.click(screen.getByRole("button", { name: "Layers" }));
-    const checkbox = screen.getByRole("checkbox", { name: "greenery" });
+    const checkbox = screen.getByRole("checkbox", { name: "Greenery" });
     fireEvent.click(checkbox);
     expect(checkbox).not.toBeChecked();
-    const predictedLayer = screen.getByRole("checkbox", { name: "predictedRisk" });
+    const predictedLayer = screen.getByRole("checkbox", { name: "Future ML exposure" });
     expect(predictedLayer).not.toBeChecked();
     fireEvent.click(predictedLayer);
     expect(screen.getByTestId("mock-city")).toHaveAttribute("data-predicted-risk", "true");

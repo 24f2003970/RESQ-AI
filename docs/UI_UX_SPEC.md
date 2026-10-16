@@ -6,6 +6,8 @@
 
 Use a default isometric camera, with orbit, zoom, pan, and object inspection. Buildings vary by district and height; hospitals, shelters, roads, bridges, river, terrain, and response vehicles have distinct shapes. The city is an evolving Digital Twin only when its geometry reflects the same backend IDs and states as the simulation.
 
+The Digital Twin includes camera presets for city overview, flood hotspot, bridge crossing and selected rescue operation; a lighting selector offers daylight, overcast and low-light rendering. These presets are presentation controls and do not change scenario inputs. Low-graphics mode is available alongside the viewport and reduces detail and shadows for lower-power laptops.
+
 ### Color and layer rules
 
 - Flood depth: shallow light cyan; moderate blue; deep dark blue; severe indigo.
