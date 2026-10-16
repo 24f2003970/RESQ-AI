@@ -599,6 +599,38 @@ h1 {
   font-size: 6px;
   color: #a7bfb0;
 }
+.scene-mission-status {
+  position: absolute;
+  top: 48px;
+  left: 21px;
+  padding: 5px 8px;
+  border: 1px solid #54766c;
+  border-radius: 3px;
+  background: #152722e8;
+  color: #c4e5d8;
+  font: 600 9px/1.3 "IBM Plex Mono", monospace;
+  letter-spacing: .35px;
+  pointer-events: none;
+}
+.scene-mission-status.status-blocked { border-color: #c85d54; color: #ffd1c9; }
+.scene-mission-status.status-arrived,
+.scene-mission-status.status-completed { border-color: #69a987; color: #c5ead4; }
+.scene-renderer-status {
+  position: absolute;
+  left: 50%;
+  bottom: 44px;
+  z-index: 4;
+  width: min(440px, calc(100% - 40px));
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border: 1px solid #b77a4c;
+  border-radius: 5px;
+  background: #28231feF;
+  color: #f4d7b7;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
 .map-coordinate {
   position: absolute;
   left: 21px;
@@ -625,7 +657,28 @@ h1 {
   background: #172b28ed;
   border: 1px solid #426257;
   gap: 2px;
+  max-width: 148px;
 }
+.scene-tools select {
+  width: 138px;
+  max-width: 34vw;
+  min-height: 28px;
+  padding: 3px 5px;
+  border: 1px solid #426257;
+  border-radius: 3px;
+  background: #1b302c;
+  color: #c6d9ce;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.scene-tools select:focus-visible,
+.scene-tools button:focus-visible {
+  outline: 2px solid #75d6c5;
+  outline-offset: 2px;
+}
+.scene-tools select:disabled { opacity: .55; }
 .scene-tools button {
   display: grid;
   place-items: center;

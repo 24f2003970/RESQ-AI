@@ -10,10 +10,14 @@ import {
 } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Edges, Line, OrbitControls } from "@react-three/drei";
+import { useReducedMotion } from "motion/react";
 import {
   BoxGeometry,
   BufferGeometry,
   Color,
+  ConeGeometry,
+  CylinderGeometry,
+  DoubleSide,
   Float32BufferAttribute,
   InstancedMesh,
   Matrix4,
@@ -29,6 +33,7 @@ import type { ScenarioPredictionSet } from "../api/client";
 import type { Mission, MissionUnitResource } from "../api/client";
 import { toScene } from "./coordinates";
 import { sampleMissionRoute, type MissionRouteGeometry } from "./missionPath";
+import { buildingVisualProfile, floodSurfaceColor, floodSurfaceOpacity, terrainSampleGrid } from "./visualData";
 
 export type Layers = {
   buildings: boolean;
@@ -55,7 +60,7 @@ function missionRoutePoints(city:CityState,mission:Mission):[number,number,numbe
   return Array.isArray(xy)?(xy as number[][]).map(point=>routePointToScene(city,point)):[];
 }
 
-function MissionVehicle({mission,resource,selected,onSelect}:{mission:Mission;resource:MissionUnitResource;selected:boolean;onSelect:()=>void}) {
+function MissionVehicle({mission,resource,selected,onSelect,reducedMotion}:{mission:Mission;resource:MissionUnitResource;selected:boolean;onSelect:()=>void;reducedMotion:boolean}) {
   const group=useRef<Group>(null);
   const position=resource.position;
   const displayedDistance=useRef(mission.traversed_distance_m);
@@ -63,17 +68,19 @@ function MissionVehicle({mission,resource,selected,onSelect}:{mission:Mission;re
   const targetDistance=useRef(mission.traversed_distance_m);
   const elapsed=useRef(1);
   const routeRevision=useRef(mission.route_revision);
-  const color=mission.status==="blocked"?"#c95955":mission.status==="arrived"||mission.status==="completed"?"#78c4a3":mission.unit_type==="ambulance"?"#e5e2d3":"#bd9b69";
+  const status=resource.status==="available"?"standby":resource.status==="reserved"?"reserved":resource.status==="blocked"||mission.status==="blocked"?"blocked":resource.status==="at_destination"||mission.status==="arrived"?"arrived":resource.status==="unavailable"&&mission.status==="completed"?"awaiting-return":resource.status;
+  const statusColor=status==="blocked"?"#df655b":status==="arrived"?"#65bd93":status==="awaiting-return"?"#d4a959":status==="reserved"?"#69b9ac":"#8aa89b";
+  const color=status==="blocked"?"#c95955":status==="arrived"||status==="awaiting-return"?"#78c4a3":mission.unit_type==="ambulance"?"#e5e2d3":"#bd9b69";
   useEffect(()=>{
     const target=mission.traversed_distance_m;
     const revised=routeRevision.current!==mission.route_revision;
     routeRevision.current=mission.route_revision;
-    if(mission.status!=="en_route"||revised){
+    if(mission.status!=="en_route"||revised||reducedMotion){
       displayedDistance.current=target;startDistance.current=target;targetDistance.current=target;elapsed.current=1;
     }else{
       startDistance.current=displayedDistance.current;targetDistance.current=Math.max(displayedDistance.current,target);elapsed.current=0;
     }
-  },[mission.traversed_distance_m,mission.status,mission.route_revision]);
+  },[mission.traversed_distance_m,mission.status,mission.route_revision,reducedMotion]);
   useFrame((_,delta)=>{
     if(!group.current)return;
     if(mission.status==="en_route"){
@@ -91,7 +98,7 @@ function MissionVehicle({mission,resource,selected,onSelect}:{mission:Mission;re
     onClick={event=>{event.stopPropagation();onSelect();}}>
     <mesh position={[0,.04,0]} rotation={[-Math.PI/2,0,0]}>
       <torusGeometry args={[selected?4.2:3.4,.12,6,28]}/>
-      <meshBasicMaterial color={selected?"#91e3d1":mission.status==="blocked"?"#e46b65":"#8bc8b1"} transparent opacity={selected ? .88 : .45}/>
+      <meshBasicMaterial color={selected?"#91e3d1":statusColor} transparent opacity={selected ? .88 : .52}/>
     </mesh>
     <group position={[0,.35,0]}>
       <mesh castShadow position={[0,.5,0]}><boxGeometry args={[2.15,1.25,4.8]}/><meshStandardMaterial color={color} roughness={.55} metalness={.16}/></mesh>
@@ -102,7 +109,7 @@ function MissionVehicle({mission,resource,selected,onSelect}:{mission:Mission;re
         <mesh><boxGeometry args={[.78,.16,.32]}/><meshStandardMaterial color="#d8615c" emissive="#6f211e" emissiveIntensity={.32}/></mesh>
         <mesh position={[.28,.02,0]}><boxGeometry args={[.14,.09,.34]}/><meshStandardMaterial color="#7aabcf" emissive="#315b7b" emissiveIntensity={.18}/></mesh>
       </group>}
-      <mesh position={[0,1.82,0]}><sphereGeometry args={[.18,10,8]}/><meshBasicMaterial color={mission.status==="blocked"?"#d9635e":mission.status==="arrived"?"#85d0a6":"#e7c57a"}/></mesh>
+      <mesh position={[0,1.82,0]}><sphereGeometry args={[status==="blocked"?.25:.18,10,8]}/><meshBasicMaterial color={statusColor}/></mesh>
     </group>
   </group>;
 }
@@ -114,26 +121,47 @@ type Instance = {
 };
 const box = new BoxGeometry(1, 1, 1);
 const surface = new MeshStandardMaterial({ roughness: 0.82, metalness: 0.05 });
+const facadeSurface = new MeshStandardMaterial({ roughness: 0.88, metalness: 0.02 });
+const windowSurface = new MeshStandardMaterial({ roughness: 0.3, metalness: 0.12 });
+const gableRoof = (() => {
+  const geometry = new BufferGeometry();
+  geometry.setAttribute("position", new Float32BufferAttribute([
+    -0.5,0,-0.5, 0.5,0,-0.5, 0,1,-0.5,
+    -0.5,0,0.5, 0.5,0,0.5, 0,1,0.5,
+  ], 3));
+  geometry.setIndex([0,2,1, 0,3,5,0,5,2, 2,5,4,2,4,1, 0,1,4,0,4,3, 3,4,5]);
+  geometry.computeVertexNormals();
+  return geometry;
+})();
+const gableSurface = new MeshStandardMaterial({ roughness: 0.9, side: DoubleSide });
+const trunkGeometry = new CylinderGeometry(0.42,0.72,4.8,6);
+const canopyGeometry = new ConeGeometry(4.2,8.2,7,1);
+const foliageSurface = new MeshStandardMaterial({ roughness: 1 });
+const trunkSurface = new MeshStandardMaterial({ roughness: 0.95 });
 
 function Batch({
   items,
   onSelect,
   shadows = false,
+  geometry = box,
+  material = surface,
 }: {
   items: Instance[];
   onSelect?: (id: string) => void;
   shadows?: boolean;
+  geometry?: BufferGeometry;
+  material?: MeshStandardMaterial;
 }) {
   const ref = useRef<InstancedMesh>(null);
   useLayoutEffect(() => {
     const mesh = ref.current;
     if (!mesh) return;
+    const transform = new Matrix4();
+    const tint = new Color();
     items.forEach((item, index) => {
-      mesh.setMatrixAt(
-        index,
-        new Matrix4().makeScale(...item.scale).setPosition(...item.position),
-      );
-      mesh.setColorAt(index, new Color(item.color));
+      transform.makeScale(...item.scale).setPosition(...item.position);
+      mesh.setMatrixAt(index, transform);
+      mesh.setColorAt(index, tint.set(item.color));
     });
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -143,7 +171,7 @@ function Batch({
   return (
     <instancedMesh
       ref={ref}
-      args={[box, surface, items.length]}
+      args={[geometry, material, items.length]}
       dispose={null}
       castShadow={shadows}
       receiveShadow
@@ -168,6 +196,7 @@ function BuildingBlocks({
   selected,
   predictions,
   showPredictions,
+  lowGraphics,
 }: {
   city: CityState;
   scenario: ScenarioState | null;
@@ -175,49 +204,75 @@ function BuildingBlocks({
   selected: Building | null;
   predictions: ScenarioPredictionSet | null;
   showPredictions: boolean;
+  lowGraphics: boolean;
 }) {
   const batches = useMemo(() => {
-    const walls: Instance[] = [],
-      roofs: Instance[] = [],
-      windows: Instance[] = [],
-      equipment: Instance[] = [];
+    const walls: Instance[] = [], plinths: Instance[] = [], flatRoofs: Instance[] = [],
+      gableRoofs: Instance[] = [], parapets: Instance[] = [], windows: Instance[] = [],
+      equipment: Instance[] = [], doors: Instance[] = [], awnings: Instance[] = [],
+      facadeTrim: Instance[] = [], hospitalMarks: Instance[] = [], shelterMarks: Instance[] = [];
+    const exposureById = new Map((scenario?.impacts.buildings ?? []).map((item) => [item.entity_id, item]));
+    const predictedIds = new Set(showPredictions ? (predictions?.predictions ?? []).filter((p) => p.predicted_future_exposed).map((p) => p.building_id) : []);
     for (const b of city.buildings) {
       const [x, y, z] = toScene(b.position);
-      const exposure = scenario?.impacts.buildings.find((item) => item.entity_id === b.id);
-      const predicted = showPredictions && predictions?.predictions.some((p) => p.building_id === b.id && p.predicted_future_exposed);
+      const profile = buildingVisualProfile(b);
+      const exposure = exposureById.get(b.id);
+      const predicted = predictedIds.has(b.id);
       const color = predicted
         ? "#ef8a58"
         : exposure?.category === "severe"
           ? "#b48b72"
           : exposure?.category === "moderate"
             ? "#b1a084"
-            : b.use === "hospital"
-          ? "#d3dfd7"
-          : b.use === "shelter"
-            ? "#aac5b4"
-            : b.material_color;
+            : profile.wall;
+      const buildingId = b.id;
+      plinths.push({ position:[x,y+0.28,z],scale:[b.width_m+1.1,.56,b.depth_m+1.1],color:profile.trim,id:buildingId });
       walls.push({
         position: [x, y + b.height_m / 2, z],
         scale: [b.width_m, b.height_m, b.depth_m],
         color,
-        id: b.id,
+        id: buildingId,
       });
-      roofs.push({
-        position: [x, y + b.height_m + 0.7, z],
-        scale: [b.width_m + 1.1, 1.4, b.depth_m + 1.1],
-        color: "#69787b",
-        id: b.id,
-      });
+      const pitchedHome=profile.form==="home"&&b.floors<=2;
+      if(pitchedHome){
+        gableRoofs.push({position:[x,y+b.height_m,z],scale:[b.width_m+1.2,Math.min(4.2,2.2+b.width_m*.04),b.depth_m+1.2],color:profile.roof,id:buildingId});
+      }else{
+        flatRoofs.push({position:[x,y+b.height_m+.65,z],scale:[b.width_m+1.1,1.3,b.depth_m+1.1],color:profile.roof,id:buildingId});
+        if(!lowGraphics){
+          const parapetY=y+b.height_m+1.65;
+          parapets.push({position:[x,parapetY,z-(b.depth_m+1.1)/2],scale:[b.width_m+1.1,.52,.26],color:profile.trim,id:buildingId});
+          parapets.push({position:[x,parapetY,z+(b.depth_m+1.1)/2],scale:[b.width_m+1.1,.52,.26],color:profile.trim,id:buildingId});
+          parapets.push({position:[x-(b.width_m+1.1)/2,parapetY,z],scale:[.26,.52,b.depth_m+1.1],color:profile.trim,id:buildingId});
+          parapets.push({position:[x+(b.width_m+1.1)/2,parapetY,z],scale:[.26,.52,b.depth_m+1.1],color:profile.trim,id:buildingId});
+        }
+      }
       equipment.push({
-        position: [x - b.width_m * 0.18, y + b.height_m + 2.1, z],
-        scale: [b.width_m * 0.3, 2, b.depth_m * 0.3],
-        color: "#9aa6a7",
-        id: b.id,
+        position: [x - b.width_m * 0.2, y + b.height_m + (pitchedHome?2.5:2.25), z],
+        scale: [Math.max(1.4,b.width_m * (profile.form==="commercial"?.22:.18)), profile.form==="home"?2.4:1.6, Math.max(1.6,b.depth_m * .2)],
+        color: profile.form==="home"?"#756d60":"#8d9a96",
+        id: buildingId,
       });
+      if(!lowGraphics){
+        const doorW=Math.min(2,b.width_m*.24), doorH=Math.min(3.1,b.height_m*.16);
+        doors.push({position:[x,y+doorH/2,z-b.depth_m/2-.05],scale:[doorW,doorH,.16],color:profile.entrance,id:buildingId});
+        awnings.push({position:[x,y+doorH+.2,z-b.depth_m/2-.34],scale:[doorW+1,.35,.8],color:profile.trim,id:buildingId});
+        for(const sx of [-1,1]) for(const sz of [-1,1])
+          facadeTrim.push({position:[x+sx*(b.width_m/2-.2),y+b.height_m/2,z+sz*(b.depth_m/2-.2)],scale:[.32,b.height_m,.32],color:profile.trim,id:buildingId});
+      }
+      if(b.use==="hospital"){
+        hospitalMarks.push({position:[x,y+b.height_m+3.1,z],scale:[4,.4,1.05],color:"#f4eee0",id:buildingId});
+        hospitalMarks.push({position:[x,y+b.height_m+3.1,z],scale:[1.05,.4,4],color:"#f4eee0",id:buildingId});
+        hospitalMarks.push({position:[x,y+b.height_m+3.38,z],scale:[1.5,.18,1.5],color:profile.trim,id:buildingId});
+      }
+      if(b.use==="shelter"){
+        shelterMarks.push({position:[x,y+b.height_m+2.5,z],scale:[4,.3,4],color:"#e4eee3",id:buildingId});
+        shelterMarks.push({position:[x,y+b.height_m+2.76,z],scale:[2.6,.3,.6],color:profile.trim,id:buildingId});
+        shelterMarks.push({position:[x,y+b.height_m+2.76,z],scale:[.6,.3,2.6],color:profile.trim,id:buildingId});
+      }
       for (let floor = 0; floor < b.floors; floor++) {
         const wy = y + floor * 3.6 + 2;
-        for (let column = -1; column <= 1; column++) {
-          const tint = (floor + column) % 3 === 0 ? "#b6c2b3" : "#475f69";
+        for (let column = -1; column <= 1; column += lowGraphics?2:1) {
+          const tint = (floor + column) % 3 === 0 ? "#b9cbc2" : profile.window;
           windows.push({
             position: [
               x + column * b.width_m * 0.27,
@@ -226,7 +281,7 @@ function BuildingBlocks({
             ],
             scale: [b.width_m * 0.16, 1.5, 0.2],
             color: tint,
-            id: b.id,
+            id: buildingId,
           });
           windows.push({
             position: [
@@ -236,7 +291,7 @@ function BuildingBlocks({
             ],
             scale: [0.2, 1.5, b.depth_m * 0.16],
             color: tint,
-            id: b.id,
+            id: buildingId,
           });
           windows.push({
             position: [
@@ -246,7 +301,7 @@ function BuildingBlocks({
             ],
             scale: [b.width_m * 0.16, 1.5, 0.2],
             color: tint,
-            id: b.id,
+            id: buildingId,
           });
           windows.push({
             position: [
@@ -256,19 +311,27 @@ function BuildingBlocks({
             ],
             scale: [0.2, 1.5, b.depth_m * 0.16],
             color: tint,
-            id: b.id,
+            id: buildingId,
           });
         }
       }
     }
-    return { walls, roofs, windows, equipment };
-  }, [city, scenario, predictions, showPredictions]);
+    return { walls, plinths, flatRoofs, gableRoofs, parapets, windows, equipment, doors, awnings, facadeTrim, hospitalMarks, shelterMarks };
+  }, [city, scenario, predictions, showPredictions, lowGraphics]);
   return (
     <>
       <Batch items={batches.walls} onSelect={onSelect} shadows />
-      <Batch items={batches.roofs} onSelect={onSelect} />
+      <Batch items={batches.plinths} material={facadeSurface} />
+      <Batch items={batches.flatRoofs} />
+      <Batch items={batches.gableRoofs} geometry={gableRoof} material={gableSurface} />
+      <Batch items={batches.parapets} material={facadeSurface} />
       <Batch items={batches.equipment} onSelect={onSelect} shadows />
-      <Batch items={batches.windows} onSelect={onSelect} />
+      <Batch items={batches.windows} material={windowSurface} />
+      <Batch items={batches.doors} material={facadeSurface} />
+      <Batch items={batches.awnings} material={facadeSurface} />
+      <Batch items={batches.facadeTrim} material={facadeSurface} />
+      <Batch items={batches.hospitalMarks} material={facadeSurface} />
+      <Batch items={batches.shelterMarks} material={facadeSurface} />
       {selected && (
         <mesh
           position={[
@@ -297,36 +360,34 @@ function BuildingBlocks({
   );
 }
 
-function sampleGrid(grid: number[][], x: number, y: number) {
-  const height = grid.length;
-  const width = grid[0]?.length ?? 0;
-  if (!width || !height) return 0;
-  const gx = Math.max(0, Math.min(width - 1, (x + 320) / 20));
-  const gy = Math.max(0, Math.min(height - 1, (y + 240) / 20));
-  const x0 = Math.floor(gx), y0 = Math.floor(gy);
-  const x1 = Math.min(x0 + 1, width - 1), y1 = Math.min(y0 + 1, height - 1);
-  const tx = gx - x0, ty = gy - y0;
-  return (grid[y0][x0] * (1 - tx) + grid[y0][x1] * tx) * (1 - ty)
-    + (grid[y1][x0] * (1 - tx) + grid[y1][x1] * tx) * ty;
-}
+function sampleGrid(grid: number[][], x: number, y: number) { return terrainSampleGrid(grid,x,y); }
 
-function terrainGeometry(grid: number[][]) {
+function terrainGeometry(grid: number[][], lowGraphics: boolean) {
   const geometry = new BufferGeometry();
   const rows = grid.length, columns = grid[0]?.length ?? 0;
-  const positions: number[] = [], indices: number[] = [];
-  for (let row = 0; row <= rows; row++) {
-    const northing = 250 - row * 20;
-    for (let column = 0; column <= columns; column++) {
-      const east = -330 + column * 20;
+  const positions: number[] = [], colors: number[] = [], indices: number[] = [];
+  const subdivisions=lowGraphics?1:2;
+  const rowCount=rows*subdivisions, columnCount=columns*subdivisions;
+  const elevations=grid.flat();
+  const minimum=Math.min(...elevations), maximum=Math.max(...elevations);
+  const low=new Color("#687b65"), high=new Color("#898775"), tint=new Color();
+  for (let row = 0; row <= rowCount; row++) {
+    const northing = 250 - row * (20/subdivisions);
+    for (let column = 0; column <= columnCount; column++) {
+      const east = -330 + column * (20/subdivisions);
       positions.push(east, sampleGrid(grid, east, northing), -northing);
-      if (row < rows && column < columns) {
-        const a = row * (columns + 1) + column;
-        const b = a + 1, c = a + columns + 1, d = c + 1;
+      const ratio=(sampleGrid(grid,east,northing)-minimum)/Math.max(maximum-minimum,.001);
+      tint.copy(low).lerp(high,Math.min(.82,Math.max(.04,ratio)));
+      colors.push(tint.r,tint.g,tint.b);
+      if (row < rowCount && column < columnCount) {
+        const a = row * (columnCount + 1) + column;
+        const b = a + 1, c = a + columnCount + 1, d = c + 1;
         indices.push(a, c, b, b, c, d);
       }
     }
   }
   geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("color",new Float32BufferAttribute(colors,3));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
@@ -335,57 +396,57 @@ function terrainGeometry(grid: number[][]) {
 function floodGeometry(terrain: number[][], depth: number[][]) {
   const geometry = new BufferGeometry();
   const positions: number[] = [], colors: number[] = [], indices: number[] = [];
-  const shades = ["#98e9e8", "#398fc1", "#1e5a98", "#443477"];
+  const tint=new Color();
   for (let row = 0; row < depth.length; row++) {
     for (let column = 0; column < depth[row].length; column++) {
       const level = depth[row][column];
       if (level < 0.025) continue;
       const x = -320 + column * 20, north = -240 + row * 20;
       const points: [number, number][] = [[x - 10, north - 10], [x + 10, north - 10], [x + 10, north + 10], [x - 10, north + 10]];
-      const color = new Color(level < 0.3 ? shades[0] : level < 1 ? shades[1] : level < 2 ? shades[2] : shades[3]);
+      tint.set(floodSurfaceColor(level));
       const first = positions.length / 3;
       for (const [east, northing] of points) {
         const base = sampleGrid(terrain, east, northing);
-        const water = sampleGrid(depth, east, northing);
-        positions.push(east, base + Math.max(level * 0.55, water) + 0.025, -northing);
-        colors.push(color.r, color.g, color.b);
+        const water = Math.min(level,Math.max(0,sampleGrid(depth,east,northing)));
+        positions.push(east, base + water + 0.025, -northing);
+        colors.push(tint.r,tint.g,tint.b,floodSurfaceOpacity(level));
       }
       indices.push(first, first + 1, first + 2, first, first + 2, first + 3);
     }
   }
   geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
-  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  geometry.setAttribute("color", new Float32BufferAttribute(colors, 4));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
 }
 
-function Terrain({ grid }: { grid: number[][] }) {
-  const geometry = useMemo(() => terrainGeometry(grid), [grid]);
+function Terrain({ grid,lowGraphics }: { grid: number[][]; lowGraphics:boolean }) {
+  const geometry = useMemo(() => terrainGeometry(grid,lowGraphics), [grid,lowGraphics]);
   useEffect(() => () => geometry?.dispose(), [geometry]);
   if (!geometry) return null;
-  return <mesh geometry={geometry} receiveShadow><meshStandardMaterial color="#718477" roughness={0.96}/></mesh>;
+  return <mesh geometry={geometry} receiveShadow><meshStandardMaterial vertexColors roughness={0.96}/></mesh>;
 }
 
-function Floodwater({ scenario }: { scenario: ScenarioState | null }) {
+function Floodwater({ scenario,lowGraphics }: { scenario: ScenarioState | null; lowGraphics:boolean }) {
   const terrain = scenario?.terrain_m;
   const depth = scenario?.depth_m;
   const geometry = useMemo(() => terrain && depth ? floodGeometry(terrain, depth) : null,
     [terrain, depth]);
   useEffect(() => () => geometry?.dispose(), [geometry]);
   if (!geometry || geometry.getAttribute("position").count === 0) return null;
-  return <mesh geometry={geometry} renderOrder={2}><meshPhysicalMaterial vertexColors transparent opacity={0.78} roughness={0.24} metalness={0.18} clearcoat={0.55} clearcoatRoughness={0.22} depthWrite={false}/></mesh>;
+  return <mesh geometry={geometry} renderOrder={2}><meshPhysicalMaterial vertexColors transparent roughness={lowGraphics?.42:.24} metalness={lowGraphics?.08:.18} clearcoat={lowGraphics?.12:.55} clearcoatRoughness={0.22} depthWrite={false}/></mesh>;
 }
 
-function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState; layers: Layers; scenario: ScenarioState | null; manualClosureIds:string[] }) {
+function Ground({ city, layers, scenario, manualClosureIds, lowGraphics }: { city: CityState; layers: Layers; scenario: ScenarioState | null; manualClosureIds:string[]; lowGraphics:boolean }) {
   const terrain = scenario?.terrain_m ?? city.terrain.elevation_m;
   const roadImpacts = scenario?.impacts.roads;
+  const roadsById = useMemo(() => new Map((roadImpacts ?? []).map((impact) => [impact.entity_id, impact])), [roadImpacts]);
   const bridgesById = new Map((scenario?.impacts.bridges ?? []).map((bridge) => [bridge.entity_id, bridge]));
   const streetItems = useMemo(
     () => city.roads.flatMap((road) => {
       const count = Math.ceil(road.length_m / 20);
       const bridge = city.bridges.find((item) => item.road_id === road.id);
-      const roadsById = new Map((roadImpacts ?? []).map((impact) => [impact.entity_id, impact]));
       return Array.from({ length: count }, (_, index) => {
         const t0 = index / count, t1 = (index + 1) / count, t = (t0 + t1) / 2;
         const x = road.start.x_m + (road.end.x_m - road.start.x_m) * t;
@@ -403,7 +464,7 @@ function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState;
         };
       }).filter((item): item is NonNullable<typeof item> => item !== null);
     }),
-    [city, terrain, roadImpacts, manualClosureIds],
+    [city, terrain, roadsById, manualClosureIds],
   );
   const markings = useMemo(() => {
     const result: Instance[] = [];
@@ -423,6 +484,57 @@ function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState;
       }
     return result;
   }, [city, terrain]);
+  const streetFurniture=useMemo(()=>{
+    const sidewalks:Instance[]=[],curbs:Instance[]=[],poles:Instance[]=[],lampHeads:Instance[]=[],barriers:Instance[]=[];
+    for(const road of city.roads){
+      const horizontal=Math.abs(road.end.x_m-road.start.x_m)>=Math.abs(road.end.y_m-road.start.y_m);
+      const ux=(road.end.x_m-road.start.x_m)/Math.max(road.length_m,1),uy=(road.end.y_m-road.start.y_m)/Math.max(road.length_m,1);
+      const px=-uy,py=ux;
+      const bridge=city.bridges.find((item)=>item.road_id===road.id);
+      const impact=roadsById.get(road.id);
+      const closed=manualClosureIds.includes(road.id)||impact?.status==="closed";
+      const step=30,count=Math.ceil(road.length_m/step);
+      for(let index=0;index<count;index++){
+        const t=(index+.5)/count,x=road.start.x_m+(road.end.x_m-road.start.x_m)*t,y=road.start.y_m+(road.end.y_m-road.start.y_m)*t;
+        if(bridge&&Math.abs(y-bridge.position.y_m)<=bridge.length_m/2+step/2)continue;
+        const length=road.length_m/count+.3;
+        for(const side of [-1,1]){
+          const sx=x+px*side*(road.width_m/2+1.5),sy=y+py*side*(road.width_m/2+1.5),elevation=sampleGrid(terrain,sx,sy)+.12;
+          sidewalks.push({position:[sx,elevation,-sy],scale:horizontal?[length,.22,2.4]:[2.4,.22,length],color:"#898f86"});
+          const cx=x+px*side*(road.width_m/2+.12),cy=y+py*side*(road.width_m/2+.12),curbY=sampleGrid(terrain,cx,cy)+.24;
+          curbs.push({position:[cx,curbY,-cy],scale:horizontal?[length,.34,.28]:[.28,.34,length],color:"#b6b4a6"});
+        }
+      }
+      if(!lowGraphics) for(let d=55;d<road.length_m-35;d+=120){
+        const t=d/road.length_m,x=road.start.x_m+(road.end.x_m-road.start.x_m)*t,y=road.start.y_m+(road.end.y_m-road.start.y_m)*t;
+        if(bridge&&Math.abs(y-bridge.position.y_m)<=bridge.length_m/2+12)continue;
+        const side=d%240<120?1:-1,lx=x+px*side*(road.width_m/2+3.7),ly=y+py*side*(road.width_m/2+3.7),base=sampleGrid(terrain,lx,ly);
+        poles.push({position:[lx,base+3.2,-ly],scale:[.28,6.4,.28],color:"#374441"});
+        lampHeads.push({position:[lx+px*side*.65,base+6.45,-(ly+py*side*.65)],scale:[1.5,.24,.38],color:"#d7d0a7"});
+      }
+      if(closed){
+        const x=(road.start.x_m+road.end.x_m)/2,y=(road.start.y_m+road.end.y_m)/2,elevation=sampleGrid(terrain,x,y)+1.1;
+        barriers.push({position:[x,elevation,-y],scale:horizontal?[.38,.34,road.width_m*.76]:[road.width_m*.76,.34,.38],color:"#eee0c7"});
+        for(const side of [-1,1]) barriers.push({position:horizontal?[x,elevation,-y+side*road.width_m*.34]:[x+side*road.width_m*.34,elevation,-y],scale:[.32,1.3,.32],color:"#c85c4f"});
+      }
+    }
+    return {sidewalks,curbs,poles,lampHeads,barriers};
+  },[city,terrain,roadsById,manualClosureIds,lowGraphics]);
+  const treeInstances=useMemo(()=>{
+    const trunks:Instance[]=[],canopies:Instance[]=[];
+    for(const park of city.green_areas) for(let index=0;index<park.trees.length;index++){
+      if(lowGraphics&&index%2)continue;
+      const [x,y,z]=toScene(park.trees[index]);
+      trunks.push({position:[x,y+2.4,z],scale:[1,1,1],color:index%3===0?"#726652":"#625d4e"});
+      canopies.push({position:[x,y+7.4,z],scale:[1+(index%3)*.06,1,1+(index%2)*.08],color:index%3===0?"#486d59":index%3===1?"#5c795b":"#3f6658"});
+    }
+    return {trunks,canopies};
+  },[city,lowGraphics]);
+  const bridgeSupports=useMemo(()=>city.bridges.flatMap((bridge)=>[-1,1].map((side)=>{
+    const y=bridge.position.y_m+side*bridge.length_m*.34;
+    const ground=sampleGrid(terrain,bridge.position.x_m,y),height=Math.max(.8,bridge.position.elevation_m-ground-.35);
+    return {position:[bridge.position.x_m,(ground+bridge.position.elevation_m)/2,-y] as [number,number,number],scale:[bridge.width_m*.62,height,bridge.width_m*.62] as [number,number,number],color:"#6d7774"};
+  })),[city.bridges,terrain]);
   return (
     <>
       <mesh position={[0, -9, 0]} receiveShadow>
@@ -431,27 +543,31 @@ function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState;
         />
         <meshStandardMaterial color="#394b49" roughness={0.9} />
       </mesh>
-      <Terrain grid={scenario?.terrain_m ?? city.terrain.elevation_m}/>
+      <Terrain grid={terrain} lowGraphics={lowGraphics}/>
       {city.rivers.map((r) => (
-        <group key={r.id} position={[0, scenario?.parameters.river_level_m ?? r.surface_elevation_m, -r.start.y_m]}>
-          {!scenario && <mesh>
-            <boxGeometry args={[r.end.x_m - r.start.x_m, 0.3, r.width_m]} />
-            <meshStandardMaterial color="#326977" roughness={0.29} metalness={0.25}/>
-          </mesh>}
-          {[-1, 1].map((s) => (
-            <mesh
-              key={s}
-              position={[0, sampleGrid(scenario?.terrain_m ?? city.terrain.elevation_m, 0, s * (r.width_m / 2 + 2)) + 0.5 - (scenario?.parameters.river_level_m ?? r.surface_elevation_m), s * (r.width_m / 2 + 2)]}
-              receiveShadow
-            >
-              <boxGeometry args={[660, 2, 3]} />
-              <meshStandardMaterial color="#b0b7ab" />
-            </mesh>
-          ))}
+        <group key={r.id} position={[(r.start.x_m+r.end.x_m)/2,0,-(r.start.y_m+r.end.y_m)/2]} rotation={[0,Math.atan2(r.end.y_m-r.start.y_m,r.end.x_m-r.start.x_m),0]}>
+          <mesh position={[0,scenario?.parameters.river_level_m??r.surface_elevation_m,0]}>
+            <boxGeometry args={[Math.hypot(r.end.x_m-r.start.x_m,r.end.y_m-r.start.y_m),0.24,r.width_m]} />
+            <meshPhysicalMaterial color="#356f7a" roughness={0.28} metalness={0.12} clearcoat={lowGraphics?.08:.3}/>
+          </mesh>
+          {[-1,1].map((side)=>{
+            const offset=r.width_m/2+2.1,dx=r.end.x_m-r.start.x_m,dy=r.end.y_m-r.start.y_m,length=Math.max(Math.hypot(dx,dy),1);
+            const bankX=(r.start.x_m+r.end.x_m)/2+dy/length*side*offset;
+            const bankY=(r.start.y_m+r.end.y_m)/2-dx/length*side*offset;
+            return <mesh key={side} position={[0,sampleGrid(terrain,bankX,bankY)+.72,side*offset]} receiveShadow>
+              <boxGeometry args={[length,1.35,2.2]}/>
+              <meshStandardMaterial color="#a9a99b" roughness={.86}/>
+            </mesh>;
+          })}
         </group>
       ))}
       {layers.infrastructure && <Batch items={streetItems} />}
       {layers.infrastructure && <Batch items={markings} />}
+      {layers.infrastructure&&<Batch items={streetFurniture.sidewalks} material={facadeSurface}/>}
+      {layers.infrastructure&&<Batch items={streetFurniture.curbs} material={facadeSurface}/>}
+      {layers.infrastructure&&!lowGraphics&&<Batch items={streetFurniture.poles} material={facadeSurface}/>}
+      {layers.infrastructure&&!lowGraphics&&<Batch items={streetFurniture.lampHeads} material={facadeSurface}/>}
+      {layers.infrastructure&&<Batch items={streetFurniture.barriers} material={facadeSurface}/>}
       {layers.infrastructure && city.bridges.map((b) => (
         <group key={b.id} position={toScene(b.position)}>
           <mesh receiveShadow>
@@ -468,6 +584,7 @@ function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState;
           ))}
         </group>
       ))}
+      {layers.infrastructure&&<Batch items={bridgeSupports} material={facadeSurface} shadows={!lowGraphics}/>}
       {layers.greenery &&
         city.green_areas.map((park) => (
           <group key={park.id}>
@@ -478,23 +595,10 @@ function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState;
               <boxGeometry args={[park.width_m, 0.3, park.depth_m]} />
               <meshStandardMaterial color="#6d896b" />
             </mesh>
-            {park.trees.map((p, i) => (
-              <group key={i} position={toScene(p)}>
-                <mesh position={[0, 2.5, 0]} castShadow>
-                  <cylinderGeometry args={[0.6, 1, 5, 5]} />
-                  <meshStandardMaterial color="#656b52" />
-                </mesh>
-                <mesh position={[0, 7, 0]} castShadow>
-                  <icosahedronGeometry args={[4.8, 1]} />
-                  <meshStandardMaterial
-                    color={i % 2 ? "#41685b" : "#52775e"}
-                    roughness={1}
-                  />
-                </mesh>
-              </group>
-            ))}
           </group>
         ))}
+      {layers.greenery&&<Batch items={treeInstances.trunks} geometry={trunkGeometry} material={trunkSurface} shadows={!lowGraphics}/>}
+      {layers.greenery&&<Batch items={treeInstances.canopies} geometry={canopyGeometry} material={foliageSurface} shadows={!lowGraphics}/>}
       {layers.districts &&
         city.districts.map((d) => {
           const x = d.center.x_m,
@@ -543,28 +647,7 @@ function Ground({ city, layers, scenario, manualClosureIds }: { city: CityState;
               </mesh>
             </group>
           ))}
-      {layers.units &&
-        city.rescue_units.map((unit) => (
-          <group key={unit.id} position={toScene(unit.position)}>
-            <mesh position={[0, 1.8, 0]} castShadow>
-              <boxGeometry
-                args={[
-                  unit.type === "boat" ? 4 : 3.8,
-                  3.2,
-                  unit.type === "boat" ? 9 : 7,
-                ]}
-              />
-              <meshStandardMaterial
-                color={unit.type === "ambulance" ? "#e1e0cc" : "#d2a765"}
-              />
-            </mesh>
-            <mesh position={[0, 3.8, 0]}>
-              <boxGeometry args={[2.6, 0.5, 1.2]} />
-              <meshBasicMaterial color="#69d9cb" />
-            </mesh>
-          </group>
-        ))}
-      {layers.flood && <Floodwater scenario={scenario}/>}
+      {layers.flood && <Floodwater scenario={scenario} lowGraphics={lowGraphics}/>}
     </>
   );
 }
@@ -573,14 +656,21 @@ function Camera({
   target,
   mission,
   action,
+  city,
+  scenario,
+  reducedMotion,
 }: {
   target: Building | null;
   mission: Mission | null;
   action: { type: string; key: number };
+  city: CityState;
+  scenario: ScenarioState | null;
+  reducedMotion: boolean;
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera, invalidate, size, gl } = useThree();
   const lastCommand = useRef("");
+  const transition = useRef<{ fromPosition: Vector3; toPosition: Vector3; fromTarget: Vector3; toTarget: Vector3; elapsed: number } | null>(null);
   useEffect(() => {
     const control = controls.current;
     if (!control) return;
@@ -592,38 +682,86 @@ function Camera({
     control.listenToKeyEvents(gl.domElement);
     return () => control.stopListenToKeyEvents();
   }, [gl]);
+  useFrame((_, delta) => {
+    const current = transition.current;
+    if (!controls.current) return;
+    if (current) {
+      current.elapsed = reducedMotion ? 1 : Math.min(1, current.elapsed + delta / 0.55);
+      const eased = current.elapsed * current.elapsed * (3 - 2 * current.elapsed);
+      camera.position.lerpVectors(current.fromPosition, current.toPosition, eased);
+      controls.current.target.lerpVectors(current.fromTarget, current.toTarget, eased);
+      camera.updateProjectionMatrix();
+      controls.current.update();
+      if (current.elapsed >= 1) transition.current = null;
+      else invalidate();
+    }
+    if (mission && mission.status === "en_route" && (action.type === "focus-mission" || action.type === "rescue")) {
+      const sample = sampleMissionRoute(mission.route as unknown as MissionRouteGeometry, mission.traversed_distance_m);
+      if (sample) {
+        const desired = new Vector3(sample.position[0], sample.position[1] + 2, sample.position[2]);
+        const deltaToUnit = desired.sub(controls.current.target).multiplyScalar(reducedMotion ? 1 : Math.min(1, delta * 2.4));
+        controls.current.target.add(deltaToUnit);
+        camera.position.add(deltaToUnit);
+        controls.current.update();
+        invalidate();
+      }
+    }
+  });
   useLayoutEffect(() => {
     if (!controls.current) return;
     const commandKey = `${action.key}:${size.width}:${size.height}`;
     if (lastCommand.current === commandKey) return;
     lastCommand.current = commandKey;
-    if (action.type === "focus-mission" && mission) {
-      const center=new Vector3(mission.position.x_m,(mission.position.elevation_m??0)+2,-mission.position.y_m);
-      controls.current.target.copy(center);
-      camera.position.copy(center.clone().add(new Vector3(105,105,125)));
-      camera.zoom=2.6;
+    let center: Vector3 | null = null;
+    let offset = new Vector3(220, 220, 240);
+    let zoom = camera.zoom;
+    if ((action.type === "focus-mission" || action.type === "rescue") && mission) {
+      center = new Vector3(mission.position.x_m,(mission.position.elevation_m??0)+2,-mission.position.y_m);
+      offset = new Vector3(105,105,125);
+      zoom = 2.6;
     } else if (action.type === "focus" && target) {
-      const center = new Vector3(
+      center = new Vector3(
         target.position.x_m,
         target.height_m / 2,
         -target.position.y_m,
       );
-      controls.current.target.copy(center);
-      camera.position.copy(center.clone().add(new Vector3(220, 220, 240)));
-      camera.zoom = 2;
+      zoom = 2;
+    } else if (action.type === "hotspot") {
+      let maxDepth = -1, row = 0, column = 0;
+      scenario?.depth_m.forEach((line, y) => line.forEach((depth, x) => { if (depth > maxDepth) { maxDepth = depth; row = y; column = x; } }));
+      if (maxDepth > 0) {
+        const x = -320 + column * 20, north = -240 + row * 20;
+        center = new Vector3(x, sampleGrid(scenario?.terrain_m ?? city.terrain.elevation_m, x, north) + maxDepth / 2, -north);
+      }
+      zoom = 1.65;
+    } else if (action.type === "bridge" && city.bridges.length) {
+      const bridge = city.bridges[0];
+      center = new Vector3(bridge.position.x_m, bridge.position.elevation_m, -bridge.position.y_m);
+      offset = new Vector3(85, 65, 100);
+      zoom = 2.8;
     } else if (action.type === "zoom-in")
       camera.zoom = Math.min(4, camera.zoom * 1.2);
     else if (action.type === "zoom-out")
       camera.zoom = Math.max(0.4, camera.zoom / 1.2);
     else if (action.type === "reset") {
-      camera.position.set(520, 500, 570);
-      camera.zoom = Math.min(size.width / 820, size.height / 570) * 1.05;
-      controls.current.target.set(0, 0, 0);
+      center = new Vector3(0, 0, 0);
+      offset = new Vector3(520, 500, 570);
+      zoom = Math.min(size.width / 820, size.height / 570) * 1.05;
+    }
+    if (center) {
+      transition.current = {
+        fromPosition: camera.position.clone(),
+        toPosition: center.clone().add(offset),
+        fromTarget: controls.current.target.clone(),
+        toTarget: center,
+        elapsed: 0,
+      };
+      camera.zoom = zoom;
     }
     camera.updateProjectionMatrix();
     controls.current.update();
     invalidate();
-  }, [action, camera, target, mission, invalidate, size]);
+  }, [action, camera, target, mission, city, scenario, reducedMotion, invalidate, size]);
   return (
     <OrbitControls
       ref={controls}
@@ -681,11 +819,27 @@ export default function CityScene({
 }) {
   const [action, setAction] = useState({ type: "reset", key: 0 });
   const [mapMode, setMapMode] = useState(false);
+  const [lighting, setLighting] = useState<"daylight"|"overcast"|"low-light">("daylight");
+  const [rendererCanvas, setRendererCanvas] = useState<HTMLCanvasElement|null>(null);
+  const [webglLost, setWebglLost] = useState(false);
+  const reducedMotion = useReducedMotion() ?? false;
   const focusedMission=missions.find(item=>item.mission_id===selectedMissionId)??null;
+  const focusedResource=focusedMission?missionUnits.find(unit=>unit.unit_id===focusedMission.unit_id):undefined;
   const isMoving=missions.some(item=>item.status==="en_route");
   const resourceById=new Map(missionUnits.map(item=>[item.unit_id,item]));
   const latestMissionByUnit=new Map<string,Mission>();
   for(const mission of missions)latestMissionByUnit.set(mission.unit_id,mission);
+  useEffect(()=>{
+    if(!rendererCanvas)return;
+    const handleLost=(event:Event)=>{event.preventDefault();setWebglLost(true);};
+    const handleRestored=()=>setWebglLost(false);
+    rendererCanvas.addEventListener("webglcontextlost",handleLost);
+    rendererCanvas.addEventListener("webglcontextrestored",handleRestored);
+    return ()=>{
+      rendererCanvas.removeEventListener("webglcontextlost",handleLost);
+      rendererCanvas.removeEventListener("webglcontextrestored",handleRestored);
+    };
+  },[rendererCanvas]);
   useEffect(()=>{
     if(selectedMissionId)setAction(current=>({type:"focus-mission",key:current.key+1}));
   },[selectedMissionId]);
@@ -738,12 +892,13 @@ export default function CityScene({
               shadows={lowGraphics ? false : { type: PCFShadowMap }}
               dpr={lowGraphics ? 1 : [1, 1.5]}
               gl={{ antialias: true, powerPreference: "high-performance" }}
+              onCreated={({gl})=>setRendererCanvas(gl.domElement)}
             >
-              <color attach="background" args={["#243633"]} />
-              <ambientLight intensity={1.2} color="#c8e0db" />
+              <color attach="background" args={[lighting==="low-light"?"#121c24":lighting==="overcast"?"#344047":"#243633"]} />
+              <ambientLight intensity={lighting==="low-light"?.72:lighting==="overcast"?1.55:1.2} color={lighting==="low-light"?"#9cb2c1":lighting==="overcast"?"#d6e0e4":"#c8e0db"} />
               <directionalLight
                 position={[-180, 380, -220]}
-                intensity={3}
+                intensity={lighting==="low-light"?1.4:lighting==="overcast"?2.0:3}
                 castShadow={!lowGraphics}
                 shadow-mapSize={[2048, 2048]}
                 shadow-camera-left={-450}
@@ -753,7 +908,7 @@ export default function CityScene({
                 shadow-camera-far={1200}
                 shadow-bias={-0.001}
               />
-              <Ground city={city} layers={layers} scenario={scenario} manualClosureIds={manualClosureIds} />
+              <Ground city={city} layers={layers} scenario={scenario} manualClosureIds={manualClosureIds} lowGraphics={lowGraphics} />
               {routeLines.map((route,index)=><Line key={`planned-route-${index}`} points={route.map(point=>routePointToScene(city,point))} color="#57d7cf" lineWidth={3} transparent opacity={0.9}/>) }
               {missions.filter(mission=>mission.status==="ready"||mission.status==="en_route"||mission.status==="blocked"||mission.status==="arrived"||mission.mission_id===selectedMissionId).map(mission=>{
                 const points=missionRoutePoints(city,mission);
@@ -773,12 +928,13 @@ export default function CityScene({
                   onSelect={onSelect}
                   predictions={predictions}
                   showPredictions={layers.predictedRisk}
+                  lowGraphics={lowGraphics}
                 />
               )}
               {layers.units&&missionUnits.map(resource=>{
                 const mission=resource.mission_id?missions.find(item=>item.mission_id===resource.mission_id):latestMissionByUnit.get(resource.unit_id);
                 if(!mission)return null;
-                return <MissionVehicle key={`mission-unit-${resource.unit_id}`} mission={mission} resource={resource} selected={mission.mission_id===selectedMissionId} onSelect={()=>onSelectMission(mission.mission_id)}/>;
+                return <MissionVehicle key={`mission-unit-${resource.unit_id}`} mission={mission} resource={resource} selected={mission.mission_id===selectedMissionId} reducedMotion={reducedMotion} onSelect={()=>onSelectMission(mission.mission_id)}/>;
               })}
               {layers.units&&city.rescue_units.filter(unit=>!resourceById.has(unit.id)).map(unit=>(
                 <group key={unit.id} position={toScene(unit.position)}>
@@ -786,14 +942,16 @@ export default function CityScene({
                   <mesh position={[0,2.8,0]}><boxGeometry args={[1.2,.14,.45]}/><meshBasicMaterial color="#73bfa9"/></mesh>
                 </group>
               ))}
-              <Camera target={selected} mission={focusedMission} action={action} />
+              <Camera target={selected} mission={focusedMission} action={action} city={city} scenario={scenario} reducedMotion={reducedMotion} />
             </Canvas>
           </Suspense>
         </SceneBoundary>
       )}
+      {webglLost&&<div className="scene-renderer-status" role="alert">3D graphics paused after a graphics context reset. Use the building inventory control or wait while the browser restores the scene.</div>}
       <div className="map-location">
         <span className="live-dot" /> RIVERSIDE <span>/ FICTIONAL CITY</span>
       </div>
+      {focusedMission&&<div className={`scene-mission-status status-${focusedMission.status}`} aria-live="polite">UNIT {focusedMission.unit_id} · {focusedMission.status.replaceAll("_"," ").toUpperCase()} · {focusedMission.status==="ready"?"RESERVED":focusedMission.status==="completed"?focusedResource?.status==="available"?"RETURNED TO SERVICE":"AWAITING RETURN-TO-SERVICE":focusedMission.status==="en_route"?"DISPATCHED":"MISSION STATE"}</div>}
       <div className="map-coordinate">
         LOCAL GRID · METERS
         <span>
@@ -801,6 +959,18 @@ export default function CityScene({
         </span>
       </div>
       <div className="scene-tools" aria-label="Camera controls">
+        <select aria-label="Camera preset" value="" onChange={(event)=>event.target.value&&command(event.target.value)} disabled={mapMode}>
+          <option value="" disabled>Camera preset</option>
+          <option value="reset">City overview</option>
+          <option value="hotspot">Flood hotspot</option>
+          <option value="bridge">Bridge crossing</option>
+          <option value="rescue">Rescue operation</option>
+        </select>
+        <select aria-label="Lighting preset" value={lighting} onChange={(event)=>setLighting(event.target.value as typeof lighting)} disabled={mapMode}>
+          <option value="daylight">Daylight</option>
+          <option value="overcast">Overcast</option>
+          <option value="low-light">Low-light</option>
+        </select>
         <button
           title="Reset isometric camera"
           aria-label="Reset camera"

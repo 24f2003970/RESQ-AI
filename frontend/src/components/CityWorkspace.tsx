@@ -284,7 +284,7 @@ export default function CityWorkspace({
                     </div>
                     {(Object.keys(layers) as (keyof Layers)[]).map((key) => (
                       <label key={key}>
-                        <span>{key}</span>
+                        <span>{{buildings:"Buildings", greenery:"Greenery", facilities:"Emergency facilities", districts:"Districts", units:"Rescue units", flood:"Current flood depth", infrastructure:"Roads and bridges", predictedRisk:"Future ML exposure"}[key]}</span>
                         <input
                           type="checkbox"
                           checked={layers[key]}
