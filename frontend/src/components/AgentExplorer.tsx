@@ -54,7 +54,7 @@ export default function AgentExplorer({scenario}:{scenario:ScenarioState|null}) 
   const historic=!!detail&&!!scenario&&detail.event.scenario_epoch!==scenario.epoch;
   const stale=!!detail&&!!scenario&&(detail.event.simulation_state_version!==scenario.state_version||detail.event.infrastructure_revision!==dashboard?.infrastructure_revision);
   return <main className="agent-explorer">
-    <header className="agent-hero"><div><span className="eyebrow">LOCAL DECISION SUPPORT · PART 06</span><h1>AI Decision Explorer</h1><p>Follow real scenario events through six algorithmic agents. Each recommendation stays a proposal until the commander decides.</p></div><button className="primary-button" disabled={!scenario||busy} onClick={assess}><Activity size={16}/>{busy?"Working…":"Run assessment"}</button></header>
+    <header className="agent-hero"><div><span className="eyebrow">SIX ALGORITHMIC AGENTS · PERSISTED EVENT EVIDENCE</span><h1>AI Decision Explorer</h1><p>Follow real scenario events through six algorithmic agents. Each recommendation stays a proposal until the commander decides.</p></div><button className="primary-button" disabled={!scenario||busy} onClick={assess}><Activity size={16}/>{busy?"Working…":"Run assessment"}</button></header>
     {error&&<div className="agent-error" role="alert"><AlertTriangle size={17}/>{error}<button className="secondary-button small" onClick={()=>void refresh()}><RefreshCw size={14}/> Retry connection</button></div>}
     {!scenario&&<Panel title="Scenario unavailable"><p>Connect to the local service to inspect agent activity.</p></Panel>}
     {scenario&&<>

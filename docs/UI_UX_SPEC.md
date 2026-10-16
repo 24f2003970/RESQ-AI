@@ -73,6 +73,12 @@ Persistent top bar: scenario name, simulation clock/state, connection indicator,
 - Provide a 2D fallback table or map summary when WebGL fails or reduced graphics are needed.
 - Avoid flashing, unnecessary camera movement, and animation that changes meaning.
 
+## Part 11 presentation mode
+
+Judge Mode uses the same application scenario and backend records as Command Center. It expands the Digital Twin, keeps four current-state indicators and the current event visible, and surfaces agent traces, proposal freshness, assignment evidence and mission lifecycle counts. It has explicit entry/exit controls, low-graphics and predicted-risk switches, supporting-workspace links, and a next-review cue derived from the current API snapshot. A proposal remains pending human approval and links to the existing commander review. Out-of-date prediction/plan values are withheld or labeled historical. The route includes a table fallback for backend-derived exposed-building depths if the 3D scene fails.
+
+The shared interface uses a restrained graphite/navy surface system, mint action and focus color, readable status badges, consistent panel headings and minimum-height controls. At 1366 × 768, prioritize the city and core evidence; detail pages retain their existing navigation and controls. Do not describe synthetic model scores as real-world accuracy or simulated missions as completed rescue outcomes.
+
 ## Performance budget (initial targets)
 
 Keep the fictional demo city within a few hundred visible buildings and a modest flood grid (for example 64×64); measure on the actual demo laptop before expanding. Avoid real-time fluid rendering and expensive postprocessing. The frontend should request compact state deltas, batch geometry where feasible, and decouple visual animation from simulation step frequency. Targets are engineering goals to profile, not claims until measured.

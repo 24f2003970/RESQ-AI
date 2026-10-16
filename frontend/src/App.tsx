@@ -8,6 +8,7 @@ import {
   Cpu,
   LayoutDashboard,
   Menu,
+  Presentation,
   Radio,
   RefreshCw,
   ServerOff,
@@ -24,6 +25,7 @@ import ScenarioLab from "./components/ScenarioLab";
 import DemoMode from "./components/DemoMode";
 import ModelLab from "./components/ModelLab";
 import { useRisk } from "./api/useRisk";
+import JudgeMode from "./components/JudgeMode";
 
 const nav = [
   { path: "/", name: "Command Center", icon: LayoutDashboard },
@@ -44,9 +46,10 @@ export default function App() {
     () => window.matchMedia("(max-width: 550px)").matches,
   );
   const reducedMotion = useReducedMotion();
+  const judgeMode = location.pathname === "/judge";
   useEffect(() => {
     setMenuOpen(false);
-    document.title = `${nav.find((n) => n.path === location.pathname)?.name ?? "Page not found"} · RESQ-AI`;
+    document.title = `${location.pathname === "/judge" ? "Judge Mode" : nav.find((n) => n.path === location.pathname)?.name ?? "Page not found"} · RESQ-AI`;
     document.getElementById("main-content")?.focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }, [location.pathname]);
@@ -57,7 +60,7 @@ export default function App() {
     return () => media.removeEventListener("change", update);
   }, []);
   return (
-    <div className="app">
+    <div className={`app ${judgeMode ? "judge-shell" : ""}`}>
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
@@ -161,7 +164,8 @@ export default function App() {
             >
               <RefreshCw size={16} />
             </button>
-            <span className="part-label">PART 08</span>
+            <Link className="judge-entry-link" to="/judge"><Presentation size={14}/> Judge Mode</Link>
+            <span className="part-label">PART 11</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -202,6 +206,7 @@ export default function App() {
               transition={{ duration: 0.2 }}
             >
               <Routes>
+                <Route path="/judge" element={<JudgeMode city={city} scenario={simulation.scenario} events={simulation.envelope?.events ?? []} status={status} retry={retry} model={risk.model} predictions={risk.predictions} />} />
                 <Route
                   path="/"
                   element={
