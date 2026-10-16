@@ -20,4 +20,4 @@ Status: pending. The computer-use helper could not establish the active browser 
 
 ## Bundle measurement
 
-Baseline and Part 9 builds use the same Vite/Rolldown production build. The Part 9 visual additions increased the lazy `CityScene` chunk by about 8.5 kB minified and 2.7 kB gzip in the measured final build. A manual Three.js vendor split experiment was reverted because it moved Three/Fiber dependencies into the initial dependency chain (736.70 kB `three-core` and 222.85 kB `react-three` chunks). The existing lazy scene boundary keeps 3D code deferred until its view is used; no warning threshold was raised.
+Baseline and Part 9 builds use the same Vite/Rolldown production build. The Part 9 visual additions increased the lazy `CityScene` chunk by about 9.5 kB minified and 3.1 kB gzip in the measured final build. A manual Three.js vendor split experiment was reverted because it moved Three/Fiber dependencies into the initial dependency chain (736.70 kB `three-core` and 222.85 kB `react-three` chunks). The existing lazy scene boundary keeps 3D code deferred until its view is used; no warning threshold was raised.

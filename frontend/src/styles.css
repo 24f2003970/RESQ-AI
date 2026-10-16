@@ -615,6 +615,22 @@ h1 {
 .scene-mission-status.status-blocked { border-color: #c85d54; color: #ffd1c9; }
 .scene-mission-status.status-arrived,
 .scene-mission-status.status-completed { border-color: #69a987; color: #c5ead4; }
+.scene-renderer-status {
+  position: absolute;
+  left: 50%;
+  bottom: 44px;
+  z-index: 4;
+  width: min(440px, calc(100% - 40px));
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border: 1px solid #b77a4c;
+  border-radius: 5px;
+  background: #28231feF;
+  color: #f4d7b7;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
 .map-coordinate {
   position: absolute;
   left: 21px;

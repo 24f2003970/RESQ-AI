@@ -21,10 +21,10 @@ Each displayed flood cell uses its backend depth and terrain sample to set its w
 
 ## Missions and vehicles
 
-Vehicles sample the approved `polyline_xyz` route at the reported mission distance. When a newer authoritative snapshot arrives, the visual can ease between the previous and new distance but cannot exceed the new value. Route revisions snap to the revised route's persisted mission position. Blocked, arrived and completed missions stop movement. Arrival is not completion and does not restore a resource.
+Vehicles sample the approved `polyline_xyz` route at the reported mission distance. When a newer authoritative snapshot arrives, the visual can ease between the previous and new distance but cannot exceed the new value. Route revisions snap to the revised route's persisted mission position. Blocked, arrived and completed missions stop movement. Selecting an en-route mission lets the camera follow its latest authoritative position without changing its progress. Arrival is not completion and does not restore a resource.
 
 ## Reduced graphics and camera
 
 Low graphics disables shadow maps, fixes device pixel ratio to 1, uses base terrain grid spacing, reduces facade windows and tree density, removes streetlights and lowers water material complexity. Camera controls include overview, flood hotspot, bridge crossing, rescue operation, selected building, zoom, and accessible inventory fallback. Lighting options affect only background/light values.
 
-The current fallback is a selectable building inventory wrapped in a React render error boundary. Browser/GPU context-loss behavior still requires manual validation on the presentation laptop.
+Reduced-motion preference makes camera presets immediate and disables in-between vehicle motion. The canvas listens for WebGL context loss/restoration, allows the browser restoration event, and displays a status message while graphics are paused. The current render-error fallback is a selectable building inventory wrapped in a React render error boundary. Actual GPU recovery still requires manual validation on the presentation laptop.

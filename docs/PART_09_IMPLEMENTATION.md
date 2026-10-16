@@ -8,7 +8,8 @@ Part 9 improves the existing backend-driven Digital Twin presentation. It does n
 - Terrain is rendered with twice the grid subdivision in standard mode and bilinear samples from the existing elevation matrix. Height-based vertex tints add ground variation without changing scenario elevations.
 - Flood rendering uses depth bands and opacity from the current positive depth cells. River banks follow the river segment coordinates. Road surface status colors, sidewalk/curb batches, occasional street lights, closure barriers, bridge decks, guardrails and supports use the existing road/bridge geometry.
 - Trees and repeated architectural parts use instanced meshes with shared geometry/materials.
-- Daylight, overcast and low-light presets change only render lighting. Camera presets focus the city, deepest currently wet cell, first modeled bridge, or selected mission. Camera transitions use easing while the user retains orbit/zoom control.
+- Daylight, overcast and low-light presets change only render lighting. Camera presets focus the city, deepest currently wet cell, first modeled bridge, or selected mission; selected en-route missions can be followed. Camera transitions use easing while the user retains orbit/zoom control.
+- System reduced-motion preference disables the camera easing and visual travel interpolation. WebGL context-loss/restoration events are observed, and the canvas displays an explicit paused-rendering status during loss.
 - Existing mission vehicles continue to sample the approved 3D route using authoritative traversed distance. The display does not advance a mission or move beyond the backend progress snapshot. Low-graphics mode remains available.
 
 ## Source-level geometry baseline

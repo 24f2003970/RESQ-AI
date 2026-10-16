@@ -6,11 +6,11 @@ Production output from the Part 8 baseline and current visual implementation:
 
 | Output chunk | Before | Part 9 | Change |
 | --- | ---: | ---: | ---: |
-| Main JS, minified | 707.92 kB | 708.14 kB | +0.22 kB |
-| Main JS, gzip | 209.97 kB | 210.05 kB | +0.08 kB |
-| Lazy CityScene, minified | 968.74 kB | 977.29 kB | +8.55 kB |
-| Lazy CityScene, gzip | 258.73 kB | 261.43 kB | +2.70 kB |
-| CSS | 59.72 kB | 61.18 kB | +1.46 kB |
+| Main JS, minified | 707.92 kB | 708.16 kB | +0.24 kB |
+| Main JS, gzip | 209.97 kB | 210.06 kB | +0.09 kB |
+| Lazy CityScene, minified | 968.74 kB | 978.25 kB | +9.51 kB |
+| Lazy CityScene, gzip | 258.73 kB | 261.82 kB | +3.09 kB |
+| CSS | 59.72 kB | 61.45 kB | +1.73 kB |
 
 The 3D viewport remains lazy-loaded. Total app JavaScript remains large, and Vite reports the scene chunk warning. A tested vendor split reduced the visible scene entry chunk but made the initial graph statically depend on 736.70 kB of Three.js core and 222.85 kB of React Three code; that experiment was reverted. The warning threshold was not changed.
 

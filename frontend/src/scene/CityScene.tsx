@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Edges, Line, OrbitControls } from "@react-three/drei";
+import { useReducedMotion } from "motion/react";
 import {
   BoxGeometry,
   BufferGeometry,
@@ -59,7 +60,7 @@ function missionRoutePoints(city:CityState,mission:Mission):[number,number,numbe
   return Array.isArray(xy)?(xy as number[][]).map(point=>routePointToScene(city,point)):[];
 }
 
-function MissionVehicle({mission,resource,selected,onSelect}:{mission:Mission;resource:MissionUnitResource;selected:boolean;onSelect:()=>void}) {
+function MissionVehicle({mission,resource,selected,onSelect,reducedMotion}:{mission:Mission;resource:MissionUnitResource;selected:boolean;onSelect:()=>void;reducedMotion:boolean}) {
   const group=useRef<Group>(null);
   const position=resource.position;
   const displayedDistance=useRef(mission.traversed_distance_m);
@@ -74,12 +75,12 @@ function MissionVehicle({mission,resource,selected,onSelect}:{mission:Mission;re
     const target=mission.traversed_distance_m;
     const revised=routeRevision.current!==mission.route_revision;
     routeRevision.current=mission.route_revision;
-    if(mission.status!=="en_route"||revised){
+    if(mission.status!=="en_route"||revised||reducedMotion){
       displayedDistance.current=target;startDistance.current=target;targetDistance.current=target;elapsed.current=1;
     }else{
       startDistance.current=displayedDistance.current;targetDistance.current=Math.max(displayedDistance.current,target);elapsed.current=0;
     }
-  },[mission.traversed_distance_m,mission.status,mission.route_revision]);
+  },[mission.traversed_distance_m,mission.status,mission.route_revision,reducedMotion]);
   useFrame((_,delta)=>{
     if(!group.current)return;
     if(mission.status==="en_route"){
@@ -657,12 +658,14 @@ function Camera({
   action,
   city,
   scenario,
+  reducedMotion,
 }: {
   target: Building | null;
   mission: Mission | null;
   action: { type: string; key: number };
   city: CityState;
   scenario: ScenarioState | null;
+  reducedMotion: boolean;
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera, invalidate, size, gl } = useThree();
@@ -681,15 +684,28 @@ function Camera({
   }, [gl]);
   useFrame((_, delta) => {
     const current = transition.current;
-    if (!current || !controls.current) return;
-    current.elapsed = Math.min(1, current.elapsed + delta / 0.55);
-    const eased = current.elapsed * current.elapsed * (3 - 2 * current.elapsed);
-    camera.position.lerpVectors(current.fromPosition, current.toPosition, eased);
-    controls.current.target.lerpVectors(current.fromTarget, current.toTarget, eased);
-    camera.updateProjectionMatrix();
-    controls.current.update();
-    if (current.elapsed >= 1) transition.current = null;
-    else invalidate();
+    if (!controls.current) return;
+    if (current) {
+      current.elapsed = reducedMotion ? 1 : Math.min(1, current.elapsed + delta / 0.55);
+      const eased = current.elapsed * current.elapsed * (3 - 2 * current.elapsed);
+      camera.position.lerpVectors(current.fromPosition, current.toPosition, eased);
+      controls.current.target.lerpVectors(current.fromTarget, current.toTarget, eased);
+      camera.updateProjectionMatrix();
+      controls.current.update();
+      if (current.elapsed >= 1) transition.current = null;
+      else invalidate();
+    }
+    if (mission && mission.status === "en_route" && (action.type === "focus-mission" || action.type === "rescue")) {
+      const sample = sampleMissionRoute(mission.route as unknown as MissionRouteGeometry, mission.traversed_distance_m);
+      if (sample) {
+        const desired = new Vector3(sample.position[0], sample.position[1] + 2, sample.position[2]);
+        const deltaToUnit = desired.sub(controls.current.target).multiplyScalar(reducedMotion ? 1 : Math.min(1, delta * 2.4));
+        controls.current.target.add(deltaToUnit);
+        camera.position.add(deltaToUnit);
+        controls.current.update();
+        invalidate();
+      }
+    }
   });
   useLayoutEffect(() => {
     if (!controls.current) return;
@@ -745,7 +761,7 @@ function Camera({
     camera.updateProjectionMatrix();
     controls.current.update();
     invalidate();
-  }, [action, camera, target, mission, city, scenario, invalidate, size]);
+  }, [action, camera, target, mission, city, scenario, reducedMotion, invalidate, size]);
   return (
     <OrbitControls
       ref={controls}
@@ -804,12 +820,26 @@ export default function CityScene({
   const [action, setAction] = useState({ type: "reset", key: 0 });
   const [mapMode, setMapMode] = useState(false);
   const [lighting, setLighting] = useState<"daylight"|"overcast"|"low-light">("daylight");
+  const [rendererCanvas, setRendererCanvas] = useState<HTMLCanvasElement|null>(null);
+  const [webglLost, setWebglLost] = useState(false);
+  const reducedMotion = useReducedMotion() ?? false;
   const focusedMission=missions.find(item=>item.mission_id===selectedMissionId)??null;
   const focusedResource=focusedMission?missionUnits.find(unit=>unit.unit_id===focusedMission.unit_id):undefined;
   const isMoving=missions.some(item=>item.status==="en_route");
   const resourceById=new Map(missionUnits.map(item=>[item.unit_id,item]));
   const latestMissionByUnit=new Map<string,Mission>();
   for(const mission of missions)latestMissionByUnit.set(mission.unit_id,mission);
+  useEffect(()=>{
+    if(!rendererCanvas)return;
+    const handleLost=(event:Event)=>{event.preventDefault();setWebglLost(true);};
+    const handleRestored=()=>setWebglLost(false);
+    rendererCanvas.addEventListener("webglcontextlost",handleLost);
+    rendererCanvas.addEventListener("webglcontextrestored",handleRestored);
+    return ()=>{
+      rendererCanvas.removeEventListener("webglcontextlost",handleLost);
+      rendererCanvas.removeEventListener("webglcontextrestored",handleRestored);
+    };
+  },[rendererCanvas]);
   useEffect(()=>{
     if(selectedMissionId)setAction(current=>({type:"focus-mission",key:current.key+1}));
   },[selectedMissionId]);
@@ -862,6 +892,7 @@ export default function CityScene({
               shadows={lowGraphics ? false : { type: PCFShadowMap }}
               dpr={lowGraphics ? 1 : [1, 1.5]}
               gl={{ antialias: true, powerPreference: "high-performance" }}
+              onCreated={({gl})=>setRendererCanvas(gl.domElement)}
             >
               <color attach="background" args={[lighting==="low-light"?"#121c24":lighting==="overcast"?"#344047":"#243633"]} />
               <ambientLight intensity={lighting==="low-light"?.72:lighting==="overcast"?1.55:1.2} color={lighting==="low-light"?"#9cb2c1":lighting==="overcast"?"#d6e0e4":"#c8e0db"} />
@@ -903,7 +934,7 @@ export default function CityScene({
               {layers.units&&missionUnits.map(resource=>{
                 const mission=resource.mission_id?missions.find(item=>item.mission_id===resource.mission_id):latestMissionByUnit.get(resource.unit_id);
                 if(!mission)return null;
-                return <MissionVehicle key={`mission-unit-${resource.unit_id}`} mission={mission} resource={resource} selected={mission.mission_id===selectedMissionId} onSelect={()=>onSelectMission(mission.mission_id)}/>;
+                return <MissionVehicle key={`mission-unit-${resource.unit_id}`} mission={mission} resource={resource} selected={mission.mission_id===selectedMissionId} reducedMotion={reducedMotion} onSelect={()=>onSelectMission(mission.mission_id)}/>;
               })}
               {layers.units&&city.rescue_units.filter(unit=>!resourceById.has(unit.id)).map(unit=>(
                 <group key={unit.id} position={toScene(unit.position)}>
@@ -911,11 +942,12 @@ export default function CityScene({
                   <mesh position={[0,2.8,0]}><boxGeometry args={[1.2,.14,.45]}/><meshBasicMaterial color="#73bfa9"/></mesh>
                 </group>
               ))}
-              <Camera target={selected} mission={focusedMission} action={action} city={city} scenario={scenario} />
+              <Camera target={selected} mission={focusedMission} action={action} city={city} scenario={scenario} reducedMotion={reducedMotion} />
             </Canvas>
           </Suspense>
         </SceneBoundary>
       )}
+      {webglLost&&<div className="scene-renderer-status" role="alert">3D graphics paused after a graphics context reset. Use the building inventory control or wait while the browser restores the scene.</div>}
       <div className="map-location">
         <span className="live-dot" /> RIVERSIDE <span>/ FICTIONAL CITY</span>
       </div>
