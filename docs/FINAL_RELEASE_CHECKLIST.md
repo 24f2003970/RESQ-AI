@@ -8,7 +8,7 @@ Statuses and evidence are maintained in [Part 16 verification](PART_16_VERIFICAT
 |---|---|---|---|
 | Backend and frontend suites | Full Pytest and Vitest | PASS | Review upstream warning; no local failures |
 | Lint, typecheck, API contract/types, build | All commands succeed | PASS | Address large chunks in later optimization work |
-| Model and calibration artifacts | Cross-checked hashes, metadata, clean manifest | PENDING | Complete manifest integrity audit |
+| Model and calibration artifacts | Cross-checked hashes, metadata, validated manifest on source commit | PASS | Regenerate manifest after final docs commit |
 | Scientific evidence | Exclusive buckets and regenerated 10-group JSON/CSV/MD | PASS | Preserve synthetic caveat |
 | Human approval and mission lifecycle | Part 10/14 disposable acceptance and regressions | PASS | Review acceptance reports |
 | Demo A and Demo B | 14 RC1 checks, benchmark and all-roads-closed zero assignment | PASS | Run live rehearsal before judging |
@@ -20,6 +20,6 @@ Statuses and evidence are maintained in [Part 16 verification](PART_16_VERIFICAT
 | Live spoken rehearsal | Timed team rehearsal | PENDING | Team fills rehearsal record |
 | Submission details | Verified names, institution and event registration | PENDING | Team completes placeholders |
 | Repository hygiene | Exact staging review; no envs, DBs, caches or baseline folders | PENDING | Complete before commit |
-| Hosted CI | Initial Part 16 source commit passed both jobs; recheck latest docs-update head | PASS | Confirm newest PR run; keep PR open/unmerged |
+| Hosted CI | Runs 39049846395 and 39049998316 both passed backend and frontend on their recorded commits | PASS | Confirm newest PR run; keep PR open/unmerged |
 
 The candidate is **not fully visually validated**. The browser safety stop is not evidence of an application defect. No tag, GitHub Release, deployment, or Innotech submission is part of this handoff.

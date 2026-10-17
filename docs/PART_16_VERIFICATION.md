@@ -27,7 +27,7 @@ Statuses: **PASS**, **FAIL**, **PENDING**, **BLOCKED**, **ACCEPTED LIMITATION**.
 | Same-ID epoch reset | Covered by backend regressions and full suite; test name includes durable agent reset epoch | `backend/tests/test_agents.py`, `backend/tests/test_missions.py`, `backend/tests/test_robustness.py` | High | None | PASS |
 | Mission clock synchronization | Clock version/idempotency, paused state, route revision and epoch reset tests included in full suite | `backend/tests/test_missions.py` | High | None | PASS |
 | All-roads-closed and approval | Rescue tests and both disposable acceptance workflows; zero assignments verified in benchmark and scientific evaluation | `backend/tests/test_rescue.py`, acceptance outputs | High | None | PASS |
-| Release manifest | Generated JSON parses; branch/candidate correct; 16 frontend assets hash-verify; total asset size 1,885,320 bytes; no absolute/personal paths, DBs, environments or browser profiles; source SHA will be refreshed after commit | `artifacts/part16-release-manifest.json` (ignored generated output), `scripts/write-release-manifest.ps1` | High | Regenerate after final source commit and final CI | PASS |
+| Release manifest | Generated JSON parses for source SHA `e1e63552b737d4ee87805c0a0b7bad9a60b0f069`; 16 frontend assets hash-verify; total asset size 1,885,320 bytes; no absolute/personal paths, DBs, environments or browser profiles; tracked source tree clean | `artifacts/part16-release-manifest.json` (ignored generated output), `scripts/write-release-manifest.ps1` | High | Regenerate after the final documentation commit | PASS |
 | Repository hygiene | `.gitignore` covers environments, node_modules, local DBs, caches and artifacts; baselines preserved; staged-path audit pending | `.gitignore`, final staged diff | High | Complete before commit | PENDING |
 | Documentation / claim review | All local Markdown links resolve; no personal machine paths/usernames found; browser status explicitly blocked | `docs/README.md`, final docs | Medium | Finish final diff audit | PASS |
 | Browser visual walkthrough | Not attempted after URL-safety stop | This record; `FINAL_VISUAL_QA.md` | Medium | Requires independent URL-verifiable session | BLOCKED |
@@ -38,7 +38,7 @@ Statuses: **PASS**, **FAIL**, **PENDING**, **BLOCKED**, **ACCEPTED LIMITATION**.
 | Offline isolation | Local inference and loopback demo verified; no OS firewall isolation test | `docs/OFFLINE_AUDIT.md`, preflight | Medium | Do not claim physical network isolation | ACCEPTED LIMITATION |
 | Team live rehearsal | Automated workflows passed; no timed spoken rehearsal performed | `FINAL_DEMO_REHEARSAL.md` | Medium | Team must rehearse and fill presenter fields | PENDING |
 | Submission details | Names, institution, mentor and registration fields remain placeholders; nothing submitted | `INNOTECH_SUBMISSION_KIT.md` | Medium | Team fills verified event information | PENDING |
-| Hosted CI on initial Part 16 head | Run 39049846395 on commit `b7251d86a676c589059c6eceb7768d6a77899a2a`; backend and frontend jobs both completed successfully | [GitHub Actions run 39049846395](https://github.com/24f2003970/RESQ-AI/actions/runs/39049846395) | High | Recheck the final documentation-update commit's own run before review | PASS |
+| Hosted CI | Run 39049846395 on source commit `b7251d86a676c589059c6eceb7768d6a77899a2a` and run 39049998316 on documentation commit `e1e63552b737d4ee87805c0a0b7bad9a60b0f069`; backend and frontend jobs succeeded on both | [Run 39049846395](https://github.com/24f2003970/RESQ-AI/actions/runs/39049846395), [run 39049998316](https://github.com/24f2003970/RESQ-AI/actions/runs/39049998316) | High | Recheck the final verification-record commit's run before review | PASS |
 
 ## Executed commands
 
@@ -59,4 +59,4 @@ The first preflight was run while services were stopped and returned expected AP
 
 ## Hosted results
 
-PR #16: https://github.com/24f2003970/RESQ-AI/pull/16 (open and unmerged). Initial Part 16 source-head Actions run: https://github.com/24f2003970/RESQ-AI/actions/runs/39049846395; backend and frontend both succeeded. The subsequent documentation-only update triggers a separate run; inspect the latest run attached to the current PR head before making a merge decision.
+PR #16: https://github.com/24f2003970/RESQ-AI/pull/16 (open and unmerged). Actions runs 39049846395 and 39049998316 passed both backend and frontend jobs on their recorded commits. A final verification-record update will trigger a new run; inspect the latest run attached to the current PR head before making a merge decision.
