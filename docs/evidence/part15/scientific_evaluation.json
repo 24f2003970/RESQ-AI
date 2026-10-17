@@ -6,7 +6,7 @@
     "python": "3.12.5",
     "scikit_learn": "1.9.1"
   },
-  "generated_at_utc": "2026-10-17T16:28:36.508050+00:00",
+  "generated_at_utc": "2026-10-17T16:55:26.848812+00:00",
   "limitations": [
     "Ten scenario groups cover specified conditions but do not estimate real-world outcome rates.",
     "Scenario seeds are distinct; configuration families are not repeated enough for inferential comparisons.",
@@ -50,7 +50,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.08,
+        "assignment_runtime_ms": 0.102,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -86,8 +86,8 @@
           "simulated_travel_minutes": -0.4,
           "total_distance_m": -208.0
         },
-        "planning_wall_ms": 14.72,
-        "routing_runtime_ms": 14.518,
+        "planning_wall_ms": 15.309,
+        "routing_runtime_ms": 15.063,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 50,
         "unreachable_destinations": 0
@@ -98,7 +98,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151500",
-      "scenario_runtime_ms": 186.163,
+      "scenario_runtime_ms": 156.004,
       "seed": 151500,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -129,7 +129,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.123,
+        "assignment_runtime_ms": 0.117,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -165,8 +165,8 @@
           "simulated_travel_minutes": 0.0,
           "total_distance_m": 71.2
         },
-        "planning_wall_ms": 35.177,
-        "routing_runtime_ms": 34.858,
+        "planning_wall_ms": 32.475,
+        "routing_runtime_ms": 32.202,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 86,
         "unreachable_destinations": 0
@@ -177,7 +177,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151501",
-      "scenario_runtime_ms": 158.773,
+      "scenario_runtime_ms": 147.446,
       "seed": 151501,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -208,7 +208,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.15,
+        "assignment_runtime_ms": 0.146,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -244,8 +244,8 @@
           "simulated_travel_minutes": -1.8,
           "total_distance_m": -520.0
         },
-        "planning_wall_ms": 82.135,
-        "routing_runtime_ms": 81.597,
+        "planning_wall_ms": 85.991,
+        "routing_runtime_ms": 85.542,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 62,
         "unreachable_destinations": 41
@@ -256,7 +256,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151502",
-      "scenario_runtime_ms": 217.751,
+      "scenario_runtime_ms": 205.354,
       "seed": 151502,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -287,7 +287,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.061,
+        "assignment_runtime_ms": 0.072,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 2,
@@ -323,8 +323,8 @@
           "simulated_travel_minutes": -0.7,
           "total_distance_m": -312.0
         },
-        "planning_wall_ms": 13.735,
-        "routing_runtime_ms": 13.555,
+        "planning_wall_ms": 13.965,
+        "routing_runtime_ms": 13.757,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 16,
         "unreachable_destinations": 10
@@ -335,7 +335,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151503",
-      "scenario_runtime_ms": 153.265,
+      "scenario_runtime_ms": 132.576,
       "seed": 151503,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -366,7 +366,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.004,
+        "assignment_runtime_ms": 0.012,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 0,
@@ -402,8 +402,8 @@
           "simulated_travel_minutes": 0,
           "total_distance_m": 0
         },
-        "planning_wall_ms": 0.589,
-        "routing_runtime_ms": 0.502,
+        "planning_wall_ms": 1.092,
+        "routing_runtime_ms": 0.917,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 0,
         "unreachable_destinations": 0
@@ -414,7 +414,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151504",
-      "scenario_runtime_ms": 118.025,
+      "scenario_runtime_ms": 186.794,
       "seed": 151504,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -447,7 +447,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.078,
+        "assignment_runtime_ms": 0.129,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -483,8 +483,8 @@
           "simulated_travel_minutes": -1.6,
           "total_distance_m": -728.0
         },
-        "planning_wall_ms": 13.014,
-        "routing_runtime_ms": 12.791,
+        "planning_wall_ms": 25.134,
+        "routing_runtime_ms": 24.768,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 50,
         "unreachable_destinations": 0
@@ -495,7 +495,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151505",
-      "scenario_runtime_ms": 239.706,
+      "scenario_runtime_ms": 306.568,
       "seed": 151505,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -526,7 +526,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 2.104,
+        "assignment_runtime_ms": 0.148,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -562,8 +562,8 @@
           "simulated_travel_minutes": 0.4,
           "total_distance_m": 216.0
         },
-        "planning_wall_ms": 29.704,
-        "routing_runtime_ms": 27.122,
+        "planning_wall_ms": 25.04,
+        "routing_runtime_ms": 24.651,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 46,
         "unreachable_destinations": 0
@@ -574,7 +574,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151506",
-      "scenario_runtime_ms": 272.383,
+      "scenario_runtime_ms": 315.349,
       "seed": 151506,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -605,7 +605,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.05,
+        "assignment_runtime_ms": 0.052,
         "conventional_baseline": {
           "available_unit_count": 2,
           "destinations_covered": 2,
@@ -641,8 +641,8 @@
           "simulated_travel_minutes": 0.2,
           "total_distance_m": 104.0
         },
-        "planning_wall_ms": 6.316,
-        "routing_runtime_ms": 6.156,
+        "planning_wall_ms": 8.561,
+        "routing_runtime_ms": 8.418,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 13,
         "unreachable_destinations": 0
@@ -653,7 +653,7 @@
         "team_count": 1
       },
       "scenario_group": "part15-seed-151507",
-      "scenario_runtime_ms": 253.183,
+      "scenario_runtime_ms": 252.436,
       "seed": 151507,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -684,7 +684,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.106,
+        "assignment_runtime_ms": 0.116,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -720,8 +720,8 @@
           "simulated_travel_minutes": 2.5,
           "total_distance_m": 1240.0
         },
-        "planning_wall_ms": 23.933,
-        "routing_runtime_ms": 23.64,
+        "planning_wall_ms": 21.914,
+        "routing_runtime_ms": 21.611,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 36,
         "unreachable_destinations": 0
@@ -732,7 +732,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151508",
-      "scenario_runtime_ms": 280.807,
+      "scenario_runtime_ms": 314.532,
       "seed": 151508,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -774,7 +774,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.08,
+        "assignment_runtime_ms": 0.086,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 0,
@@ -810,8 +810,8 @@
           "simulated_travel_minutes": 0,
           "total_distance_m": 0
         },
-        "planning_wall_ms": 3.234,
-        "routing_runtime_ms": 2.924,
+        "planning_wall_ms": 3.92,
+        "routing_runtime_ms": 3.614,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 0,
         "unreachable_destinations": 9
@@ -822,7 +822,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151509",
-      "scenario_runtime_ms": 353.839,
+      "scenario_runtime_ms": 281.554,
       "seed": 151509,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -844,7 +844,7 @@
       151509
     ],
     "ticks_per_group": 6,
-    "total_runtime_ms": 2245.968
+    "total_runtime_ms": 2312.418
   },
   "title": "RESQ-AI Part 15 bounded scientific evaluation"
 }
