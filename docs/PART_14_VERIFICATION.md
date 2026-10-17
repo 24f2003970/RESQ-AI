@@ -49,11 +49,11 @@ The prior foreground WebGL 2 `?perf=1` snapshots are recorded in `GPU_PERFORMANC
 | ML artifact integrity | Model, metadata (normalized LF), calibrator and support hashes match saved metadata |
 | Windows startup/shutdown | Loopback health-gated start and Ctrl+C child shutdown verified with disposable DB; backend health readiness 3159.3 ms, frontend HTTP readiness 580 ms |
 | Browser visual walkthrough | Demo A lifecycle and Demo B zero-assignment presentation verified; requested desktop viewports pending |
-| Hosted GitHub Actions | Pending Part 14.2 commit and hosted run |
+| Hosted GitHub Actions | Fix-commit CI run 39042627833 passed; backend and frontend jobs succeeded. Documentation-only follow-up receives a fresh run on the same PR. |
 
 Model artifact SHA-256: `9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73`. Normalized `model_metadata.json` SHA-256: `7542b7d10be467ef560ec76bbe105ffc8001c063dfff177375cbef42cb0bf2d4`. Calibration artifact SHA-256: `64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6`. Support artifact SHA-256: `f01bcc84be76cc94b2df955ba5c9a90881e9823454c7aaa6da675833dc5f26f3`. Dataset SHA-256: `c560bdb345ad083f3f8e1d9d8a2d4928d2705bd7787f4e9640567a439040387d`.
 
-PR #14: https://github.com/24f2003970/RESQ-AI/pull/14 (open, unmerged). Hosted CI run [39032141846](https://github.com/24f2003970/RESQ-AI/actions/runs/39032141846) passed on correction commit `3a57dc1ca60441f7b2630117f8f6c4aee0718b51`; both backend and frontend jobs succeeded. A documentation-only follow-up records this run and triggers a fresh check for the updated PR head.
+PR #14: https://github.com/24f2003970/RESQ-AI/pull/14 (open, unmerged). Hosted CI run [39042627833](https://github.com/24f2003970/RESQ-AI/actions/runs/39042627833) passed on fix commit `9221eb64f3f8b629414bd9b89ca4df3d43b4becf`; backend and frontend jobs both succeeded. A documentation-only follow-up records these local results and receives its own hosted run on the same PR.
 
 
 
