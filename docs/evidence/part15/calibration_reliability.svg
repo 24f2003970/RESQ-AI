@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="540" viewBox="0 0 1120 540">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="560" y="30" text-anchor="middle" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#0f172a">RESQ-AI synthetic future-exposure reliability</text>
+<text x="295.0" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#0f172a">Development · nested grouped adoption</text>
+<path d="M 90.00 80 V 430 M 90 430.00 H 500" stroke="#dbe4ee" stroke-width="1"/>
+<text x="90.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.0</text>
+<text x="80" y="434.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.0</text>
+<path d="M 172.00 80 V 430 M 90 360.00 H 500" stroke="#dbe4ee" stroke-width="1"/>
+<text x="172.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.2</text>
+<text x="80" y="364.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.2</text>
+<path d="M 254.00 80 V 430 M 90 290.00 H 500" stroke="#dbe4ee" stroke-width="1"/>
+<text x="254.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.4</text>
+<text x="80" y="294.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.4</text>
+<path d="M 336.00 80 V 430 M 90 220.00 H 500" stroke="#dbe4ee" stroke-width="1"/>
+<text x="336.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.6</text>
+<text x="80" y="224.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.6</text>
+<path d="M 418.00 80 V 430 M 90 150.00 H 500" stroke="#dbe4ee" stroke-width="1"/>
+<text x="418.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.8</text>
+<text x="80" y="154.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.8</text>
+<path d="M 500.00 80 V 430 M 90 80.00 H 500" stroke="#dbe4ee" stroke-width="1"/>
+<text x="500.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">1.0</text>
+<text x="80" y="84.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">1.0</text>
+<rect x="90" y="80" width="410" height="350" fill="none" stroke="#64748b"/>
+<path d="M 90 430 L 500 80" stroke="#94a3b8" stroke-dasharray="6 5" stroke-width="1.5"/>
+<path d="M 102.68 426.01 L 145.66 396.14 L 191.11 362.56 L 232.92 328.25 L 274.28 260.00 L 316.15 192.46 L 358.50 141.25 L 398.65 117.31 L 438.53 90.55 L 496.59 80.42" fill="none" stroke="#64748b" stroke-width="2.3"/>
+<circle cx="102.68" cy="426.01" r="3.40" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=4390, mean predicted=0.031, observed=0.011</title></circle>
+<circle cx="145.66" cy="396.14" r="2.76" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=951, mean predicted=0.136, observed=0.097</title></circle>
+<circle cx="191.11" cy="362.56" r="2.57" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=410, mean predicted=0.247, observed=0.193</title></circle>
+<circle cx="232.92" cy="328.25" r="2.56" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=399, mean predicted=0.349, observed=0.291</title></circle>
+<circle cx="274.28" cy="260.00" r="2.54" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=350, mean predicted=0.449, observed=0.486</title></circle>
+<circle cx="316.15" cy="192.46" r="2.53" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=333, mean predicted=0.552, observed=0.679</title></circle>
+<circle cx="358.50" cy="141.25" r="2.60" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=480, mean predicted=0.655, observed=0.825</title></circle>
+<circle cx="398.65" cy="117.31" r="2.67" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=666, mean predicted=0.753, observed=0.893</title></circle>
+<circle cx="438.53" cy="90.55" r="2.71" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=796, mean predicted=0.850, observed=0.970</title></circle>
+<circle cx="496.59" cy="80.42" r="4.17" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=11745, mean predicted=0.992, observed=0.999</title></circle>
+<path d="M 95.92 420.89 L 150.10 378.39 L 191.82 346.44 L 232.97 306.08 L 274.33 264.85 L 315.49 247.22 L 355.93 193.33 L 398.83 155.62 L 440.46 128.50 L 497.79 81.74" fill="none" stroke="#06b6d4" stroke-width="2.3"/>
+<circle cx="95.92" cy="420.89" r="3.52" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=5264, mean predicted=0.014, observed=0.026</title></circle>
+<circle cx="150.10" cy="378.39" r="2.55" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=373, mean predicted=0.147, observed=0.147</title></circle>
+<circle cx="191.82" cy="346.44" r="2.51" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=289, mean predicted=0.248, observed=0.239</title></circle>
+<circle cx="232.97" cy="306.08" r="2.46" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=209, mean predicted=0.349, observed=0.354</title></circle>
+<circle cx="274.33" cy="264.85" r="2.48" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=231, mean predicted=0.450, observed=0.472</title></circle>
+<circle cx="315.49" cy="247.22" r="2.44" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=180, mean predicted=0.550, observed=0.522</title></circle>
+<circle cx="355.93" cy="193.33" r="2.46" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=210, mean predicted=0.649, observed=0.676</title></circle>
+<circle cx="398.83" cy="155.62" r="2.53" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=324, mean predicted=0.753, observed=0.784</title></circle>
+<circle cx="440.46" cy="128.50" r="2.64" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=599, mean predicted=0.855, observed=0.861</title></circle>
+<circle cx="497.79" cy="81.74" r="4.26" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=12841, mean predicted=0.995, observed=0.995</title></circle>
+<text x="295.0" y="473" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#334155">Mean predicted probability</text>
+<text x="34" y="255.0" transform="rotate(-90 34 255.0)" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#334155">Observed positive frequency</text>
+<path d="M 103 96 h 20" stroke="#64748b" stroke-width="3"/><text x="130" y="100" font-family="Arial,sans-serif" font-size="10" fill="#334155">Raw random forest</text>
+<path d="M 103 117 h 20" stroke="#06b6d4" stroke-width="3"/><text x="130" y="121" font-family="Arial,sans-serif" font-size="10" fill="#334155">Platt calibrated</text>
+<text x="494" y="99" text-anchor="end" font-family="Arial,sans-serif" font-size="9" fill="#64748b">Dashed line: perfect calibration</text>
+<text x="815.0" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#0f172a">Untouched synthetic test · descriptive only</text>
+<path d="M 610.00 80 V 430 M 610 430.00 H 1020" stroke="#dbe4ee" stroke-width="1"/>
+<text x="610.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.0</text>
+<text x="600" y="434.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.0</text>
+<path d="M 692.00 80 V 430 M 610 360.00 H 1020" stroke="#dbe4ee" stroke-width="1"/>
+<text x="692.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.2</text>
+<text x="600" y="364.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.2</text>
+<path d="M 774.00 80 V 430 M 610 290.00 H 1020" stroke="#dbe4ee" stroke-width="1"/>
+<text x="774.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.4</text>
+<text x="600" y="294.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.4</text>
+<path d="M 856.00 80 V 430 M 610 220.00 H 1020" stroke="#dbe4ee" stroke-width="1"/>
+<text x="856.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.6</text>
+<text x="600" y="224.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.6</text>
+<path d="M 938.00 80 V 430 M 610 150.00 H 1020" stroke="#dbe4ee" stroke-width="1"/>
+<text x="938.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.8</text>
+<text x="600" y="154.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">0.8</text>
+<path d="M 1020.00 80 V 430 M 610 80.00 H 1020" stroke="#dbe4ee" stroke-width="1"/>
+<text x="1020.00" y="449" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">1.0</text>
+<text x="600" y="84.00" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#475569">1.0</text>
+<rect x="610" y="80" width="410" height="350" fill="none" stroke="#64748b"/>
+<path d="M 610 430 L 1020 80" stroke="#94a3b8" stroke-dasharray="6 5" stroke-width="1.5"/>
+<path d="M 619.26 427.93 L 666.68 406.55 L 710.28 357.86 L 753.72 305.72 L 794.31 261.18 L 834.95 183.16 L 874.55 130.52 L 919.95 107.13 L 959.20 96.28 L 1016.59 80.70" fill="none" stroke="#64748b" stroke-width="2.3"/>
+<circle cx="619.26" cy="427.93" r="2.98" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=1857, mean predicted=0.023, observed=0.006</title></circle>
+<circle cx="666.68" cy="406.55" r="2.45" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=194, mean predicted=0.138, observed=0.067</title></circle>
+<circle cx="710.28" cy="357.86" r="2.41" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=131, mean predicted=0.245, observed=0.206</title></circle>
+<circle cx="753.72" cy="305.72" r="2.41" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=138, mean predicted=0.351, observed=0.355</title></circle>
+<circle cx="794.31" cy="261.18" r="2.37" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=85, mean predicted=0.450, observed=0.482</title></circle>
+<circle cx="834.95" cy="183.16" r="2.38" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=95, mean predicted=0.549, observed=0.705</title></circle>
+<circle cx="874.55" cy="130.52" r="2.38" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=97, mean predicted=0.645, observed=0.856</title></circle>
+<circle cx="919.95" cy="107.13" r="2.41" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=129, mean predicted=0.756, observed=0.922</title></circle>
+<circle cx="959.20" cy="96.28" r="2.44" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=172, mean predicted=0.852, observed=0.953</title></circle>
+<circle cx="1016.59" cy="80.70" r="3.11" fill="#64748b" stroke="white" stroke-width="1"><title>Raw random forest: n=2502, mean predicted=0.992, observed=0.998</title></circle>
+<path d="M 614.58 426.85 L 672.23 380.00 L 712.16 348.49 L 753.71 303.40 L 791.17 279.23 L 834.78 258.18 L 877.25 198.24 L 920.76 119.87 L 962.57 122.24 L 1017.80 82.18" fill="none" stroke="#06b6d4" stroke-width="2.3"/>
+<circle cx="614.58" cy="426.85" r="3.01" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=1999, mean predicted=0.011, observed=0.009</title></circle>
+<circle cx="672.23" cy="380.00" r="2.40" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=119, mean predicted=0.152, observed=0.143</title></circle>
+<circle cx="712.16" cy="348.49" r="2.36" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=73, mean predicted=0.249, observed=0.233</title></circle>
+<circle cx="753.71" cy="303.40" r="2.38" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=94, mean predicted=0.351, observed=0.362</title></circle>
+<circle cx="791.17" cy="279.23" r="2.35" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=65, mean predicted=0.442, observed=0.431</title></circle>
+<circle cx="834.78" cy="258.18" r="2.33" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=55, mean predicted=0.548, observed=0.491</title></circle>
+<circle cx="877.25" cy="198.24" r="2.36" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=74, mean predicted=0.652, observed=0.662</title></circle>
+<circle cx="920.76" cy="119.87" r="2.36" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=79, mean predicted=0.758, observed=0.886</title></circle>
+<circle cx="962.57" cy="122.24" r="2.40" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=116, mean predicted=0.860, observed=0.879</title></circle>
+<circle cx="1017.80" cy="82.18" r="3.15" fill="#06b6d4" stroke="white" stroke-width="1"><title>Platt calibrated: n=2726, mean predicted=0.995, observed=0.994</title></circle>
+<text x="815.0" y="473" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#334155">Mean predicted probability</text>
+<text x="554" y="255.0" transform="rotate(-90 554 255.0)" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#334155">Observed positive frequency</text>
+<path d="M 623 96 h 20" stroke="#64748b" stroke-width="3"/><text x="650" y="100" font-family="Arial,sans-serif" font-size="10" fill="#334155">Raw random forest</text>
+<path d="M 623 117 h 20" stroke="#06b6d4" stroke-width="3"/><text x="650" y="121" font-family="Arial,sans-serif" font-size="10" fill="#334155">Platt calibrated</text>
+<text x="1014" y="99" text-anchor="end" font-family="Arial,sans-serif" font-size="9" fill="#64748b">Dashed line: perfect calibration</text>
+<text x="560" y="520" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#475569">Ten fixed-width bins · development adoption uses nested scenario-group folds · final test split did not choose calibration</text>
+</svg>

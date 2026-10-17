@@ -1,186 +1,116 @@
 # RESQ-AI
 
-**Predict. Simulate. Plan. Review. Replan.**
+**An offline-first, synthetic disaster decision-support prototype with a flood Digital Twin, local ML, route-aware rescue planning, and human-controlled simulated missions.**
 
-## RC1 local demo
+RESQ-AI explores how a response team could inspect changing flood conditions, compare modeled future exposure, coordinate deterministic analysis agents, and review feasible rescue plans in one interface. It is a student engineering and Innotech hackathon project—not a certified emergency system, operational forecast, or replacement for field judgment.
 
-On Windows, install the documented local dependencies once, then start both services with the loopback-only launcher:
+![RESQ-AI Command Center and Riverside Digital Twin](docs/evidence/part15/screenshots/command-center-baseline-1536x912.jpg)
 
-```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-.\scripts\setup-resq-ai.ps1
-.\scripts\start-resq-ai.ps1
-```
+## Try the local demo
 
-Open the frontend URL printed by the launcher (normally `http://127.0.0.1:5173`). Use **Guided Demo** for a reproducible walkthrough. Run `scripts\demo-preflight.ps1` in a second terminal for read-only readiness checks. Press **Ctrl+C** in the launcher window to stop both services. The launcher checks existing SQLite data read-only before startup and does not delete it. For disposable positive and unreachable rescue acceptance, run `backend\.venv\Scripts\python.exe backend\demo_acceptance_rc1.py`; it creates and removes a temporary SQLite database.
-
-Part 14 is Release Candidate 1 readiness work. The deterministic RC1 positive and no-route scenarios, verification evidence, manifest and limits are documented in `docs/PART_14_IMPLEMENTATION.md`, `docs/PART_14_VERIFICATION.md`, `docs/RELEASE_CANDIDATE_MANIFEST.md`, `docs/RC1_ACCEPTANCE_MATRIX.md`, `docs/DEMO_A_POSITIVE_RESCUE.md`, `docs/DEMO_B_UNREACHABLE_ROUTES.md`, `docs/BROWSER_VISUAL_ACCEPTANCE_RC1.md`, `docs/GPU_PERFORMANCE_RC1.md`, `docs/DEMO_LAPTOP_RUNBOOK.md` and `docs/RC1_KNOWN_LIMITATIONS.md`.
-
-Part 12 adds a local ML reliability layer: calibration against held-out synthetic scenarios, feature-support warnings, failure analysis, and flood-simulation sensitivity experiments. See [`docs/PART_12_IMPLEMENTATION.md`](docs/PART_12_IMPLEMENTATION.md) and [`docs/ML_RELIABILITY_MODEL_CARD.md`](docs/ML_RELIABILITY_MODEL_CARD.md). These results are not real-world flood probabilities; current flood state remains the physical simulator output and rescue plans still require commander approval.
-
-Part 13 adds a persisted Decision Robustness Lab for frozen-snapshot environmental, infrastructure, resource, and model-reliability counterfactuals. It checks the saved plan first, then separately reoptimizes with the existing flood, graph, route, and allocation engines. Studies are isolated analytical evidence and cannot modify live operations. See [`docs/PART_13_IMPLEMENTATION.md`](docs/PART_13_IMPLEMENTATION.md), [`docs/DECISION_ROBUSTNESS_CONTRACT.md`](docs/DECISION_ROBUSTNESS_CONTRACT.md), and [`docs/ROBUSTNESS_DEMO_GUIDE.md`](docs/ROBUSTNESS_DEMO_GUIDE.md).
-
-RESQ-AI is an offline-first disaster response command center for a deterministic fictional city. Part 3 adds a stateful flood simulation, locally persisted scenario engine, transparent infrastructure exposure, and an interactive 3D Digital Twin. Part 4 adds a locally trained classifier for synthetic building exposure 30 minutes ahead. It is a decision-support prototype, not an operational warning or dispatch system.
-
-## What the demonstration will show
-
-1. Load the same seed-based city and scenario on every run.
-2. Increase rainfall and river stage, then inspect simulated inundation and affected assets.
-3. Inspect backend-computed current exposure and event history; replay a selected tick.
-4. Compare current exposure with a separately labeled 30-minute synthetic ML estimate in the Model Intelligence Lab.
-5. Generate a flood-aware rescue plan, compare exact constrained assignment with a nearest-unit baseline, review ranked destinations, and explicitly approve or reject a proposal.
-6. Observe six persisted algorithmic agents replan after measured flood/access changes or a manual road closure, review a replacement in the 3D command center, then make an explicit human decision.
-7. Run a reproducible isolated A/B experiment from one saved snapshot, compare actual flood and resource-allocation outcomes, inspect source metrics, and switch the single Digital Twin canvas between variants.
-8. Use **Guided Demo** for the ten-stage flood-to-replanning journey, including local ML, event traces, road closure, human decision, and saved baseline-versus-optimized comparison.
-9. Approve a proposal to create persistent ready missions, explicitly dispatch a simulated unit, advance the independent operational clock, review a closure-triggered route proposal, confirm arrival/completion, and inspect resource history in Mission Operations and the 3D Digital Twin.
-
-Every displayed metric must come from backend state or a recorded experiment. Simulated data, assumptions, and model results will be labeled as such. No hosted AI inference or external AI API key is part of the design. Once dependencies and any optional data are installed, the application must run locally without network access.
-
-## Planned stack
-
-- **Web:** React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion, React Three Fiber, Three.js, Recharts.
-- **Service:** Python, FastAPI, Pydantic, SQLite, local REST endpoints with safe polling.
-- **Model and algorithms:** scikit-learn, NumPy, pandas, joblib, NetworkX; simple deterministic algorithms first. OR-Tools is optional and must justify its added setup cost.
-- **Verification:** pytest, TypeScript type checks and linting, component and integration checks, deterministic simulation scenarios.
-
-The backend owns scenario state, simulation steps, predictions, agent decisions, assignments, and event history. The 3D scene renders a read-only projection of that state and sends user commands back through the API.
-
-## Current implementation — Parts 3–7
-
-The local full-stack foundation renders backend-generated city geometry and inventory. Command Center and Digital Twin Studio include building selection, an API-backed inspector, camera reset/focus/orbit/zoom/pan, map layers, snapshot export, and a building-inventory fallback. The other three routes explain their future scope. Connection status is based on successful local API requests, with retries and a stale-snapshot warning when the service disconnects.
-
-The seeded baseline contains 72 buildings, four districts, ten road corridors, six bridge crossings, one hospital, one shelter, two parks, and five response units. Part 3 adds a deterministic 20 m flood grid, SQLite scenarios/events/checkpoints, replay, and exposure modeling. Part 4 provides offline training/inference and a predicted exposure layer. Part 5 adds an intersection-connected NetworkX route graph, bridge segments, flood-aware ground routes, transparent destination priorities, constrained assignment with a baseline comparison, persistent plan proposals, commander approval/rejection, manual closure overlays, and 3D route display. All simulation and ML data are synthetic and are not validated for real disasters. Boat routing remains unsupported.
-
-Part 6 adds six deterministic local agents, a transaction-backed SQLite event outbox, durable run/decision traces, stale-state rejection, automatic route-aware proposal updates, and a polling AI Decision Explorer. It reuses the Part 5 ML, priority, route and SciPy assignment contracts. Recommendations remain subject to commander approval. Details: `docs/PART_06_IMPLEMENTATION.md`, `docs/AGENT_ARCHITECTURE.md`, `docs/EVENT_ORCHESTRATION.md`, `docs/DECISION_TRACE_CONTRACT.md`, `docs/REPLANNING_POLICY.md`, and `docs/PART_06_VERIFICATION.md`.
-
-Part 7 adds isolated SQLite-backed A/B experiments from one exact scenario snapshot, existing-engine flood variations, resource and manual-road interventions, measured conventional-nearest versus priority-weighted SciPy assignment, saved result charts/JSON export, a one-canvas A/B Digital Twin view, and the guided ten-stage demo. Experiments do not mutate operational scenarios, plans, outboxes, traces or reservations. The demo uses seed 2026, 90 mm/h rain, 1.4 m river stage, 20% drainage and 12 ticks; its acceptance script verifies actual ML inference, six-agent traces, route closure invalidation, replanning, approval and reservation safety. See `docs/PART_07_IMPLEMENTATION.md`, `docs/SCENARIO_COMPARISON.md`, `docs/BASELINE_COMPARISON_METHOD.md`, `docs/HACKATHON_DEMO_GUIDE.md`, `docs/DEMO_ACCEPTANCE_REPORT.md`, and `docs/PART_07_VERIFICATION.md`.
-
-Part 8 adds persistent missions after approval, explicit dispatch, backend-authoritative route progression on a separate operational clock, closure-triggered blocking and reviewed route changes, explicit arrival/completion, durable replay events, and unit return-to-service controls. Browser refresh and service restart do not release resources. A dispatched cancellation or completed mission leaves the unit unavailable until explicitly restored at its recorded position; no return trip is fabricated. Mission metrics and occupant targets are synthetic. See `docs/PART_08_IMPLEMENTATION.md`, `docs/MISSION_LIFECYCLE.md`, `docs/MISSION_CLOCK_MODEL.md`, `docs/RESOURCE_RELEASE_POLICY.md`, `docs/MISSION_EVENT_CONTRACT.md`, `docs/MISSION_DEMO_GUIDE.md`, and `docs/PART_08_VERIFICATION.md`.
-
-Part 5 assumptions and verification are documented in `docs/PART_05_IMPLEMENTATION.md`, `docs/PART_05_VERIFICATION.md`, `docs/ROUTING_MODEL.md`, `docs/RESOURCE_OPTIMIZATION.md`, and `docs/RESCUE_PLAN_CONTRACT.md`.
-
-## Repository map
-
-```text
-backend/
-  app/             # Configuration, Pydantic schemas, seed service, FastAPI routes
-  demo_acceptance.py # Real local-ML flood-to-replanning acceptance run
-  tests/           # Determinism, relationships, schemas, endpoints and CORS
-  export_contract.py
-  requirements.txt # Exact installed dependency versions
-frontend/
-  src/api/         # Generated OpenAPI types and JSON-schema payload validation
-  src/components/  # Reusable UI primitives
-  src/scene/       # Backend-to-scene mapping and instanced 3D rendering
-  src/test/        # API/interaction tests; generated fixture is test-only
-docs/
-  ARCHITECTURE.md
-  PART_06_IMPLEMENTATION.md
-  PART_07_IMPLEMENTATION.md
-  PART_07_VERIFICATION.md
-  SCENARIO_COMPARISON.md
-  BASELINE_COMPARISON_METHOD.md
-  HACKATHON_DEMO_GUIDE.md
-  DEMO_ACCEPTANCE_REPORT.md
-  PART_06_VERIFICATION.md
-  AGENT_ARCHITECTURE.md
-  EVENT_ORCHESTRATION.md
-  DECISION_TRACE_CONTRACT.md
-  REPLANNING_POLICY.md
-  AGENT_DEMO_SCENARIO.md
-  DATA_MODEL.md
-  DEVELOPMENT_ROADMAP.md
-  ML_STRATEGY.md
-  PRODUCT_REQUIREMENTS.md
-  TEAM_WORKFLOW.md
-  UI_UX_SPEC.md
-  PART_02_IMPLEMENTATION.md
-  PART_03_IMPLEMENTATION.md
-  PART_03_VERIFICATION.md
-  PART_04_IMPLEMENTATION.md
-  PART_04_VERIFICATION.md
-  ML_MODEL_CARD.md
-  ML_EVALUATION.md
-  DATASET_PROVENANCE.md
-  ML_REPRODUCTION.md
-  FLOOD_SIMULATION_METHOD.md
-```
-
-## Getting started
-
-Use Python 3.12 and Node.js 22.12+ (Node 24 is recommended). Internet access is needed to install dependencies. Fonts and geometry are local after installation. Commands below work in PowerShell and do not require activating a script or changing execution policy.
-
-### Local demo quickstart
-
-From the repository root, run first-time setup once, then launch the development demo:
+The fastest supported setup is Windows PowerShell with Python 3.12 and Node.js 22.12 or newer:
 
 ```powershell
 .\scripts\setup-resq-ai.ps1
 .\scripts\start-resq-ai.ps1
 ```
 
-Open **http://127.0.0.1:5173**. The launcher checks the local Python 3.12 environment, Node.js, installed dependencies and model artifact, waits for backend health, then starts Vite. Press Ctrl+C in that terminal to stop the local services. `scripts\demo-preflight.ps1` checks readiness without changing existing scenarios. Setup needs Python 3.12 and Node.js 22.12 or newer already installed; it installs packages only into `backend/.venv` and `frontend/node_modules`. See [Local Demo Quickstart](docs/LOCAL_DEMO_QUICKSTART.md) and [Demo Preflight](docs/DEMO_PREFLIGHT.md).
+Open **http://127.0.0.1:5173**. The launcher checks local dependencies and model artifacts, waits for backend health, then starts the frontend. Press Ctrl+C in the launcher terminal to stop the services. See [Local Demo Quickstart](docs/LOCAL_DEMO_QUICKSTART.md) and [Demo Preflight](docs/DEMO_PREFLIGHT.md).
 
-For an acceptance run against a temporary database, use the explicit test commander flag:
+The application works locally after dependencies are installed. No hosted inference API, external map service, or credentials are needed for the core demo.
+
+## Five-minute product walkthrough
+
+1. Show the 3D Riverside city and step the deterministic flood simulation.
+2. Compare authoritative physical exposure with the locally trained model's future exposure estimate and reliability/support warnings.
+3. Inspect the six deterministic agent decisions and their persisted trace.
+4. Review route-feasible, priority-weighted assignments against a conventional baseline.
+5. Explicitly approve simulated missions, dispatch units, and observe backend-authoritative progress.
+6. Demonstrate an honest failure case: when all modeled roads are closed, the router returns no supported ground assignment. It does not invent a route.
+
+Use the exact timed script in [Innotech Five-Minute Presentation](docs/INNOTECH_5_MINUTE_PRESENTATION.md). For a presentation rehearsal, follow the disposable setup and recovery guidance in [Demo Fallback and Recovery](docs/DEMO_FALLBACK_AND_RECOVERY.md).
+
+## What is implemented
+
+- Deterministic flood simulation, scenario persistence, checkpoints, and replay.
+- Procedural 3D city and infrastructure rendering with flood and route overlays.
+- A locally trained random forest for a synthetic future-exposure target, plus calibration and training-support warnings.
+- Six event-driven **algorithmic** agents with durable decision traces; they are not language-model agents.
+- Flood-aware NetworkX road routing and SciPy constrained resource assignment with a transparent baseline comparison.
+- Human approval before simulated mission creation, explicit dispatch, persisted route progress, blockage/review, arrival/completion, and explicit return-to-service.
+- Scenario A/B experiments and isolated Decision Robustness Lab counterfactuals.
+- Judge Mode, Guided Demo, local preflight and disposable acceptance workflows.
+
+See the [architecture overview](docs/RESQ_AI_ARCHITECTURE_OVERVIEW.md) for editable Mermaid diagrams and system boundaries.
+
+## Evidence and research
+
+Part 15 adds a reproducible ten-group synthetic evaluation with JSON/CSV/Markdown output, a model reliability plot, a genuine local-browser screenshot gallery, and a complete Innotech/portfolio documentation set.
 
 ```powershell
-.\backend\.venv\Scripts\python.exe .\backend\demo_acceptance_part10.py --test-commander-actions
+.\backend\.venv\Scripts\python.exe .\backend\run_part15_evaluation.py
 ```
 
-It writes JSON and Markdown evidence under the ignored `artifacts/part10-acceptance/` directory and deletes its temporary database after the run. The flag authorizes simulated approval and dispatch only inside this local test workflow.
+The final recorded local run took **3,768.693 ms** across ten groups: the optimized priority objective improved in 8 groups, tied within 0.01 in 2, and was lower in 0. Two groups had zero assignments; the all-roads-closed case correctly produced zero. See [Scientific Evaluation](docs/SCIENTIFIC_EVALUATION.md) and the per-case [CSV](docs/evidence/part15/scientific_evaluation.csv). Results are synthetic, configuration-specific measurements, not real-world rescue-effectiveness claims.
 
-From the repository root, prepare and start the backend:
+The ML dataset contains 72 synthetic scenario groups (42 train, 15 validation, 15 untouched test); each prediction horizon covers six future five-minute ticks. Grouped validation keeps correlated steps from one scenario together. Platt calibration was adopted through a nested grouped development gate. The untouched synthetic test Brier score was 0.030526 raw and 0.027917 calibrated; log loss was 0.106666 raw and 0.094190 calibrated. This is not calibration against real disaster outcomes. Details and reliability plots are linked in [Scientific Evaluation](docs/SCIENTIFIC_EVALUATION.md) and the [model card](docs/ML_RELIABILITY_MODEL_CARD.md).
 
-```powershell
-cd backend
-py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+## Architecture
+
+```mermaid
+flowchart LR
+  UI[React + TypeScript] --> Twin[React Three Fiber / Three.js]
+  UI --> API[FastAPI local services]
+  API --> Flood[Deterministic flood engine]
+  API --> ML[Local random forest + reliability]
+  API --> Agents[Six deterministic agents]
+  Agents --> Router[NetworkX flood-aware routing]
+  Router --> Optimizer[SciPy constrained assignment]
+  API --> SQLite[(SQLite scenarios, events, missions)]
+  API --> Review[Commander review and explicit approval]
+  Review --> Mission[Simulated mission clock and persisted progress]
+  Mission --> SQLite
 ```
 
-In a second terminal, from the repository root:
+See the full data-flow, mission state-machine, decision-boundary, and counterfactual-isolation diagrams in [RESQ-AI Architecture Overview](docs/RESQ_AI_ARCHITECTURE_OVERVIEW.md).
+
+## Evaluation and local checks
+
+From the repository root, using the installed local environment:
 
 ```powershell
-cd frontend
-npm ci
-npm run dev
-```
-
-Open **http://127.0.0.1:5173**. Keep both terminals running; stop them with Ctrl+C. Vite proxies `/api` to the local backend on port 8000. Use `npm run build` and `npm run preview` for a local production-build demo at **http://127.0.0.1:4173**, with the same backend running. `vite preview` is for local review, not public hosting.
-
-### Verification and contract generation
-
-```powershell
-# From backend/
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe -m pip check
-.\.venv\Scripts\python.exe export_contract.py
-
-# From frontend/
-npm run generate-api
-npm run typecheck
+.\backend\.venv\Scripts\python.exe -m pytest --basetemp=.pytest-tmp-part15
+Push-Location frontend
+npm test -- --reporter=dot
 npm run lint
-npm test
+npm run typecheck
+npm run generate-api
 npm run build
+Pop-Location
 ```
 
-Regenerate and commit the OpenAPI schema, JSON Schemas, test fixture, and TypeScript declarations whenever the Python contract changes. The generated city fixture is used only by tests, never by the application. See [Part 3 implementation notes](docs/PART_03_IMPLEMENTATION.md) and [the flood method](docs/FLOOD_SIMULATION_METHOD.md) for current endpoints, coordinates, controls, assumptions, and limitations.
+The backend also exposes `backend/export_contract.py`. Disposable Part 10/14 acceptance workflows, preflight checks, and the robustness benchmark are documented in [Part 15 Verification](docs/PART_15_VERIFICATION.md). Build output has previously reported a large lazy CityScene chunk; consult the current verification run before treating any size or timing as current.
 
-## Data, safety, and scope
+## Engineering case study and presentation kit
 
-- The first demo city and its flood labels are synthetic and repeatable.
-- The initial classifier learns a clearly defined synthetic target; it is not evidence of real-world flood forecasting skill.
-- Public geospatial data is optional, must be checked for access and terms before use, and must be credited as required by its provider.
-- Human approval is required before simulated rescue actions are committed.
-- Do not add credentials, raw large datasets, generated checkpoints, or personal data to Git.
-- No open-source license is included yet. **Apache-2.0 is the initial recommendation** for a permissive software project with an explicit patent grant; the owner must approve a license before adding it or making the repository public.
+- [Portfolio Case Study](docs/RESQ_AI_PORTFOLIO_CASE_STUDY.md)
+- [90-Second Pitch](docs/INNOTECH_90_SECOND_PITCH.md)
+- [Five-Minute Presentation](docs/INNOTECH_5_MINUTE_PRESENTATION.md)
+- [Slide Storyboard](docs/INNOTECH_SLIDE_STORYBOARD.md)
+- [Judge Q&A](docs/INNOTECH_JUDGE_QA.md)
+- [Technical Deep Dive](docs/INNOTECH_TECHNICAL_DEEP_DIVE.md)
+- [Visual Evidence Gallery](docs/VISUAL_EVIDENCE_GALLERY.md)
+- [Demo Fallback and Recovery](docs/DEMO_FALLBACK_AND_RECOVERY.md)
 
-## Team and status
+## Important boundaries
 
-Two student developers are planned: one owns the service, simulation, and model pipeline; the other owns the web interface and Digital Twin. Both review integration pull requests and jointly rehearse the demo. See [the roadmap](docs/DEVELOPMENT_ROADMAP.md) and [team workflow](docs/TEAM_WORKFLOW.md).
+- Floods, buildings, roads, labels, resources, and outcomes are synthetic. The model is not validated against operational disaster outcomes.
+- The road graph represents modeled connectivity and assumptions, not surveyed roads or field safety. A feasible graph route is not an emergency access guarantee.
+- The optimizer solves its encoded assignment objective and constraints; it cannot guarantee a globally best real-world response.
+- Human approval is required for plan commitment. Dispatch, travel, arrival, completion, and return-to-service are simulated actions, not contact with real responders.
+- Unsupported routes stay unreachable. In the all-roads-closed condition, zero assignments is the correct modeled outcome.
+- Earthquake simulation, live geospatial feeds, boat routing, real dispatch integrations, and real-world validation are outside the implemented prototype.
 
-**Status:** Parts 3–10 are merged. The flood, local synthetic model, algorithmic agents, rescue planning, missions, experiments and Guided Demo are local decision-support features. Part 11 adds a presentation mode and judge materials on `feature/part-11-judge-experience`. Earthquake scenarios, live-data integration, water rescue, and real-world emergency operations remain outside scope.
+## Project record
 
-Part 10's startup, readiness, offline audit, acceptance and recovery procedures are documented in `docs/PART_10_IMPLEMENTATION.md`, `docs/PART_10_VERIFICATION.md`, `docs/LOCAL_DEMO_QUICKSTART.md`, `docs/DEMO_PREFLIGHT.md`, `docs/OFFLINE_AUDIT.md`, `docs/END_TO_END_ACCEPTANCE.md`, `docs/DEMO_RECOVERY_RUNBOOK.md`, and `docs/GRAPHICS_PERFORMANCE_PART_10.md`.
-
-Part 11's live Judge Mode, presentation scripts, question guide and visual acceptance checklist are documented in `docs/PART_11_IMPLEMENTATION.md`, `docs/PART_11_VERIFICATION.md`, `docs/JUDGE_MODE_GUIDE.md`, `docs/INNOTECH_5_MINUTE_DEMO.md`, `docs/RESQ_AI_TECHNICAL_PITCH.md`, `docs/JUDGE_QA.md`, and `docs/VISUAL_ACCEPTANCE_PART_11.md`.
+Part 15 is delivered on `feature/part-15-evidence-presentation` in [PR #15](https://github.com/24f2003970/RESQ-AI/pull/15), open and unmerged. Its initial hosted CI run [39045492709](https://github.com/24f2003970/RESQ-AI/actions/runs/39045492709) passed both backend and frontend jobs. The PR stays open for review. Work stops at Part 15; the repository roadmap describes future work without implying that it is implemented.
