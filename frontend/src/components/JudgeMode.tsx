@@ -94,6 +94,7 @@ export default function JudgeMode({
       <div className="judge-header-actions">
         <span className={`connection ${status}`} role="status"><i/>{status === "online" ? "Local service connected" : status === "loading" ? "Connecting to local service" : "Showing last loaded state"}</span>
         <button className="secondary-button" onClick={retry}><RefreshCw size={15}/> Refresh state</button>
+        <Link className="secondary-button" to="/robustness">Robustness evidence</Link>
         <Link className="secondary-button" to="/"><ArrowLeft size={15}/> Exit Judge Mode</Link>
       </div>
     </header>

@@ -44,6 +44,30 @@ export type Mission = components["schemas"]["Mission"];
 export type MissionClock = components["schemas"]["MissionClock"];
 export type MissionUnitResource = components["schemas"]["MissionUnitResource"];
 export type MissionEvent = components["schemas"]["MissionEvent"];
+export type RobustnessCondition = {
+  condition_id: string; label: string;
+  category: "environment" | "road_closure" | "bridge_closure" | "resources" | "ml_reliability";
+  rainfall_mm_h?: number; river_level_m?: number; drainage_effectiveness?: number;
+  closed_asset_ids?: string[]; unavailable_unit_ids?: string[];
+  unavailable_unit_type?: "ambulance" | "rescue_team"; unavailable_count?: number;
+  reliability_mode?: "actual" | "injected_unavailable" | "outside_support" | "no_forecast_destinations";
+};
+export type RobustnessBaseline = {
+  scenario_id: string; scenario_epoch: number; simulation_state_version: number;
+  infrastructure_revision: number; simulation_tick: number; seed: number;
+  available_unit_ids: string[]; reserved_unit_ids: string[]; manual_closure_road_ids: string[];
+  plans: {plan_id:string;status:string;assignment_count:number;solver_status:string}[];
+  model_reliability: {status:string;warnings:string[];calibration_status:string;probabilities_calibrated:boolean};
+};
+export type RobustnessStudy = {
+  study_id:string;scenario_id:string;scenario_epoch:number;simulation_state_version:number;
+  infrastructure_revision:number;simulation_tick:number;seed:number;original_plan_id:string;
+  snapshot_sha256:string;frozen_available_unit_ids:string[];frozen_reserved_unit_ids:string[];
+  baseline:Record<string,unknown>;conditions:RobustnessCondition[];evaluation_horizon_ticks:number;
+  algorithm_version:string;status:"pending"|"running"|"completed"|"failed"|"interrupted";
+  created_at_utc:string;completed_at_utc:string|null;stale:boolean;stale_reason:string|null;
+  results:Record<string,unknown>|null;reproduction:Record<string,unknown>;error:string|null;
+};
 
 const validate = new Ajv2020({
   strict: false,
@@ -264,6 +288,19 @@ export async function decideRescuePlan(planId: string, action: "approved"|"rejec
   const value = await request(`rescue-plans/${encodeURIComponent(planId)}/decision`, undefined, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,expected_version:expectedVersion,reason})});
   if (!validateRescuePlan(value)) throw new Error("The local service returned an invalid rescue decision.");
   return value;
+}
+
+export async function fetchRobustnessBaseline(scenarioId:string,signal?:AbortSignal):Promise<RobustnessBaseline>{
+  return await request(`scenarios/${encodeURIComponent(scenarioId)}/robustness-baseline`,signal) as RobustnessBaseline;
+}
+export async function createRobustnessStudy(scenarioId:string,baseline:RobustnessBaseline,conditions:RobustnessCondition[],horizon:number,planId?:string):Promise<RobustnessStudy>{
+  return await request(`scenarios/${encodeURIComponent(scenarioId)}/robustness-studies`,undefined,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({scenario_id:scenarioId,expected_state_version:baseline.simulation_state_version,expected_epoch:baseline.scenario_epoch,expected_infrastructure_revision:baseline.infrastructure_revision,original_plan_id:planId??null,evaluation_horizon_ticks:horizon,conditions})}) as RobustnessStudy;
+}
+export async function fetchRobustnessStudy(studyId:string,signal?:AbortSignal):Promise<RobustnessStudy>{
+  return await request(`robustness-studies/${encodeURIComponent(studyId)}`,signal) as RobustnessStudy;
+}
+export async function fetchRobustnessStudies(scenarioId:string,signal?:AbortSignal):Promise<RobustnessStudy[]>{
+  return await request(`scenarios/${encodeURIComponent(scenarioId)}/robustness-studies?limit=10`,signal) as RobustnessStudy[];
 }
 
 export async function fetchHealth(): Promise<Health> {
