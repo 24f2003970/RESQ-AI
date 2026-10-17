@@ -27,6 +27,6 @@ Captured local run: 4 baseline assignments; full 11-condition study runtime **56
 - Part 10 demo preflight: all readiness checks passed with the local services running.
 - Disposable Part 10 commander acceptance: **17/17 checks passed** in 8,183.576 ms.
 - Browser visual inspection: completed at the verified local `/robustness` URL. Confirmed the frozen snapshot, hypothetical-only guardrail, bounded condition controls, and currently connected local service. No live plan or mission was altered during visual verification.
-- GitHub Actions: pending publication of the final commit and PR; add run URL and job conclusions after hosted checks finish.
+- GitHub Actions on implementation commit `61163458609c3dfe857124afdc63d773cd299223`: [run 39016892419](https://github.com/24f2003970/RESQ-AI/actions/runs/39016892419) — backend **success**, frontend **success**. A follow-up docs-only commit will cause a fresh run; report that run after it completes.
 
 The captured benchmark is above and is synthetic only. Known graph access-spur limitation remains documented there.
