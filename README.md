@@ -51,7 +51,7 @@ Part 15 adds a reproducible ten-group synthetic evaluation with JSON/CSV/Markdow
 .\backend\.venv\Scripts\python.exe .\backend\run_part15_evaluation.py
 ```
 
-The final recorded local run took **3,768.693 ms** across ten groups: the optimized priority objective improved in 8 groups, tied within 0.01 in 2, and was lower in 0. Two groups had zero assignments; the all-roads-closed case correctly produced zero. See [Scientific Evaluation](docs/SCIENTIFIC_EVALUATION.md) and the per-case [CSV](docs/evidence/part15/scientific_evaluation.csv). Results are synthetic, configuration-specific measurements, not real-world rescue-effectiveness claims.
+The historical Part 15 run took 3,768.693 ms. The Part 16 release-hardening rerun took **2,245.968 ms** across ten groups: the optimized priority objective improved in 8 groups, tied within the symmetric ±0.01 tolerance in 2, and was lower in 0. Two groups had zero assignments; the all-roads-closed case correctly produced zero. The regenerated evidence is in [Scientific Evaluation](docs/SCIENTIFIC_EVALUATION.md) and the per-case [CSV](docs/evidence/part15/scientific_evaluation.csv). Results are synthetic, configuration-specific measurements, not real-world rescue-effectiveness claims.
 
 The ML dataset contains 72 synthetic scenario groups (42 train, 15 validation, 15 untouched test); each prediction horizon covers six future five-minute ticks. Grouped validation keeps correlated steps from one scenario together. Platt calibration was adopted through a nested grouped development gate. The untouched synthetic test Brier score was 0.030526 raw and 0.027917 calibrated; log loss was 0.106666 raw and 0.094190 calibrated. This is not calibration against real disaster outcomes. Details and reliability plots are linked in [Scientific Evaluation](docs/SCIENTIFIC_EVALUATION.md) and the [model card](docs/ML_RELIABILITY_MODEL_CARD.md).
 
@@ -93,6 +93,8 @@ The backend also exposes `backend/export_contract.py`. Disposable Part 10/14 acc
 
 ## Engineering case study and presentation kit
 
+See the [Part 16 release checklist](docs/FINAL_RELEASE_CHECKLIST.md), [verification matrix](docs/PART_16_VERIFICATION.md), and [submission kit](docs/INNOTECH_SUBMISSION_KIT.md) for the current candidate handoff status.
+
 - [Portfolio Case Study](docs/RESQ_AI_PORTFOLIO_CASE_STUDY.md)
 - [90-Second Pitch](docs/INNOTECH_90_SECOND_PITCH.md)
 - [Five-Minute Presentation](docs/INNOTECH_5_MINUTE_PRESENTATION.md)
@@ -113,4 +115,4 @@ The backend also exposes `backend/export_contract.py`. Disposable Part 10/14 acc
 
 ## Project record
 
-Part 15 is delivered on `feature/part-15-evidence-presentation` in [PR #15](https://github.com/24f2003970/RESQ-AI/pull/15), open and unmerged. Its initial hosted CI run [39045492709](https://github.com/24f2003970/RESQ-AI/actions/runs/39045492709) passed both backend and frontend jobs. The PR stays open for review. Work stops at Part 15; the repository roadmap describes future work without implying that it is implemented.
+Part 15 was merged to `main` as commit `156b88dfda55728a3e8ecc3ff23fc5d5826b9ddb` through [PR #15](https://github.com/24f2003970/RESQ-AI/pull/15). Its final head run [39045759422](https://github.com/24f2003970/RESQ-AI/actions/runs/39045759422) passed backend and frontend jobs. Part 16 release hardening is under review in [PR #16](https://github.com/24f2003970/RESQ-AI/pull/16) on `feature/part-16-final-release`; it remains open and unmerged. No public release or deployment is implied.

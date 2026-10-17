@@ -26,6 +26,7 @@ import numpy as np
 import sklearn
 
 from app.city_service import generate_city
+from app.evaluation import OBJECTIVE_DELTA_TOLERANCE, classify_objective_delta
 from app.ml_service import ModelUnavailable, predict_state
 from app.rescue import generate_plan
 from app.scenarios import ScenarioStore
@@ -136,7 +137,7 @@ def evaluate_case(case: dict, index: int) -> dict:
             "resource_inventory": {"ground_unit_count": sum(unit.type != "boat" for unit in city.rescue_units), "ambulance_count": sum(unit.type == "ambulance" for unit in city.rescue_units), "team_count": sum(unit.type == "rescue_team" for unit in city.rescue_units)},
             "physical_state": {"tick": state.tick, "maximum_flood_depth_m": state.maximum_depth_m, "physically_affected_buildings": state.affected_buildings, "exposed_roads": state.exposed_roads, "closed_bridges": state.closed_bridges},
             "ml": {"status": ml_status, "unavailable_reason": ml_error, "predicted_rows": len(getattr(prediction_set, "predictions", []))},
-            "planner": {"solver_status": plan.solver_status, "objective_definition": plan.objective, "unreachable_destinations": len(plan.unreachable), "supported_unit_destination_routes": len(plan.available_assignments), "assignment_runtime_ms": plan.timings_ms.get("assignment"), "routing_runtime_ms": plan.timings_ms.get("routing"), "planning_wall_ms": round((time.perf_counter() - plan_started) * 1000, 3), "conventional_baseline": base, "optimized": optimized, "optimized_minus_baseline": {"objective_value": objective_delta, "priority_weighted_coverage": weighted_delta, "destinations_covered": optimized["destinations_covered"] - base["destinations_covered"], "total_distance_m": round(optimized["total_distance_m"] - base["total_distance_m"], 1), "simulated_travel_minutes": round(optimized["total_simulated_travel_minutes"] - base["total_simulated_travel_minutes"], 1)}},
+            "planner": {"solver_status": plan.solver_status, "objective_definition": plan.objective, "unreachable_destinations": len(plan.unreachable), "supported_unit_destination_routes": len(plan.available_assignments), "assignment_runtime_ms": plan.timings_ms.get("assignment"), "routing_runtime_ms": plan.timings_ms.get("routing"), "planning_wall_ms": round((time.perf_counter() - plan_started) * 1000, 3), "conventional_baseline": base, "optimized": optimized, "optimized_minus_baseline": {"objective_value": objective_delta, "priority_weighted_coverage": weighted_delta, "destinations_covered": optimized["destinations_covered"] - base["destinations_covered"], "total_distance_m": round(optimized["total_distance_m"] - base["total_distance_m"], 1), "simulated_travel_minutes": round(optimized["total_simulated_travel_minutes"] - base["total_simulated_travel_minutes"], 1)}, "objective_outcome": classify_objective_delta(objective_delta)},
             "scenario_runtime_ms": wall_ms,
         }
 
@@ -145,13 +146,13 @@ def run(output_dir: Path) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     results = [evaluate_case(case, index) for index, case in enumerate(CASES)]
-    metric = "objective_value"
-    deltas = [row["planner"]["optimized_minus_baseline"][metric] for row in results]
+    outcomes = [row["planner"]["objective_outcome"] for row in results]
     summary = {
         "independent_scenario_groups": len(results),
         "ticks_per_group": TICKS,
         "scenario_seed_range": [results[0]["seed"], results[-1]["seed"]],
-        "assignment_objective_outcomes": {"improved": sum(value > 0.005 for value in deltas), "equal_within_0_01": sum(abs(value) <= 0.01 for value in deltas), "lower": sum(value < -0.005 for value in deltas)},
+        "objective_delta_tolerance": str(OBJECTIVE_DELTA_TOLERANCE),
+        "assignment_objective_outcomes": {"improved": outcomes.count("improved"), "tied": outcomes.count("tied"), "lower": outcomes.count("lower")},
         "groups_with_zero_ground_assignments": sum(row["planner"]["optimized"]["destinations_covered"] == 0 for row in results),
         "all_roads_closed_assignments": next(row["planner"]["optimized"]["destinations_covered"] for row in results if row["case"] == "graph_inaccessible_all_roads_closed"),
         "total_runtime_ms": round((time.perf_counter() - started) * 1000, 3),
@@ -172,15 +173,15 @@ def run(output_dir: Path) -> dict:
     }
     json_path = output_dir / "scientific_evaluation.json"
     json_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    columns = ["scenario_group", "case", "seed", "tick", "physical_max_depth_m", "affected_buildings", "ml_status", "solver_status", "baseline_assignments", "optimized_assignments", "baseline_priority_coverage", "optimized_priority_coverage", "baseline_objective", "optimized_objective", "objective_delta", "baseline_unreachable", "optimized_unreachable", "assignment_runtime_ms", "routing_runtime_ms", "scenario_runtime_ms"]
+    columns = ["scenario_group", "case", "seed", "tick", "physical_max_depth_m", "affected_buildings", "ml_status", "solver_status", "objective_outcome", "baseline_assignments", "optimized_assignments", "baseline_priority_coverage", "optimized_priority_coverage", "baseline_objective", "optimized_objective", "objective_delta", "baseline_unreachable", "optimized_unreachable", "assignment_runtime_ms", "routing_runtime_ms", "scenario_runtime_ms"]
     with (output_dir / "scientific_evaluation.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=columns)
         writer.writeheader()
         for row in results:
             base = row["planner"]["conventional_baseline"]
             opt = row["planner"]["optimized"]
-            writer.writerow({"scenario_group": row["scenario_group"], "case": row["case"], "seed": row["seed"], "tick": row["physical_state"]["tick"], "physical_max_depth_m": row["physical_state"]["maximum_flood_depth_m"], "affected_buildings": row["physical_state"]["physically_affected_buildings"], "ml_status": row["ml"]["status"], "solver_status": row["planner"]["solver_status"], "baseline_assignments": base["destinations_covered"], "optimized_assignments": opt["destinations_covered"], "baseline_priority_coverage": base["priority_weighted_coverage"], "optimized_priority_coverage": opt["priority_weighted_coverage"], "baseline_objective": base["objective_value"], "optimized_objective": opt["objective_value"], "objective_delta": row["planner"]["optimized_minus_baseline"]["objective_value"], "baseline_unreachable": base["unreachable_destinations"], "optimized_unreachable": opt["unreachable_destinations"], "assignment_runtime_ms": row["planner"]["assignment_runtime_ms"], "routing_runtime_ms": row["planner"]["routing_runtime_ms"], "scenario_runtime_ms": row["scenario_runtime_ms"]})
-    lines = ["# Part 15 scientific evaluation run", "", f"Generated: {report['generated_at_utc']}", "", f"- Independent scenario groups: **{summary['independent_scenario_groups']}**.", f"- Flood ticks per group (correlated within scenario): **{TICKS}**.", f"- Optimized objective compared with baseline: **{summary['assignment_objective_outcomes']['improved']} improved, {summary['assignment_objective_outcomes']['equal_within_0_01']} effectively equal, {summary['assignment_objective_outcomes']['lower']} lower**.", f"- Groups with zero assignments: **{summary['groups_with_zero_ground_assignments']}**.", f"- All-roads-closed assignments: **{summary['all_roads_closed_assignments']}**.", f"- Total local runtime: **{summary['total_runtime_ms']:.3f} ms**.", "", "See `scientific_evaluation.json` for per-group conditions, full metrics and environment; `scientific_evaluation.csv` is the compact machine-readable table.", "", "These are synthetic simulator results. They do not establish real-world rescue performance or field safety.", ""]
+            writer.writerow({"scenario_group": row["scenario_group"], "case": row["case"], "seed": row["seed"], "tick": row["physical_state"]["tick"], "physical_max_depth_m": row["physical_state"]["maximum_flood_depth_m"], "affected_buildings": row["physical_state"]["physically_affected_buildings"], "ml_status": row["ml"]["status"], "solver_status": row["planner"]["solver_status"], "objective_outcome": row["planner"]["objective_outcome"], "baseline_assignments": base["destinations_covered"], "optimized_assignments": opt["destinations_covered"], "baseline_priority_coverage": base["priority_weighted_coverage"], "optimized_priority_coverage": opt["priority_weighted_coverage"], "baseline_objective": base["objective_value"], "optimized_objective": opt["objective_value"], "objective_delta": row["planner"]["optimized_minus_baseline"]["objective_value"], "baseline_unreachable": base["unreachable_destinations"], "optimized_unreachable": opt["unreachable_destinations"], "assignment_runtime_ms": row["planner"]["assignment_runtime_ms"], "routing_runtime_ms": row["planner"]["routing_runtime_ms"], "scenario_runtime_ms": row["scenario_runtime_ms"]})
+    lines = ["# Part 15 scientific evaluation run", "", f"Generated: {report['generated_at_utc']}", "", f"- Independent scenario groups: **{summary['independent_scenario_groups']}**.", f"- Flood ticks per group (correlated within scenario): **{TICKS}**.", f"- Optimized objective compared with baseline (exclusive ±{summary['objective_delta_tolerance']} tolerance): **{summary['assignment_objective_outcomes']['improved']} improved, {summary['assignment_objective_outcomes']['tied']} tied, {summary['assignment_objective_outcomes']['lower']} lower**.", f"- Groups with zero assignments: **{summary['groups_with_zero_ground_assignments']}**.", f"- All-roads-closed assignments: **{summary['all_roads_closed_assignments']}**.", f"- Total local runtime: **{summary['total_runtime_ms']:.3f} ms**.", "", "See `scientific_evaluation.json` for per-group conditions, full metrics and environment; `scientific_evaluation.csv` is the compact machine-readable table.", "", "These are synthetic simulator results. They do not establish real-world rescue performance or field safety.", ""]
     (output_dir / "scientific_evaluation.md").write_text("\n".join(lines), encoding="utf-8")
     return report
 
