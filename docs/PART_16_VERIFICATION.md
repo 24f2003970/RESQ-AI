@@ -38,7 +38,7 @@ Statuses: **PASS**, **FAIL**, **PENDING**, **BLOCKED**, **ACCEPTED LIMITATION**.
 | Offline isolation | Local inference and loopback demo verified; no OS firewall isolation test | `docs/OFFLINE_AUDIT.md`, preflight | Medium | Do not claim physical network isolation | ACCEPTED LIMITATION |
 | Team live rehearsal | Automated workflows passed; no timed spoken rehearsal performed | `FINAL_DEMO_REHEARSAL.md` | Medium | Team must rehearse and fill presenter fields | PENDING |
 | Submission details | Names, institution, mentor and registration fields remain placeholders; nothing submitted | `INNOTECH_SUBMISSION_KIT.md` | Medium | Team fills verified event information | PENDING |
-| Hosted CI | Run 39049846395 on source commit `b7251d86a676c589059c6eceb7768d6a77899a2a` and run 39049998316 on documentation commit `e1e63552b737d4ee87805c0a0b7bad9a60b0f069`; backend and frontend jobs succeeded on both | [Run 39049846395](https://github.com/24f2003970/RESQ-AI/actions/runs/39049846395), [run 39049998316](https://github.com/24f2003970/RESQ-AI/actions/runs/39049998316) | High | Recheck the final verification-record commit's run before review | PASS |
+| Hosted CI | Run 39050331892 on commit `f34c8ed3c8216deb8974aedcaee1199c1add9dea`; backend and frontend both succeeded. Earlier source/docs commits also passed their recorded runs. | [Final verification update run 39050331892](https://github.com/24f2003970/RESQ-AI/actions/runs/39050331892) | High | Confirm the latest PR head remains green before review | PASS |
 
 ## Executed commands
 
@@ -59,4 +59,4 @@ The first preflight was run while services were stopped and returned expected AP
 
 ## Hosted results
 
-PR #16: https://github.com/24f2003970/RESQ-AI/pull/16 (open and unmerged). Actions runs 39049846395 and 39049998316 passed both backend and frontend jobs on their recorded commits. The latest verification-record update will trigger another run; inspect the newest run attached to the PR before making a merge decision.
+PR #16: https://github.com/24f2003970/RESQ-AI/pull/16 (open and unmerged). Run 39050331892 passed backend and frontend on commit `f34c8ed3c8216deb8974aedcaee1199c1add9dea`; earlier source and documentation commits also passed. The PR's checks tab is authoritative for the newest head; keep the PR open and require both jobs to pass before review/merge.

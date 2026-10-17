@@ -20,6 +20,6 @@ Statuses and evidence are maintained in [Part 16 verification](PART_16_VERIFICAT
 | Live spoken rehearsal | Timed team rehearsal | PENDING | Team fills rehearsal record |
 | Submission details | Verified names, institution and event registration | PENDING | Team completes placeholders |
 | Repository hygiene | Exact staging review; no envs, DBs, caches or baseline folders | PENDING | Complete before commit |
-| Hosted CI | Runs 39049846395 and 39049998316 both passed backend and frontend on their recorded commits | PASS | Confirm newest PR run; keep PR open/unmerged |
+| Hosted CI | Run 39050331892 passed backend and frontend on commit `f34c8ed3c8216deb8974aedcaee1199c1add9dea` | PASS | Confirm newest PR head stays green; keep PR open/unmerged |
 
 The candidate is **not fully visually validated**. The browser safety stop is not evidence of an application defect. No tag, GitHub Release, deployment, or Innotech submission is part of this handoff.
