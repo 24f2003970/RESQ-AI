@@ -74,4 +74,4 @@ ML integrity checks compared the saved reliability report with local artifacts. 
 
 The local URL-verified browser captures are documented in `VISUAL_EVIDENCE_GALLERY.md`. Exact target desktop CSS viewports, reduced-motion behavior, and WebGL context-loss recovery remain pending; see `FINAL_VISUAL_QA.md`.
 
-Hosted GitHub Actions run [39045492709](https://github.com/24f2003970/RESQ-AI/actions/runs/39045492709) completed successfully on implementation commit `f674e28e750731736b51017e2a6ae9efcc7b817a`: backend and frontend jobs both passed. A documentation-only follow-up is being pushed to the same PR and will receive a fresh CI run.
+Hosted GitHub Actions run [39045492709](https://github.com/24f2003970/RESQ-AI/actions/runs/39045492709) completed successfully on implementation commit `f674e28e750731736b51017e2a6ae9efcc7b817a`: backend and frontend jobs both passed. The documentation-only follow-up commit `15d9feb134845a5d5c7a495d87019b8ccdc2b2b6` also passed both hosted jobs in [run 39045630015](https://github.com/24f2003970/RESQ-AI/actions/runs/39045630015).
