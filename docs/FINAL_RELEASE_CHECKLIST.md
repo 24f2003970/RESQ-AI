@@ -20,6 +20,6 @@ Statuses and evidence are maintained in [Part 16 verification](PART_16_VERIFICAT
 | Live spoken rehearsal | Timed team rehearsal | PENDING | Team fills rehearsal record |
 | Submission details | Verified names, institution and event registration | PENDING | Team completes placeholders |
 | Repository hygiene | Exact staging review; no envs, DBs, caches or baseline folders | PENDING | Complete before commit |
-| Hosted CI | Both jobs pass on PR #16 head | PENDING | Confirm after push; keep PR open/unmerged |
+| Hosted CI | Initial Part 16 source commit passed both jobs; recheck latest docs-update head | PASS | Confirm newest PR run; keep PR open/unmerged |
 
 The candidate is **not fully visually validated**. The browser safety stop is not evidence of an application defect. No tag, GitHub Release, deployment, or Innotech submission is part of this handoff.

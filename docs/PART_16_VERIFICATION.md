@@ -38,7 +38,7 @@ Statuses: **PASS**, **FAIL**, **PENDING**, **BLOCKED**, **ACCEPTED LIMITATION**.
 | Offline isolation | Local inference and loopback demo verified; no OS firewall isolation test | `docs/OFFLINE_AUDIT.md`, preflight | Medium | Do not claim physical network isolation | ACCEPTED LIMITATION |
 | Team live rehearsal | Automated workflows passed; no timed spoken rehearsal performed | `FINAL_DEMO_REHEARSAL.md` | Medium | Team must rehearse and fill presenter fields | PENDING |
 | Submission details | Names, institution, mentor and registration fields remain placeholders; nothing submitted | `INNOTECH_SUBMISSION_KIT.md` | Medium | Team fills verified event information | PENDING |
-| Hosted CI | PR #16 not yet created; both hosted jobs not yet available | Updated after PR creation | High | Confirm backend and frontend conclusions | PENDING |
+| Hosted CI on initial Part 16 head | Run 39049846395 on commit `b7251d86a676c589059c6eceb7768d6a77899a2a`; backend and frontend jobs both completed successfully | [GitHub Actions run 39049846395](https://github.com/24f2003970/RESQ-AI/actions/runs/39049846395) | High | Recheck the final documentation-update commit's own run before review | PASS |
 
 ## Executed commands
 
@@ -59,4 +59,4 @@ The first preflight was run while services were stopped and returned expected AP
 
 ## Hosted results
 
-PR #16 Actions URL and the backend/frontend job conclusions will be added after PR creation. PR must remain open and unmerged.
+PR #16: https://github.com/24f2003970/RESQ-AI/pull/16 (open and unmerged). Initial Part 16 source-head Actions run: https://github.com/24f2003970/RESQ-AI/actions/runs/39049846395; backend and frontend both succeeded. The subsequent documentation-only update triggers a separate run; inspect the latest run attached to the current PR head before making a merge decision.

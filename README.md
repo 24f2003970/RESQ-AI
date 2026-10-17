@@ -115,4 +115,4 @@ See the [Part 16 release checklist](docs/FINAL_RELEASE_CHECKLIST.md), [verificat
 
 ## Project record
 
-Part 15 was merged to `main` as commit `156b88dfda55728a3e8ecc3ff23fc5d5826b9ddb` through [PR #15](https://github.com/24f2003970/RESQ-AI/pull/15). Historical Part 15 CI runs are linked from its PR; the final Part 15 head run [39045759422](https://github.com/24f2003970/RESQ-AI/actions/runs/39045759422) passed backend and frontend jobs. Part 16 release hardening is tracked separately on `feature/part-16-final-release` and PR status will be reported only after it exists. No public release or deployment is implied.
+Part 15 was merged to `main` as commit `156b88dfda55728a3e8ecc3ff23fc5d5826b9ddb` through [PR #15](https://github.com/24f2003970/RESQ-AI/pull/15). Its final head run [39045759422](https://github.com/24f2003970/RESQ-AI/actions/runs/39045759422) passed backend and frontend jobs. Part 16 release hardening is under review in [PR #16](https://github.com/24f2003970/RESQ-AI/pull/16) on `feature/part-16-final-release`; it remains open and unmerged. No public release or deployment is implied.
