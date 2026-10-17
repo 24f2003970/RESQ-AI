@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import sqlite3
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -10,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .city_service import generate_city
 from .config import settings
-from .ml_service import (ModelUnavailable, dataset_info, evaluation_info, feature_info,
+from .ml_service import (ModelUnavailable, dataset_info, evaluation_info, feature_info, predict_state,
                          model_info, predictions, reliability_info, sensitivity_info)
 from .scenarios import ScenarioError, store
 from .rescue import PlanStore, RescuePlan, generate_plan
@@ -20,13 +21,16 @@ from .agent_contracts import (
     AgentRunRecord, AgentTraceDetail, persist_agent_event,
 )
 from .experiments import ExperimentCreate, ExperimentRecord, ExperimentRepository, ExperimentRunner
+from .robustness import (RobustnessRepository, RobustnessRunner, RobustnessStudy,
+                         RobustnessStudyCreate, read_infrastructure, read_reserved_units,
+                         read_resource_positions)
 from .missions import (MissionStore, MissionCommand, MissionClockAdvance, RouteApproval,
                        Mission, MissionClock, MissionEvent, MissionAdvanceResult, MissionUnitResource)
 from .schemas import (
     AdvanceRequest, Building, CityState, Health, ParameterUpdate, ScenarioCreate,
     MLDatasetInfo, MLEvaluationReport, MLFeatureInfo, MLModelInfo, ScenarioEnvelope,
     ScenarioMetadata, ScenarioPredictionSet, SimulationEvent, VersionRequest,
-    RescuePlanDecision, RoadClosureRequest, RescuePlanModification,
+    RescuePlanDecision, RoadClosureRequest, RescuePlanModification, Position,
 )
 
 logger = logging.getLogger("resq")
@@ -39,6 +43,8 @@ missions = MissionStore(store.path)
 agent_orchestrator = AgentOrchestrator(store,rescue_plans)
 experiment_repository = ExperimentRepository(store.path.with_name("experiments.sqlite3"))
 experiment_runner = ExperimentRunner(experiment_repository)
+robustness_repository = RobustnessRepository(experiment_repository.path)
+robustness_runner = RobustnessRunner(robustness_repository)
 
 @asynccontextmanager
 async def lifespan(_app):
@@ -605,3 +611,129 @@ def cancel_scenario_experiment(experiment_id: str):
     if record is None:
         raise HTTPException(404, "Scenario experiment does not exist.")
     return record
+
+
+def _robustness_stale(record: RobustnessStudy):
+    try:
+        current = store.get(record.scenario_id).state
+    except ScenarioError:
+        return robustness_repository.mark_stale(record.study_id, "The source scenario no longer exists.")
+    revision, _ = read_infrastructure(store.path, record.scenario_id, current.epoch)
+    if current.epoch != record.scenario_epoch or current.state_version != record.simulation_state_version or revision != record.infrastructure_revision:
+        return robustness_repository.mark_stale(record.study_id,
+            "The live scenario epoch, state version, or infrastructure revision changed after this study was frozen.")
+    return record
+
+
+@app.post("/api/v1/scenarios/{scenario_id}/robustness-studies", status_code=202, response_model=RobustnessStudy)
+def create_robustness_study(scenario_id: str, request: RobustnessStudyCreate, background_tasks: BackgroundTasks):
+    if request.scenario_id != scenario_id:
+        raise HTTPException(422, "Study scenario_id must match the scenario in the URL.")
+    envelope = _scenario_call(lambda: store.get(scenario_id))
+    state = envelope.state
+    revision, closures = read_infrastructure(store.path, scenario_id, state.epoch)
+    if (state.state_version, state.epoch, revision) != (request.expected_state_version, request.expected_epoch, request.expected_infrastructure_revision):
+        raise HTTPException(409, "Scenario or infrastructure changed; refresh the frozen baseline and retry.")
+    city = generate_city(state.seed)
+    reserved = read_reserved_units(store.path, scenario_id, state.epoch)
+    resource_positions = read_resource_positions(store.path, scenario_id, state.epoch)
+    city = city.model_copy(update={"rescue_units":[unit.model_copy(update={"position":Position.model_validate(resource_positions[unit.id])})
+        if unit.id in resource_positions else unit for unit in city.rescue_units]})
+    if request.original_plan_id:
+        try:
+            with sqlite3.connect(f"file:{store.path.resolve().as_posix()}?mode=ro", uri=True, timeout=5) as db:
+                row = db.execute("SELECT payload,status FROM rescue_plans WHERE plan_id=? AND scenario_id=?", (request.original_plan_id, scenario_id)).fetchone()
+        except sqlite3.OperationalError:
+            row = None
+        if not row:
+            raise HTTPException(404, "Original rescue proposal does not exist.")
+        original = RescuePlan.model_validate_json(row[0])
+        if original.status not in ("proposed", "approved"):
+            raise HTTPException(409, "Only a proposed or approved rescue plan can be stress-tested.")
+        if (original.scenario_epoch, original.scenario_version, original.infrastructure_revision) != (state.epoch, state.state_version, revision):
+            raise HTTPException(409, "The selected rescue plan is stale for the frozen baseline.")
+        original.status = row[1]
+    else:
+        try:
+            predictions = predict_state(state)
+            model_status = predictions.reliability_status
+        except ModelUnavailable:
+            predictions = None
+            model_status = "unavailable"
+        original = generate_plan(city, state, predictions, closures,
+            infrastructure_revision=revision, reserved_unit_ids=reserved)
+        original.explanation += f" Baseline local model reliability status: {model_status}."
+    available = sorted(unit.id for unit in city.rescue_units if unit.type != "boat" and unit.status == "standby" and unit.id not in set(reserved))
+    baseline = {"missions": original.missions, "solver_status": original.solver_status,
+        "objective": original.objective, "metrics": original.comparison["optimized"],
+        "model_reliability": model_status if not request.original_plan_id else "inherited from saved plan context",
+        "manual_closure_road_ids": sorted(closures)}
+    try:
+        # Recheck under a live DB write-intent lock; only the separate analytical
+        # store is written, while concurrent operational changes wait briefly.
+        with sqlite3.connect(store.path, timeout=10, isolation_level=None) as live:
+            live.execute("BEGIN IMMEDIATE")
+            latest = live.execute("SELECT state_version,epoch FROM scenarios WHERE id=?", (scenario_id,)).fetchone()
+            infra = live.execute("SELECT revision FROM scenario_infrastructure WHERE scenario_id=? AND epoch=?", (scenario_id,state.epoch)).fetchone()
+            current_revision = infra[0] if infra else 0
+            if not latest or latest[0] != state.state_version or latest[1] != state.epoch or current_revision != revision:
+                raise HTTPException(409, "Live scenario changed while the study was being frozen; refresh and retry.")
+            closures_now = sorted(row[0] for row in live.execute("SELECT road_id FROM road_closures WHERE scenario_id=? AND epoch=? AND active=1",(scenario_id,state.epoch)))
+            if closures_now != sorted(closures):
+                raise HTTPException(409, "Road closures changed while the study was being frozen; refresh and retry.")
+            reserved_now = {row[0] for row in live.execute("SELECT unit_id FROM unit_resources WHERE scenario_id=? AND scenario_epoch=? AND status!='available'", (scenario_id,state.epoch))}
+            if reserved_now != set(reserved):
+                raise HTTPException(409, "Resource reservations changed while the study was being frozen; refresh and retry.")
+            positions_now = {unit_id:json.loads(position_json) for unit_id,position_json in live.execute("SELECT unit_id,position_json FROM unit_resources WHERE scenario_id=? AND scenario_epoch=?",(scenario_id,state.epoch))}
+            if positions_now != resource_positions:
+                raise HTTPException(409, "Mission resource positions changed while the study was being frozen; refresh and retry.")
+            if request.original_plan_id:
+                current_plan = live.execute("SELECT payload,status FROM rescue_plans WHERE plan_id=? AND scenario_id=?",(request.original_plan_id,scenario_id)).fetchone()
+                if not current_plan or current_plan[1] != original.status or RescuePlan.model_validate_json(current_plan[0]).model_dump(mode="json") != original.model_dump(mode="json"):
+                    raise HTTPException(409, "The selected rescue proposal changed while the study was being frozen; refresh and retry.")
+            study = robustness_repository.create(request,state,revision,available,reserved,original,baseline,resource_positions)
+            live.rollback()
+    except ScenarioError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
+    background_tasks.add_task(robustness_runner.run, study.study_id)
+    return study
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/robustness-baseline")
+def robustness_baseline(scenario_id: str):
+    state = _scenario_call(lambda: store.get(scenario_id)).state
+    revision, closures = read_infrastructure(store.path, scenario_id, state.epoch)
+    city = generate_city(state.seed)
+    reserved = read_reserved_units(store.path, scenario_id, state.epoch)
+    resource_positions = read_resource_positions(store.path, scenario_id, state.epoch)
+    city = city.model_copy(update={"rescue_units":[unit.model_copy(update={"position":Position.model_validate(resource_positions[unit.id])})
+        if unit.id in resource_positions else unit for unit in city.rescue_units]})
+    available = sorted(unit.id for unit in city.rescue_units if unit.status == "standby" and unit.type != "boat" and unit.id not in set(reserved))
+    with sqlite3.connect(f"file:{store.path.resolve().as_posix()}?mode=ro", uri=True, timeout=5) as db:
+        rows = db.execute("SELECT plan_id,payload,status FROM rescue_plans WHERE scenario_id=? AND scenario_epoch=? AND status IN ('proposed','approved') ORDER BY created_at DESC LIMIT 10", (scenario_id,state.epoch)).fetchall()
+    plans = []
+    for plan_id, payload, status in rows:
+        plan = RescuePlan.model_validate_json(payload)
+        if plan.scenario_version == state.state_version and plan.infrastructure_revision == revision:
+            plans.append({"plan_id":plan_id,"status":status,"assignment_count":len(plan.missions),"solver_status":plan.solver_status})
+    reliability = model_info()
+    return {"scenario_id":scenario_id,"scenario_epoch":state.epoch,"simulation_state_version":state.state_version,
+        "infrastructure_revision":revision,"simulation_tick":state.tick,"seed":state.seed,
+        "available_unit_ids":available,"reserved_unit_ids":reserved,"resource_positions":resource_positions,
+        "manual_closure_road_ids":sorted(closures),
+        "plans":plans,"model_reliability":{"status":reliability.reliability_status,"warnings":reliability.reliability_warnings,
+            "calibration_status":reliability.calibration_status,"probabilities_calibrated":reliability.probabilities_calibrated}}
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/robustness-studies", response_model=list[RobustnessStudy])
+def list_robustness_studies(scenario_id: str, limit: int = Query(default=20, ge=1, le=50)):
+    _scenario_call(lambda: store.get(scenario_id))
+    return [_robustness_stale(item) for item in robustness_repository.list(scenario_id, limit)]
+
+
+@app.get("/api/v1/robustness-studies/{study_id}", response_model=RobustnessStudy)
+def get_robustness_study(study_id: str):
+    record = robustness_repository.get(study_id)
+    if record is None:
+        raise HTTPException(404, "Robustness study does not exist.")
+    return _robustness_stale(record)

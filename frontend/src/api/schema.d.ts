@@ -991,6 +991,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/scenarios/{scenario_id}/robustness-studies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Robustness Studies */
+        get: operations["list_robustness_studies_api_v1_scenarios__scenario_id__robustness_studies_get"];
+        put?: never;
+        /** Create Robustness Study */
+        post: operations["create_robustness_study_api_v1_scenarios__scenario_id__robustness_studies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/robustness-baseline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Robustness Baseline */
+        get: operations["robustness_baseline_api_v1_scenarios__scenario_id__robustness_baseline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/robustness-studies/{study_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Robustness Study */
+        get: operations["get_robustness_study_api_v1_robustness_studies__study_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1357,6 +1409,41 @@ export interface components {
             rescue_units: components["schemas"]["RescueUnit"][];
             /** Green Areas */
             green_areas: components["schemas"]["GreenArea"][];
+        };
+        /** Counterfactual */
+        Counterfactual: {
+            /** Condition Id */
+            condition_id: string;
+            /** Label */
+            label: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "baseline" | "environment" | "road_closure" | "bridge_closure" | "resources" | "ml_reliability";
+            /** Rainfall Mm H */
+            rainfall_mm_h?: number | null;
+            /** River Level M */
+            river_level_m?: number | null;
+            /** Drainage Effectiveness */
+            drainage_effectiveness?: number | null;
+            /** Closed Asset Ids */
+            closed_asset_ids?: string[];
+            /** Unavailable Unit Ids */
+            unavailable_unit_ids?: string[];
+            /** Unavailable Unit Type */
+            unavailable_unit_type?: ("ambulance" | "rescue_team") | null;
+            /**
+             * Unavailable Count
+             * @default 0
+             */
+            unavailable_count: number;
+            /**
+             * Reliability Mode
+             * @default actual
+             * @enum {string}
+             */
+            reliability_mode: "actual" | "injected_unavailable" | "outside_support" | "no_forecast_destinations";
         };
         /** District */
         District: {
@@ -2068,6 +2155,95 @@ export interface components {
             /** Name */
             name: string;
             position: components["schemas"]["Position"];
+        };
+        /** RobustnessStudy */
+        RobustnessStudy: {
+            /** Study Id */
+            study_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Epoch */
+            scenario_epoch: number;
+            /** Simulation State Version */
+            simulation_state_version: number;
+            /** Infrastructure Revision */
+            infrastructure_revision: number;
+            /** Simulation Tick */
+            simulation_tick: number;
+            /** Seed */
+            seed: number;
+            /** Original Plan Id */
+            original_plan_id: string;
+            /** Snapshot Sha256 */
+            snapshot_sha256: string;
+            /** Frozen Available Unit Ids */
+            frozen_available_unit_ids: string[];
+            /** Frozen Reserved Unit Ids */
+            frozen_reserved_unit_ids: string[];
+            /** Frozen Resource Positions */
+            frozen_resource_positions: {
+                [key: string]: {
+                    [key: string]: unknown;
+                };
+            };
+            /** Frozen Manual Closure Road Ids */
+            frozen_manual_closure_road_ids?: string[];
+            /** Baseline */
+            baseline: {
+                [key: string]: unknown;
+            };
+            /** Conditions */
+            conditions: components["schemas"]["Counterfactual"][];
+            /** Evaluation Horizon Ticks */
+            evaluation_horizon_ticks: number;
+            /** Algorithm Version */
+            algorithm_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "running" | "completed" | "failed" | "interrupted";
+            /** Created At Utc */
+            created_at_utc: string;
+            /** Completed At Utc */
+            completed_at_utc?: string | null;
+            /**
+             * Stale
+             * @default false
+             */
+            stale: boolean;
+            /** Stale Reason */
+            stale_reason?: string | null;
+            /** Results */
+            results?: {
+                [key: string]: unknown;
+            } | null;
+            /** Reproduction */
+            reproduction: {
+                [key: string]: unknown;
+            };
+            /** Error */
+            error?: string | null;
+        };
+        /** RobustnessStudyCreate */
+        RobustnessStudyCreate: {
+            /** Scenario Id */
+            scenario_id: string;
+            /** Expected State Version */
+            expected_state_version: number;
+            /** Expected Epoch */
+            expected_epoch: number;
+            /** Expected Infrastructure Revision */
+            expected_infrastructure_revision: number;
+            /** Original Plan Id */
+            original_plan_id?: string | null;
+            /**
+             * Evaluation Horizon Ticks
+             * @default 0
+             */
+            evaluation_horizon_ticks: number;
+            /** Conditions */
+            conditions: components["schemas"]["Counterfactual"][];
         };
         /** RouteApproval */
         RouteApproval: {
@@ -4133,6 +4309,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExperimentRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_robustness_studies_api_v1_scenarios__scenario_id__robustness_studies_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RobustnessStudy"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_robustness_study_api_v1_scenarios__scenario_id__robustness_studies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RobustnessStudyCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RobustnessStudy"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    robustness_baseline_api_v1_scenarios__scenario_id__robustness_baseline_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_robustness_study_api_v1_robustness_studies__study_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                study_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RobustnessStudy"];
                 };
             };
             /** @description Validation Error */

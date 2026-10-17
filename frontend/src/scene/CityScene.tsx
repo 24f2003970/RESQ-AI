@@ -45,6 +45,7 @@ export type Layers = {
   infrastructure: boolean;
   predictedRisk: boolean;
 };
+export type HypotheticalRoute = { id: string; points: number[][]; color: string; pointsAreXYZ?:boolean };
 
 function routePointToScene(city: CityState, point: number[]): [number,number,number] {
   const [x,y]=point;
@@ -802,6 +803,9 @@ export default function CityScene({
   missionUnits,
   selectedMissionId,
   onSelectMission,
+  hypotheticalRoutes = [],
+  hypotheticalClosedRoadIds = [],
+  hypotheticalClosedBridgeIds = [],
 }: {
   city: CityState;
   scenario: ScenarioState | null;
@@ -816,6 +820,9 @@ export default function CityScene({
   missionUnits: MissionUnitResource[];
   selectedMissionId: string | null;
   onSelectMission: (missionId:string)=>void;
+  hypotheticalRoutes?:HypotheticalRoute[];
+  hypotheticalClosedRoadIds?:string[];
+  hypotheticalClosedBridgeIds?:string[];
 }) {
   const [action, setAction] = useState({ type: "reset", key: 0 });
   const [mapMode, setMapMode] = useState(false);
@@ -910,6 +917,15 @@ export default function CityScene({
               />
               <Ground city={city} layers={layers} scenario={scenario} manualClosureIds={manualClosureIds} lowGraphics={lowGraphics} />
               {routeLines.map((route,index)=><Line key={`planned-route-${index}`} points={route.map(point=>routePointToScene(city,point))} color="#57d7cf" lineWidth={3} transparent opacity={0.9}/>) }
+              {hypotheticalRoutes.map((route)=><Line key={`hypothetical-${route.id}`} points={route.points.map(point=>route.pointsAreXYZ&&point.length>=3?[point[0],point[2]+1.4,-point[1]] as [number,number,number]:routePointToScene(city,point))} color={route.color} lineWidth={3.5} dashed dashSize={5} gapSize={2} transparent opacity={0.94}/>) }
+              {city.roads.filter(road=>hypotheticalClosedRoadIds.includes(road.id)).map(road=><Line key={`hypothetical-road-closure-${road.id}`} points={[road.start,road.end].map(point=>routePointToScene(city,[point.x_m,point.y_m]))} color="#f2aa5b" lineWidth={5} dashed dashSize={3} gapSize={2} transparent opacity={0.95}/>) }
+              {city.bridges.filter(bridge=>hypotheticalClosedBridgeIds.includes(bridge.id)).map(bridge=>{
+                const road=city.roads.find(item=>item.id===bridge.road_id);
+                if(!road)return null;
+                const dx=road.end.x_m-road.start.x_m,dy=road.end.y_m-road.start.y_m,length=Math.max(Math.hypot(dx,dy),1);
+                const half=bridge.length_m/2;
+                return <Line key={`hypothetical-bridge-closure-${bridge.id}`} points={[[bridge.position.x_m-dx/length*half,bridge.position.elevation_m+1.8,-(bridge.position.y_m-dy/length*half)],[bridge.position.x_m+dx/length*half,bridge.position.elevation_m+1.8,-(bridge.position.y_m+dy/length*half)]]} color="#ff765f" lineWidth={7} dashed dashSize={2} gapSize={1.5} transparent opacity={0.98}/>;
+              })}
               {missions.filter(mission=>mission.status==="ready"||mission.status==="en_route"||mission.status==="blocked"||mission.status==="arrived"||mission.mission_id===selectedMissionId).map(mission=>{
                 const points=missionRoutePoints(city,mission);
                 if(points.length<2)return null;

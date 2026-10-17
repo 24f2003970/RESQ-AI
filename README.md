@@ -4,6 +4,8 @@
 
 Part 12 adds a local ML reliability layer: calibration against held-out synthetic scenarios, feature-support warnings, failure analysis, and flood-simulation sensitivity experiments. See [`docs/PART_12_IMPLEMENTATION.md`](docs/PART_12_IMPLEMENTATION.md) and [`docs/ML_RELIABILITY_MODEL_CARD.md`](docs/ML_RELIABILITY_MODEL_CARD.md). These results are not real-world flood probabilities; current flood state remains the physical simulator output and rescue plans still require commander approval.
 
+Part 13 adds a persisted Decision Robustness Lab for frozen-snapshot environmental, infrastructure, resource, and model-reliability counterfactuals. It checks the saved plan first, then separately reoptimizes with the existing flood, graph, route, and allocation engines. Studies are isolated analytical evidence and cannot modify live operations. See [`docs/PART_13_IMPLEMENTATION.md`](docs/PART_13_IMPLEMENTATION.md), [`docs/DECISION_ROBUSTNESS_CONTRACT.md`](docs/DECISION_ROBUSTNESS_CONTRACT.md), and [`docs/ROBUSTNESS_DEMO_GUIDE.md`](docs/ROBUSTNESS_DEMO_GUIDE.md).
+
 RESQ-AI is an offline-first disaster response command center for a deterministic fictional city. Part 3 adds a stateful flood simulation, locally persisted scenario engine, transparent infrastructure exposure, and an interactive 3D Digital Twin. Part 4 adds a locally trained classifier for synthetic building exposure 30 minutes ahead. It is a decision-support prototype, not an operational warning or dispatch system.
 
 ## What the demonstration will show

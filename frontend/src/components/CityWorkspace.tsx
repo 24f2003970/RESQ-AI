@@ -35,6 +35,7 @@ import RescuePlanning from "./RescuePlanning";
 import { AgentCommandPanel } from "./AgentExplorer";
 import type { Plan } from "./RescuePlanning";
 import MissionOperations from "./MissionOperations";
+import RobustnessSummary from "./RobustnessSummary";
 import type { Mission, MissionClock, MissionUnitResource } from "../api/client";
 
 const LazyCityScene = lazy(() => import("../scene/CityScene"));
@@ -163,6 +164,7 @@ export default function CityWorkspace({
         </div>
         <div className="workspace-actions">
           <Link className="secondary-button" to="/scenarios">Scenario Lab <ArrowRight size={14}/></Link>
+          <Link className="secondary-button" to="/robustness">Decision Robustness <ArrowRight size={14}/></Link>
           <button className="secondary-button" onClick={downloadSnapshot}>
             <ArrowDownToLine size={15} /> Export snapshot
           </button>
@@ -408,6 +410,7 @@ export default function CityWorkspace({
         <aside className="right-column">
           <MissionOperations scenario={scenario} city={city} onSnapshot={acceptMissions} onSelectMission={selectMission} selectedMissionId={selectedMissionId}/>
           <RescuePlanning city={city} scenario={scenario} onPlan={setRescuePlan}/>
+          <RobustnessSummary scenario={scenario}/>
           <AgentCommandPanel scenarioId={scenario?.id??null}/>
           <Inspector
             selected={selected}

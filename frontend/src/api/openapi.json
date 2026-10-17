@@ -2549,6 +2549,184 @@
           }
         }
       }
+    },
+    "/api/v1/scenarios/{scenario_id}/robustness-studies": {
+      "post": {
+        "summary": "Create Robustness Study",
+        "operationId": "create_robustness_study_api_v1_scenarios__scenario_id__robustness_studies_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RobustnessStudyCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RobustnessStudy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Robustness Studies",
+        "operationId": "list_robustness_studies_api_v1_scenarios__scenario_id__robustness_studies_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RobustnessStudy"
+                  },
+                  "title": "Response List Robustness Studies Api V1 Scenarios  Scenario Id  Robustness Studies Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/robustness-baseline": {
+      "get": {
+        "summary": "Robustness Baseline",
+        "operationId": "robustness_baseline_api_v1_scenarios__scenario_id__robustness_baseline_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/robustness-studies/{study_id}": {
+      "get": {
+        "summary": "Get Robustness Study",
+        "operationId": "get_robustness_study_api_v1_robustness_studies__study_id__get",
+        "parameters": [
+          {
+            "name": "study_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Study Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RobustnessStudy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3515,6 +3693,131 @@
           "green_areas"
         ],
         "title": "CityState"
+      },
+      "Counterfactual": {
+        "properties": {
+          "condition_id": {
+            "type": "string",
+            "maxLength": 48,
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "title": "Condition Id"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "baseline",
+              "environment",
+              "road_closure",
+              "bridge_closure",
+              "resources",
+              "ml_reliability"
+            ],
+            "title": "Category"
+          },
+          "rainfall_mm_h": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rainfall Mm H"
+          },
+          "river_level_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 5.0,
+                "minimum": -2.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "River Level M"
+          },
+          "drainage_effectiveness": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drainage Effectiveness"
+          },
+          "closed_asset_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Closed Asset Ids"
+          },
+          "unavailable_unit_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Unavailable Unit Ids"
+          },
+          "unavailable_unit_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ambulance",
+                  "rescue_team"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable Unit Type"
+          },
+          "unavailable_count": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 0.0,
+            "title": "Unavailable Count",
+            "default": 0
+          },
+          "reliability_mode": {
+            "type": "string",
+            "enum": [
+              "actual",
+              "injected_unavailable",
+              "outside_support",
+              "no_forecast_destinations"
+            ],
+            "title": "Reliability Mode",
+            "default": "actual"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "condition_id",
+          "label",
+          "category"
+        ],
+        "title": "Counterfactual"
       },
       "District": {
         "properties": {
@@ -5478,6 +5781,250 @@
           "position"
         ],
         "title": "RoadNode"
+      },
+      "RobustnessStudy": {
+        "properties": {
+          "study_id": {
+            "type": "string",
+            "title": "Study Id"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "scenario_epoch": {
+            "type": "integer",
+            "title": "Scenario Epoch"
+          },
+          "simulation_state_version": {
+            "type": "integer",
+            "title": "Simulation State Version"
+          },
+          "infrastructure_revision": {
+            "type": "integer",
+            "title": "Infrastructure Revision"
+          },
+          "simulation_tick": {
+            "type": "integer",
+            "title": "Simulation Tick"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "original_plan_id": {
+            "type": "string",
+            "title": "Original Plan Id"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "title": "Snapshot Sha256"
+          },
+          "frozen_available_unit_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Frozen Available Unit Ids"
+          },
+          "frozen_reserved_unit_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Frozen Reserved Unit Ids"
+          },
+          "frozen_resource_positions": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Frozen Resource Positions"
+          },
+          "frozen_manual_closure_road_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Frozen Manual Closure Road Ids"
+          },
+          "baseline": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Baseline"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/Counterfactual"
+            },
+            "type": "array",
+            "title": "Conditions"
+          },
+          "evaluation_horizon_ticks": {
+            "type": "integer",
+            "title": "Evaluation Horizon Ticks"
+          },
+          "algorithm_version": {
+            "type": "string",
+            "title": "Algorithm Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "completed",
+              "failed",
+              "interrupted"
+            ],
+            "title": "Status"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "completed_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At Utc"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "default": false
+          },
+          "stale_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stale Reason"
+          },
+          "results": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Results"
+          },
+          "reproduction": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Reproduction"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "study_id",
+          "scenario_id",
+          "scenario_epoch",
+          "simulation_state_version",
+          "infrastructure_revision",
+          "simulation_tick",
+          "seed",
+          "original_plan_id",
+          "snapshot_sha256",
+          "frozen_available_unit_ids",
+          "frozen_reserved_unit_ids",
+          "frozen_resource_positions",
+          "baseline",
+          "conditions",
+          "evaluation_horizon_ticks",
+          "algorithm_version",
+          "status",
+          "created_at_utc",
+          "reproduction"
+        ],
+        "title": "RobustnessStudy"
+      },
+      "RobustnessStudyCreate": {
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Scenario Id"
+          },
+          "expected_state_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected State Version"
+          },
+          "expected_epoch": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Epoch"
+          },
+          "expected_infrastructure_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Infrastructure Revision"
+          },
+          "original_plan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Plan Id"
+          },
+          "evaluation_horizon_ticks": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 0.0,
+            "title": "Evaluation Horizon Ticks",
+            "default": 0
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/Counterfactual"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Conditions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scenario_id",
+          "expected_state_version",
+          "expected_epoch",
+          "expected_infrastructure_revision",
+          "conditions"
+        ],
+        "title": "RobustnessStudyCreate"
       },
       "RouteApproval": {
         "properties": {

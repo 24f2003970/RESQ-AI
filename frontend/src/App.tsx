@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ServerOff,
   ShieldCheck,
+  ShieldAlert,
   Siren,
   SlidersHorizontal,
 } from "lucide-react";
@@ -26,6 +27,7 @@ import DemoMode from "./components/DemoMode";
 import ModelLab from "./components/ModelLab";
 import { useRisk } from "./api/useRisk";
 import JudgeMode from "./components/JudgeMode";
+import RobustnessLab from "./components/RobustnessLab";
 
 const nav = [
   { path: "/", name: "Command Center", icon: LayoutDashboard },
@@ -33,6 +35,7 @@ const nav = [
   { path: "/scenarios", name: "Scenario Lab", icon: SlidersHorizontal },
   { path: "/decisions", name: "AI Decision Explorer", icon: Activity },
   { path: "/model", name: "Model Intelligence Lab", icon: Cpu },
+  { path: "/robustness", name: "Decision Robustness", icon: ShieldAlert },
   { path: "/demo", name: "Guided Demo", icon: Siren },
 ];
 
@@ -165,7 +168,7 @@ export default function App() {
               <RefreshCw size={16} />
             </button>
             <Link className="judge-entry-link" to="/judge"><Presentation size={14}/> Judge Mode</Link>
-            <span className="part-label">PART 12</span>
+            <span className="part-label">PART 13</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -246,6 +249,7 @@ export default function App() {
                   element={<AgentExplorer scenario={simulation.scenario} />}
                 />
                 <Route path="/model" element={<ModelLab scenario={simulation.scenario} />} />
+                <Route path="/robustness" element={<RobustnessLab city={city} scenario={simulation.scenario} />} />
                 <Route path="/demo" element={<DemoMode city={city} scenario={simulation.scenario} onChange={simulation.accept} />} />
                 <Route
                   path="*"
