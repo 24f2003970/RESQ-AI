@@ -2681,9 +2681,9 @@
   "artifact_integrity": {
     "dataset_sha256": "c560bdb345ad083f3f8e1d9d8a2d4928d2705bd7787f4e9640567a439040387d",
     "model_artifact_sha256": "9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73",
-    "model_metadata_sha256": "ffb2061c82c96053394b5d49b3da4cfadff153c634885d75df68a8465507bfe1",
+    "model_metadata_sha256": "7542b7d10be467ef560ec76bbe105ffc8001c063dfff177375cbef42cb0bf2d4",
     "calibrator_sha256": "64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6",
-    "support_sha256": "c7187d471d42092bcc03e358887065b5c51d1c16a7be76efcb222d3ee22ee61c"
+    "support_sha256": "f01bcc84be76cc94b2df955ba5c9a90881e9823454c7aaa6da675833dc5f26f3"
   },
   "runtime_metadata": {
     "python_version": "3.12.5",
@@ -2696,9 +2696,9 @@
   "performance": {
     "batch_size": 360,
     "repetitions": 30,
-    "original_model_batch_ms": 2.774646666666667,
-    "calibrator_batch_ms": 0.07292666666666667,
-    "support_check_batch_ms": 9.993699999999999,
+    "original_model_batch_ms": 2.7390366666666663,
+    "calibrator_batch_ms": 0.07856666666666667,
+    "support_check_batch_ms": 9.942596666666667,
     "measurement_note": "Warmed local process timing; environment-specific; batch covers one generated city."
   },
   "evaluation_date": "2026-10-17",

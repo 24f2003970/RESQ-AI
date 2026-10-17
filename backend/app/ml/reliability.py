@@ -88,6 +88,31 @@ def _apply_platt(model: LogisticRegression, raw_score: np.ndarray) -> np.ndarray
     return model.predict_proba(logit.reshape(-1, 1))[:, 1]
 
 
+def _calibration_gate(raw_metrics: dict[str, Any], calibrated_metrics: dict[str, Any]) -> bool:
+    """Apply the predeclared adoption rule without consulting test metrics."""
+    brier_improvement = raw_metrics["brier_score"] - calibrated_metrics["brier_score"]
+    log_loss_delta = calibrated_metrics["log_loss"] - raw_metrics["log_loss"]
+    return brier_improvement >= 0.001 and log_loss_delta <= 0.01
+
+
+def _persist_calibrator(path: Path, calibrator: LogisticRegression | None, adopted: bool) -> str | None:
+    """Persist only an adopted production calibrator; clear stale rejected artifacts."""
+    if not adopted:
+        path.unlink(missing_ok=True)
+        return None
+    if calibrator is None:
+        raise ValueError("An adopted calibration gate requires a fitted production calibrator.")
+    joblib.dump(calibrator, path, compress=3)
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _sha256_file(path: Path, *, normalize_text_newlines: bool = False) -> str:
+    content = path.read_bytes()
+    if normalize_text_newlines:
+        content = content.replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()
+
+
 def _support(rows: list[dict[str, str]], fit_groups: set[str]) -> dict[str, Any]:
     selected = [row for row in rows if row["scenario_id"] in fit_groups]
     matrix = feature_matrix(selected)
@@ -253,7 +278,7 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
     nested_oof_metrics = calibration_metrics(dev_y, outer_calibrated)
     brier_improvement = raw_oof_metrics["brier_score"] - nested_oof_metrics["brier_score"]
     log_loss_delta = nested_oof_metrics["log_loss"] - raw_oof_metrics["log_loss"]
-    adopt = brier_improvement >= 0.001 and log_loss_delta <= 0.01
+    adopt = _calibration_gate(raw_oof_metrics, nested_oof_metrics)
 
     artifact_dir.mkdir(parents=True, exist_ok=True)
     calibrator_path = artifact_dir / CALIBRATOR_PATH.name
@@ -263,11 +288,9 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
         production_oof = _grouped_oof_scores(dev_x, dev_y, dev_groups_array,
                                              metadata["algorithm"], seed, n_splits=5)
         final_calibrator = _fit_platt(production_oof, dev_y, dev_groups_array)
-        joblib.dump(final_calibrator, calibrator_path, compress=3)
-        calibration_artifact_sha = hashlib.sha256(calibrator_path.read_bytes()).hexdigest()
+        calibration_artifact_sha = _persist_calibrator(calibrator_path, final_calibrator, adopted=True)
     else:
-        calibrator_path.unlink(missing_ok=True)
-        calibration_artifact_sha = None
+        calibration_artifact_sha = _persist_calibrator(calibrator_path, None, adopted=False)
 
     final_estimator = joblib.load(artifact_dir / metadata["artifact_file"])["estimator"]
     test_scores = _score(final_estimator, x[test_idx])
@@ -280,7 +303,7 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
     calibrated_test_cal = calibration_metrics(test_y, all_calibrated_scores) if adopt else None
     support = _support(rows, dev_groups)
     support_path = artifact_dir / SUPPORT_PATH.name
-    support_path.write_text(json.dumps(support, indent=2), encoding="utf-8")
+    support_path.write_bytes((json.dumps(support, indent=2) + "\n").encode("utf-8"))
 
     # Latency is measured on a representative 360-building scenario, warmed
     # first; timings are environment dependent and include local NumPy/sklearn.
@@ -375,7 +398,7 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
         "artifact_integrity": {
             "dataset_sha256": dataset_sha,
             "model_artifact_sha256": hashlib.sha256((artifact_dir / metadata["artifact_file"]).read_bytes()).hexdigest(),
-            "model_metadata_sha256": hashlib.sha256((artifact_dir / "model_metadata.json").read_bytes()).hexdigest(),
+            "model_metadata_sha256": _sha256_file(artifact_dir / "model_metadata.json", normalize_text_newlines=True),
             "calibrator_sha256": calibration_artifact_sha,
             "support_sha256": hashlib.sha256(support_path.read_bytes()).hexdigest(),
         },

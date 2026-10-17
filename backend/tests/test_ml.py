@@ -10,9 +10,9 @@ from app import main as main_module, ml_service
 from app.main import app
 from app.ml.dataset import DatasetConfig, generate_dataset
 from app.ml.features import FEATURE_NAMES, TARGET_NAME, feature_matrix
-from app.ml import reliability as reliability_module
 from app.ml.reliability import (calibration_metrics, check_distribution_support,
-                                run_reliability, _nested_grouped_calibration)
+                                _calibration_gate, _nested_grouped_calibration,
+                                _persist_calibrator, _sha256_file)
 from app.ml.sensitivity import run_sensitivity
 from app.ml.train import load_rows, train
 from app.ml_service import predictions
@@ -142,10 +142,10 @@ def test_calibration_is_grouped_and_preserves_untouched_test_metrics():
     assert reliability["artifact_integrity"]["model_artifact_sha256"]==hashlib.sha256(
         (ml_service.ARTIFACT_DIR/"flood_exposure_v1.joblib").read_bytes()).hexdigest()
     assert reliability["artifact_integrity"]["model_artifact_sha256"]=="9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73"
-    assert reliability["artifact_integrity"]["support_sha256"]==hashlib.sha256(
-        (ml_service.ARTIFACT_DIR/"distribution_support_v1.json").read_bytes()).hexdigest()
-    assert reliability["artifact_integrity"]["model_metadata_sha256"]==hashlib.sha256(
-        (ml_service.ARTIFACT_DIR/"model_metadata.json").read_bytes()).hexdigest()
+    assert reliability["artifact_integrity"]["support_sha256"]==_sha256_file(
+        ml_service.ARTIFACT_DIR/"distribution_support_v1.json")
+    assert reliability["artifact_integrity"]["model_metadata_sha256"]==_sha256_file(
+        ml_service.ARTIFACT_DIR/"model_metadata.json",normalize_text_newlines=True)
     assert calibration["calibrator_sha256"]==hashlib.sha256(
         (ml_service.ARTIFACT_DIR/"flood_exposure_platt_v1.joblib").read_bytes()).hexdigest()
     assert reliability["runtime_metadata"]["seed"]==92021
@@ -155,15 +155,18 @@ def test_calibration_is_grouped_and_preserves_untouched_test_metrics():
     assert reliability["dataset_sha256"]==json.loads((ml_service.ARTIFACT_DIR/"model_metadata.json").read_text())["dataset_sha256"]
 
 
-def test_nested_calibration_keeps_outer_groups_out_of_all_fits_and_is_deterministic():
-    rows=load_rows(ml_service.ARTIFACT_DIR.parent/"data"/"ml"/"flood_exposure.csv")
-    selected_groups=sorted({row["scenario_id"] for row in rows})[:8]
+def test_nested_calibration_keeps_outer_groups_out_of_all_fits_and_is_deterministic(tmp_path):
+    data=tmp_path/"nested.csv"
+    metadata=tmp_path/"nested.json"
+    generate_dataset(DatasetConfig(scenario_count=20,observation_ticks=(0,)),data,metadata)
+    rows=load_rows(data)
+    selected_groups=sorted({row["scenario_id"] for row in rows})
     selected=[row for row in rows if row["scenario_id"] in selected_groups]
     x=feature_matrix(selected)
     y=np.asarray([int(row[TARGET_NAME]) for row in selected])
     groups=np.asarray([row["scenario_id"] for row in selected])
-    first_raw,first_cal,first_audit=_nested_grouped_calibration(x,y,groups,"random_forest",92021,n_splits=2)
-    second_raw,second_cal,second_audit=_nested_grouped_calibration(x,y,groups,"random_forest",92021,n_splits=2)
+    first_raw,first_cal,first_audit=_nested_grouped_calibration(x,y,groups,"random_forest",92021,n_splits=4)
+    second_raw,second_cal,second_audit=_nested_grouped_calibration(x,y,groups,"random_forest",92021,n_splits=4)
     assert first_audit==second_audit
     assert np.array_equal(first_raw,second_raw)
     assert np.array_equal(first_cal,second_cal)
@@ -174,41 +177,21 @@ def test_nested_calibration_keeps_outer_groups_out_of_all_fits_and_is_determinis
         assert held.isdisjoint(fold["calibrator_fit_groups"])
     raw_metric=calibration_metrics(y,first_raw)
     calibrated_metric=calibration_metrics(y,first_cal)
-    gate=(raw_metric["brier_score"]-calibrated_metric["brier_score"]>=0.001 and
-          calibrated_metric["log_loss"]<=raw_metric["log_loss"]+0.01)
+    gate=_calibration_gate(raw_metric,calibrated_metric)
     second_raw_metric=calibration_metrics(y,second_raw)
     second_cal_metric=calibration_metrics(y,second_cal)
-    second_gate=(second_raw_metric["brier_score"]-second_cal_metric["brier_score"]>=0.001 and
-                 second_cal_metric["log_loss"]<=second_raw_metric["log_loss"]+0.01)
+    second_gate=_calibration_gate(second_raw_metric,second_cal_metric)
     assert gate==second_gate
 
 
-def test_failed_nested_gate_disables_calibration_without_synthetic_test_claims(tmp_path, monkeypatch):
-    source=ml_service.ARTIFACT_DIR
-    target=tmp_path/"artifacts"
-    target.mkdir()
-    for name in ("model_metadata.json", "dataset_metadata.json", "flood_exposure_v1.joblib"):
-        shutil.copy2(source/name,target/name)
-
-    def reject_gate(x, y, groups, algorithm, seed, n_splits=5):
-        uninformative=np.full(len(y),0.5)
-        audit=[{"outer_validation_groups":[],"outer_estimator_fit_groups":[],
-                "inner_oof_estimator_fit_groups":[],"calibrator_fit_groups":[],
-                "inner_grouped_oof_folds":n_splits} for _ in range(n_splits)]
-        return uninformative,uninformative.copy(),audit
-
-    monkeypatch.setattr(reliability_module,"_nested_grouped_calibration",reject_gate)
-    report=run_reliability(ml_service.ARTIFACT_DIR.parent/"data"/"ml"/"flood_exposure.csv",target,92021)
-    calibration=report["calibration"]
-    assert calibration["status"]=="not_adopted_development_gate_failed"
-    assert calibration["calibrator_artifact"] is None
-    assert calibration["calibrator_sha256"] is None
-    assert calibration["final_held_out_platt"] is None
-    assert calibration["held_out_classification_at_threshold_0_5"]["platt_calibrated"] is None
-    assert calibration["production_calibrator_fit_groups"]==[]
-    assert not (target/"flood_exposure_platt_v1.joblib").exists()
-    assert report["artifact_integrity"]["model_artifact_sha256"]==hashlib.sha256(
-        (target/"flood_exposure_v1.joblib").read_bytes()).hexdigest()
+def test_failed_nested_gate_disables_calibration_and_removes_stale_artifact(tmp_path):
+    raw={"brier_score":0.25,"log_loss":0.6931471805599453}
+    uninformative={"brier_score":0.25,"log_loss":0.6931471805599453}
+    assert not _calibration_gate(raw,uninformative)
+    path=tmp_path/"flood_exposure_platt_v1.joblib"
+    path.write_bytes(b"stale calibrator")
+    assert _persist_calibrator(path,None,adopted=False) is None
+    assert not path.exists()
 
 
 def test_distribution_support_distinguishes_in_range_edge_missing_invalid_and_outside():

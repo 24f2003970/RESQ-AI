@@ -19,11 +19,11 @@ This record is updated from commands run on the Part 12 branch. All model metric
 - Untouched test raw: Brier .0305264, log loss .1066661, 10-bin ECE .0265378.
 - Untouched test Platt: Brier .0279169, log loss .0941896, 10-bin ECE .0050088. F1 at .5 is .966182 (precision .9695, recall .9629); ROC-AUC remains .994494 because Platt is monotone.
 - Adoption decision: Platt calibration remains adopted based only on the nested development gate. Final test metrics above are descriptive synthetic holdout results and did not influence adoption.
-- Reproducibility metadata: seed 92021, Python 3.12.5, NumPy 2.5.4, scikit-learn 1.9.1. The report's dataset, original model, model metadata, calibrator, and support artifact SHA-256 values are stored and cross-checked in tests; the calibrator SHA-256 is `64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6`.
+- Reproducibility metadata: seed 92021, Python 3.12.5, NumPy 2.5.4, scikit-learn 1.9.1. The report's dataset, original model, model metadata, calibrator, and support artifact SHA-256 values are stored and cross-checked in tests. Calibrator SHA-256: `64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6`; canonical-newline support SHA-256: `f01bcc84be76cc94b2df955ba5c9a90881e9823454c7aaa6da675833dc5f26f3`.
 - Test support: 4,540 within observed support, 125 edge-of-support and 735 outside support (13.6%). The status is not an accuracy guarantee.
 - Currently dry subset: 3,648 observations across 15 scenarios; 1,319 newly exposed; precision .947707, recall .893101, F1 .919594, 141 false negatives.
 - Sensitivity: 63 validation comparisons; mean nonbaseline flip fraction .023663; mean defined Spearman rank correlation .904420; 30 rank pairs undefined due to constant tied scores. Sensitivity generation ran in approximately 3.2 seconds on the development machine.
-- Local warmed batch timing for one 360-building generated city: original model 2.82 ms, calibrator 0.079 ms, feature-support checks 10.17 ms. These are machine-specific measurements.
+- Local warmed batch timing for one 360-building generated city: original model 2.74 ms, calibrator 0.079 ms, feature-support checks 9.94 ms. These are machine-specific measurements.
 
 ## Test and delivery status
 
