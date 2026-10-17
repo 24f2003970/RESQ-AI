@@ -72,4 +72,6 @@ The backend contract export was run from `backend/` with `.venv/Scripts/python.e
 
 ML integrity checks compared the saved reliability report with local artifacts. Random forest SHA-256 `9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73`, calibrator `64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6`, support file `f01bcc84be76cc94b2df955ba5c9a90881e9823454c7aaa6da675833dc5f26f3`, normalized metadata `7542b7d10be467ef560ec76bbe105ffc8001c063dfff177375cbef42cb0bf2d4`, and training CSV `c560bdb345ad083f3f8e1d9d8a2d4928d2705bd7787f4e9640567a439040387d` all match the saved report. No model retraining occurred.
 
-The local URL-verified browser captures are documented in `VISUAL_EVIDENCE_GALLERY.md`. Exact target desktop CSS viewports, reduced-motion behavior, and WebGL context-loss recovery remain pending; see `FINAL_VISUAL_QA.md`. Hosted backend/frontend workflow conclusions will be recorded after GitHub Actions completes.
+The local URL-verified browser captures are documented in `VISUAL_EVIDENCE_GALLERY.md`. Exact target desktop CSS viewports, reduced-motion behavior, and WebGL context-loss recovery remain pending; see `FINAL_VISUAL_QA.md`.
+
+Hosted GitHub Actions run [39045492709](https://github.com/24f2003970/RESQ-AI/actions/runs/39045492709) completed successfully on implementation commit `f674e28e750731736b51017e2a6ae9efcc7b817a`: backend and frontend jobs both passed. A documentation-only follow-up is being pushed to the same PR and will receive a fresh CI run.

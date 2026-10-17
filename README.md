@@ -113,4 +113,4 @@ The backend also exposes `backend/export_contract.py`. Disposable Part 10/14 acc
 
 ## Project record
 
-Part 15 is delivered on `feature/part-15-evidence-presentation`; see the PR and CI links in the final project delivery record. Work stops at Part 15. The repository roadmap describes future work without implying that it is implemented.
+Part 15 is delivered on `feature/part-15-evidence-presentation` in [PR #15](https://github.com/24f2003970/RESQ-AI/pull/15), open and unmerged. Its initial hosted CI run [39045492709](https://github.com/24f2003970/RESQ-AI/actions/runs/39045492709) passed both backend and frontend jobs. The PR stays open for review. Work stops at Part 15; the repository roadmap describes future work without implying that it is implemented.
