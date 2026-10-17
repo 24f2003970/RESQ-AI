@@ -27,6 +27,6 @@ Part 13.1 final rerun after removing isolated-node/access-spur-only paths: 2 bas
 - Part 10 demo preflight: all readiness checks passed with the local services running.
 - Disposable Part 10 commander acceptance: **17/17 checks passed** in **8,153.651 ms**.
 - Browser visual walkthrough: completed at the verified local `/robustness` URL. Confirmed the frozen snapshot, hypothetical-only controls, scenario identity, completed result matrix, synthetic-graph wording, live-baseline-only water label, and low-graphics scene. The generated study stayed analytical and did not change live plans or missions.
-- Hosted GitHub Actions for the Part 13.1 commit will be recorded after pushing and waiting for both jobs.
+- Hosted GitHub Actions for code commit `7ec1b0c91c555deca77617d7f7445ee3e98e6744`: [run 39018139565](https://github.com/24f2003970/RESQ-AI/actions/runs/39018139565) — backend **success**, frontend **success**. A follow-up verification-record commit will trigger a new run; the final report will use the latest run for the final commit.
 
 The captured benchmark is above and is synthetic only. Ordinary building access spurs remain supported only when connected to a traversable road network. A route supported by this model does not establish surveyed connectivity or field safety.
