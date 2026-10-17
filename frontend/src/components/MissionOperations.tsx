@@ -8,7 +8,7 @@ import {
 } from "../api/client";
 import { Badge, Panel } from "./ui";
 
-type Snapshot = { missions: Mission[]; units: MissionUnitResource[]; clock: MissionClock | null };
+type Snapshot = { scenarioId:string|null; scenarioEpoch:number|null; missions: Mission[]; units: MissionUnitResource[]; clock: MissionClock | null };
 const statusLabel: Record<Mission["status"],string> = {
   ready:"Ready · reserved", en_route:"En route", blocked:"Blocked · review needed",
   arrived:"Arrived · awaiting confirmation", completed:"Completed · fictional simulation", cancelled:"Cancelled",
@@ -44,40 +44,53 @@ export default function MissionOperations({
   const [agentTrace,setAgentTrace]=useState("");
   const sequence=useRef(0);
   const snapshotIdentity=useRef("");
+  const [loadedScenarioIdentity,setLoadedScenarioIdentity]=useState("");
+  const mutationInFlight=useRef(false);
   const selectedMissionRef=useRef(selectedMissionId);
   selectedMissionRef.current=selectedMissionId;
   const activeScenario=scenario?.id;
-  const selected=useMemo(()=>missions.find(item=>item.mission_id===selectedMissionId)??null,[missions,selectedMissionId]);
+  const activeEpoch=scenario?.epoch;
+  const activeIdentity=activeScenario&&activeEpoch!==undefined?JSON.stringify([activeScenario,activeEpoch]):"";
+  const identityRef=useRef(activeIdentity);
+  identityRef.current=activeIdentity;
+  const dataIsCurrent=Boolean(activeIdentity)&&loadedScenarioIdentity===activeIdentity;
+  const visibleMissions=useMemo(()=>dataIsCurrent?missions:[],[dataIsCurrent,missions]);
+  const visibleUnits=dataIsCurrent?units:[];
+  const visibleClock=dataIsCurrent?clock:null;
+  const selected=useMemo(()=>visibleMissions.find(item=>item.mission_id===selectedMissionId)??null,[visibleMissions,selectedMissionId]);
   const refresh=useCallback(async(signal?:AbortSignal)=>{
-    if(!activeScenario)return;
+    if(!activeScenario||activeEpoch===undefined||mutationInFlight.current)return;
     const id=++sequence.current;
     const [nextMissions,nextClock,nextUnits]=await Promise.all([
-      fetchMissions(activeScenario,signal),fetchMissionClock(activeScenario,signal),fetchMissionUnits(activeScenario,signal),
+      fetchMissions(activeScenario,signal,activeEpoch),fetchMissionClock(activeScenario,signal),fetchMissionUnits(activeScenario,signal),
     ]);
-    if(id!==sequence.current||signal?.aborted)return;
+    if(id!==sequence.current||signal?.aborted||identityRef.current!==JSON.stringify([activeScenario,activeEpoch]))return;
+    if(nextMissions.some(item=>item.scenario_id!==activeScenario||item.scenario_epoch!==activeEpoch)||nextClock.scenario_id!==activeScenario||nextClock.scenario_epoch!==activeEpoch||nextUnits.some(item=>item.scenario_id!==activeScenario||item.scenario_epoch!==activeEpoch))return;
     const identity=JSON.stringify([nextMissions,nextClock,nextUnits]);
     if(identity!==snapshotIdentity.current){
       snapshotIdentity.current=identity;
+      setLoadedScenarioIdentity(JSON.stringify([activeScenario,activeEpoch]));
       setMissions(nextMissions);setClock(nextClock);setUnits(nextUnits);
-      onSnapshot({missions:nextMissions,units:nextUnits,clock:nextClock});
+      onSnapshot({scenarioId:activeScenario,scenarioEpoch:activeEpoch,missions:nextMissions,units:nextUnits,clock:nextClock});
     }
     const currentSelection=selectedMissionRef.current;
     if(!currentSelection||!nextMissions.some(item=>item.mission_id===currentSelection)){
       const nextSelection=nextMissions[0]?.mission_id??null;
       if(nextSelection!==currentSelection){selectedMissionRef.current=nextSelection;onSelectMission(nextSelection);}
     }
-  },[activeScenario,onSnapshot,onSelectMission]);
+  },[activeScenario,activeEpoch,onSnapshot,onSelectMission]);
   useEffect(()=>{
     snapshotIdentity.current="";
-    if(!activeScenario){setMissions([]);setUnits([]);setClock(null);setEvents([]);selectedMissionRef.current=null;onSelectMission(null);onSnapshot({missions:[],units:[],clock:null});return;}
+    setLoadedScenarioIdentity("");
+    if(!activeScenario||activeEpoch===undefined){setMissions([]);setUnits([]);setClock(null);setEvents([]);selectedMissionRef.current=null;onSelectMission(null);onSnapshot({scenarioId:null,scenarioEpoch:null,missions:[],units:[],clock:null});return;}
     setMissions([]);setUnits([]);setClock(null);setEvents([]);
     selectedMissionRef.current=null;onSelectMission(null);
-    onSnapshot({missions:[],units:[],clock:null});
+    onSnapshot({scenarioId:activeScenario,scenarioEpoch:activeEpoch,missions:[],units:[],clock:null});
     const controller=new AbortController();
     refresh(controller.signal).catch(cause=>{if(!controller.signal.aborted)setError(cause instanceof Error?cause.message:"Mission service is unavailable.");});
     const timer=window.setInterval(()=>refresh(controller.signal).catch(cause=>{if(!controller.signal.aborted)setError(cause instanceof Error?cause.message:"Mission service is unavailable.");}),1500);
     return()=>{controller.abort();window.clearInterval(timer);sequence.current+=1;};
-  },[activeScenario,refresh,onSnapshot,onSelectMission]);
+  },[activeScenario,activeEpoch,refresh,onSnapshot,onSelectMission]);
   useEffect(()=>{
     if(!selectedMissionId){setEvents([]);return;}
     let live=true;let requestNumber=0;
@@ -86,34 +99,65 @@ export default function MissionOperations({
     return()=>{live=false;window.clearInterval(timer);};
   },[selectedMissionId]);
   useEffect(()=>{
-    if(!activeScenario){setAgentTrace("");return;}
+    if(!activeScenario||activeEpoch===undefined){setAgentTrace("");return;}
     setAgentTrace("");
     let live=true;let sequenceId=0;
     const load=()=>{const current=++sequenceId;fetchAgentDashboard(activeScenario).then(dashboard=>{
-      if(live&&current===sequenceId)setAgentTrace(dashboard.latest_trace?.summary??"");
+      if(live&&current===sequenceId&&identityRef.current===JSON.stringify([activeScenario,activeEpoch])&&dashboard.scenario_epoch===activeEpoch)setAgentTrace(dashboard.latest_trace?.summary??"");
     }).catch(()=>{});};
     load();const timer=window.setInterval(load,4000);
     return()=>{live=false;window.clearInterval(timer);};
-  },[activeScenario]);
+  },[activeScenario,activeEpoch]);
 
-  async function run(action:()=>Promise<unknown>,success:string){
-    setBusy(true);setError("");setMessage("");
-    try{await action();await refresh();setMessage(success);}
-    catch(cause){setError(cause instanceof Error?cause.message:"The mission command could not be completed.");}
-    finally{setBusy(false);}
+  function applyMutationResult(result:unknown){
+    if(!result||typeof result!=="object")return;
+    if("clock" in result&&"missions" in result&&Array.isArray(result.missions)){
+      const advance=result as {clock:MissionClock;missions:Mission[]};
+      if(advance.clock.scenario_id!==activeScenario||advance.clock.scenario_epoch!==activeEpoch)return;
+      setClock(advance.clock);
+      setMissions(previous=>{const merged=new Map(previous.map(item=>[item.mission_id,item]));for(const item of advance.missions)merged.set(item.mission_id,item);return [...merged.values()];});
+      setLoadedScenarioIdentity(activeIdentity);
+      return;
+    }
+    if("mission_id" in result){
+      const updated=result as Mission;
+      if(updated.scenario_id!==activeScenario||updated.scenario_epoch!==activeEpoch)return;
+      setMissions(previous=>{const index=previous.findIndex(item=>item.mission_id===updated.mission_id);if(index<0)return [...previous,updated];const next=[...previous];next[index]=updated;return next;});
+      setLoadedScenarioIdentity(activeIdentity);
+      return;
+    }
+    if("scenario_id" in result&&"scenario_epoch" in result&&"seconds" in result){
+      const updated=result as MissionClock;
+      if(updated.scenario_id===activeScenario&&updated.scenario_epoch===activeEpoch){setClock(updated);setLoadedScenarioIdentity(activeIdentity);}
+    }
   }
-  const selectedUnit=selected?units.find(unit=>unit.unit_id===selected.unit_id):null;
+  async function run(action:()=>Promise<unknown>,success:string){
+    if(mutationInFlight.current)return;
+    setBusy(true);setError("");setMessage("");
+    mutationInFlight.current=true;
+    const mutationGeneration=++sequence.current;
+    try{
+      const result=await action();
+      if(identityRef.current!==activeIdentity)throw new Error("Scenario epoch changed while the operation was saving. Refresh the active scenario before continuing.");
+      applyMutationResult(result);
+      if(mutationGeneration!==sequence.current)throw new Error("A newer mission update superseded this operation; synchronizing current state.");
+      setMessage(success);
+    }
+    catch(cause){setError(cause instanceof Error?cause.message:"The mission command could not be completed.");}
+    finally{mutationInFlight.current=false;setBusy(false);void refresh().catch(cause=>setError(cause instanceof Error?cause.message:"Mission state synchronization is pending."));}
+  }
+  const selectedUnit=selected?visibleUnits.find(unit=>unit.unit_id===selected.unit_id):null;
   const destination=selected?city.buildings.find(building=>building.id===selected.destination_id):null;
   const revisionId=selected?proposalRevision(selected):null;
-  const hasMoving=missions.some(item=>item.status==="en_route");
+  const hasMoving=visibleMissions.some(item=>item.status==="en_route");
 
   return <Panel title="Mission Operations" eyebrow="FICTIONAL LOCAL SIMULATION" action={<Radio size={16}/> }>
     <div className="mission-truth"><AlertTriangle size={14}/><span>Simulation only. No real responders are contacted or dispatched.</span></div>
     {!scenario&&<p className="muted">Choose a saved scenario to inspect its mission records.</p>}
     {error&&!selected&&<p className="mission-feedback error" role="alert"><AlertTriangle size={14}/>{error}</p>}
-    {scenario&&missions.length===0&&<div className="mission-empty"><Truck size={20}/><div><b>No approved missions in this epoch</b><span>Approve a rescue plan to create reserved, ready missions. Approval does not dispatch a vehicle.</span></div></div>}
-    {missions.length>0&&<div className="mission-list" role="list" aria-label="Scenario missions">
-      {missions.map(mission=><button className={`mission-row ${selectedMissionId===mission.mission_id?"selected":""}`} key={mission.mission_id} onClick={()=>onSelectMission(mission.mission_id)} aria-pressed={selectedMissionId===mission.mission_id}>
+    {scenario&&visibleMissions.length===0&&<div className="mission-empty"><Truck size={20}/><div><b>No approved missions in this epoch</b><span>Approve a rescue plan to create reserved, ready missions. Approval does not dispatch a vehicle.</span></div></div>}
+    {visibleMissions.length>0&&<div className="mission-list" role="list" aria-label="Scenario missions">
+      {visibleMissions.map(mission=><button className={`mission-row ${selectedMissionId===mission.mission_id?"selected":""}`} key={mission.mission_id} onClick={()=>onSelectMission(mission.mission_id)} aria-pressed={selectedMissionId===mission.mission_id}>
         <span className={`mission-status-dot ${mission.status}`}/><span className="mission-row-main"><b>{mission.unit_id}<i>→</i>{city.buildings.find(building=>building.id===mission.destination_id)?.name??mission.destination_id}</b><small>{mission.mission_id.slice(0,22)} · {statusLabel[mission.status]}</small></span><Badge tone={statusTone[mission.status]}>{mission.status.replaceAll("_"," ")}</Badge>
       </button>)}
     </div>}
@@ -124,7 +168,7 @@ export default function MissionOperations({
         <span><small>TRAVELLED</small><b>{selected.traversed_distance_m.toFixed(1)} m</b></span>
         <span><small>REMAINING</small><b>{selected.remaining_distance_m.toFixed(1)} m</b></span>
         <span><small>SYNTHETIC ETA</small><b>{time(selected.estimated_remaining_seconds)}</b></span>
-        <span><small>OPS CLOCK</small><b>{clock?time(clock.seconds):"—"}{clock?.paused?" · paused":""}</b></span>
+        <span><small>OPS CLOCK</small><b>{visibleClock?time(visibleClock.seconds):"—"}{visibleClock?.paused?" · paused":""}</b></span>
         <span><small>CAPACITY / TARGET</small><b>{selected.unit_capacity} / {selected.occupants_targeted} <i>synthetic planning values</i></b></span>
       </div>
       <div className="mission-route-summary"><Route size={14}/><span>{selected.route_revision>1?`Approved route revision ${selected.route_revision}`:"Approved route"} · segment {selected.route_segment_index+1} · {routeRoads(selected).length?routeRoads(selected).join(" → "):"access spur only"}</span></div>
@@ -132,8 +176,8 @@ export default function MissionOperations({
       {selected.route_proposal&&<div className="mission-route-review"><b>Replacement route awaits commander approval</b><span>{routeRoads({...selected,route:(selected.route_proposal.route as Record<string,unknown>)??selected.route}).join(" → ")||"Alternative path calculated"}</span></div>}
       <div className="mission-controls">
         {selected.status==="ready"&&<button className="primary-button" disabled={busy} onClick={()=>void run(()=>missionCommand(selected.mission_id,"dispatch",selected.mission_version),"Dispatch authorized; the unit will move only when mission time advances.")}><Play size={14}/> Dispatch mission</button>}
-        {hasMoving&&clock&&<button className="secondary-button" disabled={busy} onClick={()=>void run(()=>controlMissionClock(scenario!.id,clock,clock.paused?"resume":"pause"),clock.paused?"Mission clock resumed.":"Mission clock paused.")}>{clock.paused?<Play size={14}/>:<Pause size={14}/>} {clock.paused?"Resume clock":"Pause clock"}</button>}
-        {hasMoving&&clock&&!clock.paused&&<button className="secondary-button" disabled={busy} onClick={()=>void run(()=>advanceMissionClock(scenario!.id,clock,scenario!.state_version,10),"Advanced the local mission clock by 10 seconds.")}><Clock3 size={14}/> Advance 10 seconds</button>}
+        {hasMoving&&visibleClock&&<button className="secondary-button" disabled={busy} onClick={()=>void run(()=>controlMissionClock(scenario!.id,visibleClock,visibleClock.paused?"resume":"pause"),visibleClock.paused?"Mission clock resumed.":"Mission clock paused.")}>{visibleClock.paused?<Play size={14}/>:<Pause size={14}/>} {visibleClock.paused?"Resume clock":"Pause clock"}</button>}
+        {hasMoving&&visibleClock&&!visibleClock.paused&&<button className="secondary-button" disabled={busy} onClick={()=>void run(()=>advanceMissionClock(scenario!.id,visibleClock,scenario!.state_version,10),"Mission clock advance confirmed by the backend.")}><Clock3 size={14}/> Advance 10 seconds</button>}
         {selected.status==="blocked"&&!selected.route_proposal&&<button className="primary-button" disabled={busy} onClick={()=>void run(()=>requestMissionRoute(selected.mission_id,selected.mission_version),"Routing Agent path calculation saved for commander review.")}><MapPinned size={14}/> Calculate replacement route</button>}
         {selected.status==="blocked"&&revisionId&&<button className="primary-button" disabled={busy} onClick={()=>void run(()=>approveMissionRoute(selected.mission_id,selected.mission_version,revisionId),"Replacement route approved; mission may continue on the next clock advance.")}><Check size={14}/> Approve route revision</button>}
         {selected.status==="arrived"&&<button className="primary-button" disabled={busy} onClick={()=>void run(()=>missionCommand(selected.mission_id,"complete",selected.mission_version),"Simulated mission completion recorded; no rescue outcome is asserted.")}><Check size={14}/> Confirm simulated completion</button>}
@@ -150,7 +194,7 @@ export default function MissionOperations({
       </div>
       {agentTrace&&<div className="mission-agent-trace"><b><Activity size={13}/> Latest persisted agent trace</b><p>{agentTrace}</p><span>Agent recommendations remain advisory. Commander controls govern mission changes.</span></div>}
     </div>}
-    {scenario&&clock&&<div className="mission-clock-footer"><span><Clock3 size={13}/> Operational clock · {time(clock.seconds)} · v{clock.version}</span><small>Independent from the five-minute flood simulation clock</small></div>}
+    {scenario&&visibleClock&&<div className="mission-clock-footer"><span><Clock3 size={13}/> Operational clock · {time(visibleClock.seconds)} · v{visibleClock.version}</span><small>Independent from the five-minute flood simulation clock</small></div>}
     <p className="mission-synthetic-note">Targeted occupants are synthetic planning values. Arrival and completion do not verify evacuation or lives saved.</p>
     {busy&&<span className="sr-only"><LoaderCircle/></span>}
   </Panel>;

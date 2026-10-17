@@ -76,15 +76,18 @@ export default function CityWorkspace({
   const [detailError, setDetailError] = useState("");
   const [rescuePlan, setRescuePlan] = useState<Plan|null>(null);
   const [manualClosureIds,setManualClosureIds]=useState<string[]>([]);
-  const [missionRecords,setMissionRecords]=useState<Mission[]>([]);
-  const [missionUnits,setMissionUnits]=useState<MissionUnitResource[]>([]);
+  const [missionSnapshot,setMissionSnapshot]=useState<{scenarioId:string|null;scenarioEpoch:number|null;missions:Mission[];units:MissionUnitResource[];clock:MissionClock|null}>({scenarioId:null,scenarioEpoch:null,missions:[],units:[],clock:null});
   const [selectedMissionId,setSelectedMissionId]=useState<string|null>(null);
   const acceptMissions=useCallback((snapshot:{missions:Mission[];units:MissionUnitResource[];clock:MissionClock|null})=>{
-    setMissionRecords(snapshot.missions);setMissionUnits(snapshot.units);
+    setMissionSnapshot(snapshot as typeof missionSnapshot);
   },[]);
   const selectMission=useCallback((missionId:string|null)=>setSelectedMissionId(missionId),[]);
   const [searchParams]=useSearchParams();
   const scenarioId=scenario?.id;
+  const missionSnapshotIsCurrent=Boolean(scenario&&missionSnapshot.scenarioId===scenario.id&&missionSnapshot.scenarioEpoch===scenario.epoch);
+  const missionRecords=missionSnapshotIsCurrent?missionSnapshot.missions:[];
+  const missionUnits=missionSnapshotIsCurrent?missionSnapshot.units:[];
+  const visibleSelectedMissionId=missionSnapshotIsCurrent?selectedMissionId:null;
   const currentPredictions = scenario && predictions?.scenario_id === scenario.id && predictions.scenario_epoch === scenario.epoch && predictions.scenario_state_version === scenario.state_version && predictions.scenario_tick === scenario.tick && predictions.model_version === model?.model_version ? predictions : null;
   const supportedPredictions = currentPredictions ? { ...currentPredictions, predictions: currentPredictions.predictions.filter((item) => item.distribution_support_status === "within_observed_support" || item.distribution_support_status === "edge_of_observed_support") } : null;
   const [layerOpen, setLayerOpen] = useState(false);
@@ -266,7 +269,7 @@ export default function CityWorkspace({
                 manualClosureIds={manualClosureIds}
                 missions={missionRecords}
                 missionUnits={missionUnits}
-                selectedMissionId={selectedMissionId}
+                selectedMissionId={visibleSelectedMissionId}
                 onSelectMission={selectMission}
               />
               <AnimatePresence>
@@ -408,7 +411,7 @@ export default function CityWorkspace({
           </Panel>
         </div>
         <aside className="right-column">
-          <MissionOperations scenario={scenario} city={city} onSnapshot={acceptMissions} onSelectMission={selectMission} selectedMissionId={selectedMissionId}/>
+          <MissionOperations scenario={scenario} city={city} onSnapshot={acceptMissions} onSelectMission={selectMission} selectedMissionId={visibleSelectedMissionId}/>
           <RescuePlanning city={city} scenario={scenario} onPlan={setRescuePlan}/>
           <RobustnessSummary scenario={scenario}/>
           <AgentCommandPanel scenarioId={scenario?.id??null}/>

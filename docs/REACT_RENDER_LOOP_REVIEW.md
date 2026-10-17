@@ -14,10 +14,10 @@ These changes remove concrete repeated-update paths and stale asynchronous write
 
 ## Regression and browser evidence
 
-- The frontend regression suite covers mission listing, selection, empty lists, offline behavior, selection clearing when switching to an empty scenario epoch, route-specific loading state, first client navigation, Back/Forward, and a second visit to an already-loaded workspace.
-- Browser URL was independently verified as `http://127.0.0.1:5173/`. The retest exercised the Command Center, scenario controls, six completed agent records, proposal/approval, mission selection and dispatch, clock action, first workspace navigation and Back/Forward. The visible console contained the React DevTools info message and two repeated `THREE.Clock` deprecation warnings; no `Maximum update depth exceeded` or other console error was observed.
-- The original error stack remains unavailable. Mission clock feedback did not advance the visible authoritative mission snapshot beyond 20 seconds / 76.7 m, so no claim is made about browser movement, blockage, rerouting, arrival or restore.
-- Screenshots were viewed in the supported browser helper but could not be saved by its available interface. The retest viewport was 807×729 CSS px. Requested display-size and WebGL context-loss checks remain pending.
+- The frontend regression suite now covers authoritative clock responses, polling/mutation races, older responses arriving later, duplicate clicks, stale-version errors, blocked/arrived states, same-ID epoch reset, selection clearing and stale overlay suppression, in addition to prior navigation and empty-state cases.
+- Browser URL was independently verified as `http://127.0.0.1:5173/`. The retest exercised the Command Center, six completed agents, proposal/approval, dispatch, route-segment movement, road closure/blocking, route request, route revision approval after reopening the closed road, arrival, simulated completion, explicit unit restoration and all-roads-closed refusal. No `Maximum update depth exceeded` warning was observed. The Vite log showed the known `THREE.Clock` deprecation notice and transient proxy connection errors during the controlled backend restart; service calls succeeded after restart.
+- The first historical error stack remains unavailable, so source attribution remains provisional. A paired before/response/fresh-GET clock trace agreed; the earlier 20-second / 76.7 m snapshot remains inconclusive because it lacked a matching before-state.
+- Screenshots were captured and displayed by the supported browser helper but could not be saved as evidence files. The viewport was 807×729 CSS px. Requested desktop sizes and WebGL context-loss checks remain pending.
 
 ## Release status
 

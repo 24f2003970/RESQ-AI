@@ -5,7 +5,7 @@
 | Candidate | `RESQ-AI-RC1` (Part 14) |
 | Repository branch | `feature/part-14-release-candidate` |
 | Base | Part 13 merge `f93b20e41b7c091be93ed72e31793576f7c8c466` |
-| Commit | RC1 implementation `3da8c11757cc5211c6ddd694bc0e0def53370734`; Part 14.1 correction is delivered on the existing PR #14 head. |
+| Commit | Part 14.2 delivery pending; see Part 14 verification after hosted checks. |
 | Application | Backend API 0.4.0; frontend package 0.2.0 |
 | Python / Node | Python 3.12.5; Node 24.12.0 (frontend minimum 22.12; CI uses Node 22) |
 | Tested OS / browser | Windows 11 workstation; Microsoft Edge, local URL verified; browser build/user-agent unavailable. Available client viewport 807×729 CSS px. |
@@ -20,8 +20,8 @@
 | Database | SQLite initialized/migrated by the app. Preserve existing data; launcher quick-check is read-only. |
 | Supported demo modes | Local Command Center, Guided Demo, deterministic positive Demo A and all-corridors-closed Demo B |
 | External runtime dependency | No cloud inference/API key; Python/npm dependencies required locally. No formal OS-level isolation test. |
-| Verification totals | 89 backend; 43 frontend; lint/typecheck/contracts/build pass; Part 10 17/17; Part 14 14/14; see verification file. |
-| Known limitations | Synthetic-only assumptions; boat routing/field safety unsupported; CityScene chunk warning; browser mission progression, Demo B and requested viewport checks pending; render-loop source attribution provisional. |
-| Verification timestamp | Local verification completed 2026-10-17; hosted CI run 39032141846 passed on Part 14.1 correction commit. The latest PR-head run is tracked in GitHub. |
+| Verification totals | 89 backend tests; 52 frontend tests; lint, typecheck, contract generation, build and Part 10/Part 14 acceptance passed; hosted CI pending. See verification file. |
+| Known limitations | Synthetic-only assumptions; boat routing/field safety unsupported; CityScene chunk warning; no detour was supported in the observed closed-road Demo A state; requested viewport checks pending; render-loop source attribution provisional. |
+| Verification timestamp | Part 14.2 local verification completed 2026-10-17; hosted CI for the final PR head pending. |
 
 This manifest describes an educational simulation prototype. It is not an operational certification, public production release, or emergency-response safety determination.

@@ -109,10 +109,11 @@ async function request(path: string, signal?: AbortSignal, init?: RequestInit): 
     ...init,
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
-  if (!response.ok)
-    throw new Error(
-      `The local service returned ${response.status}. Check that FastAPI is running on port 8000.`,
-    );
+  if (!response.ok) {
+    const problem=await response.json().catch(()=>null) as {detail?:unknown;error?:{message?:unknown}}|null;
+    const detail=typeof problem?.detail==="string"?problem.detail:typeof problem?.error?.message==="string"?problem.error.message:null;
+    throw new Error(detail??`The local service returned ${response.status}. Check that FastAPI is running on port 8000.`);
+  }
   return response.json();
 }
 
@@ -227,8 +228,9 @@ export async function fetchScenarioExperiments(scenarioId: string, signal?: Abor
   return value as ScenarioExperiment[];
 }
 
-export async function fetchMissions(scenarioId:string,signal?:AbortSignal):Promise<Mission[]> {
-  const value:unknown=await request(`scenarios/${encodeURIComponent(scenarioId)}/missions`,signal);
+export async function fetchMissions(scenarioId:string,signal?:AbortSignal,epoch?:number):Promise<Mission[]> {
+  const query=epoch===undefined?"":`?epoch=${encodeURIComponent(epoch)}`;
+  const value:unknown=await request(`scenarios/${encodeURIComponent(scenarioId)}/missions${query}`,signal);
   if(!Array.isArray(value)||!value.every(item=>validateMission(item)))throw new Error("The local service returned invalid mission records.");
   return value as Mission[];
 }

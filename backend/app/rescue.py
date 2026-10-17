@@ -269,8 +269,34 @@ def route_from_mission_segment(g, saved_route, traversed_distance_m, segment_ind
             return candidates[0] if candidates else None
         from_node,to_node=node_for(point_a),node_for(point_b)
         if from_node is None or to_node is None:
-            return {"reachable":False,"reason":"Saved route edge coordinates no longer match the traversable road graph."}
-        remaining_by_node=((from_node,progress),(to_node,max(0.0,segment_length-progress)))
+            # A previously approved mid-route proposal can begin partway along
+            # a source graph edge. Its saved edge ID still identifies that
+            # edge, while its polyline endpoints are interior points. Verify
+            # the saved segment is collinear with the open source geometry,
+            # then attach only to the source edge's real endpoints.
+            edge_xy=data.get("xy",[])
+            if len(edge_xy)<2:
+                return {"reachable":False,"reason":"Saved route edge coordinates no longer match the traversable road graph."}
+            edge_start,edge_end=edge_xy[0],edge_xy[-1]
+            dx,dy=edge_end[0]-edge_start[0],edge_end[1]-edge_start[1]
+            edge_length=math.hypot(dx,dy)
+            if edge_length<=1e-9:
+                return {"reachable":False,"reason":"The saved route edge has no traversable length."}
+            def projection(point):
+                fraction=((point[0]-edge_start[0])*dx+(point[1]-edge_start[1])*dy)/(edge_length*edge_length)
+                nearest=(edge_start[0]+fraction*dx,edge_start[1]+fraction*dy)
+                return fraction,math.dist(point,nearest)
+            start_fraction,start_offset=projection(point_a)
+            end_fraction,end_offset=projection(point_b)
+            current_fraction,current_offset=projection((sx,sy))
+            if (max(start_offset,end_offset,current_offset)>0.05 or
+                    min(start_fraction,end_fraction)<-1e-6 or max(start_fraction,end_fraction)>1+1e-6 or
+                    abs(abs(end_fraction-start_fraction)*edge_length-segment_length)>0.05):
+                return {"reachable":False,"reason":"Saved route edge coordinates no longer match the traversable road graph."}
+            remaining_by_node=((a,math.dist((sx,sy),allowed.nodes[a]["xy"])),
+                               (b,math.dist((sx,sy),allowed.nodes[b]["xy"])))
+        else:
+            remaining_by_node=((from_node,progress),(to_node,max(0.0,segment_length-progress)))
         for node,partial in remaining_by_node:
             endpoint=allowed.nodes[node]["xy"]
             allowed.add_edge(start,node,edge_id=edge_id,road_id=data.get("road_id"),bridge_id=data.get("bridge_id"),
