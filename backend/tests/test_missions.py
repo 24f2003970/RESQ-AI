@@ -195,6 +195,29 @@ def test_midroute_reroute_uses_open_geometry_and_rejects_closed_current_segment(
         assert (math.dist(start,edge_a)+math.dist(end,edge_b)<=data["length_m"]+1e-4
                 or math.dist(start,edge_b)+math.dist(end,edge_a)<=data["length_m"]+1e-4)
 
+    resumed=store.approve_route(blocked.mission_id,proposal.mission_version,
+        proposal.route_proposal["route_revision_id"],state,rev,"approve-midroute-reroute")
+    clock_after_revision=store.clock(state.id,state.epoch)
+    _,progress_after_revision=store.advance(state.id,state.epoch,clock_after_revision.version,state.state_version,1)
+    progress_after_revision=next(item for item in progress_after_revision if item.mission_id==mission.mission_id)
+    current_road=next((edge.split(":",1)[0] for edge in progress_after_revision.route["edge_ids"][progress_after_revision.route_segment_index:]
+                       if not edge.startswith("access:")),None)
+    future_road=next((edge.split(":",1)[0] for edge in progress_after_revision.route["edge_ids"][progress_after_revision.route_segment_index+1:]
+                      if not edge.startswith("access:") and edge.split(":",1)[0]!=current_road),None)
+    assert future_road is not None
+    with sqlite3.connect(path) as db:
+        db.execute("INSERT INTO road_closures(scenario_id,epoch,road_id,reason,active) VALUES(?,?,?,?,1)",
+                   (state.id,state.epoch,future_road,"second downstream closure"))
+        db.execute("UPDATE scenario_infrastructure SET revision=revision+1 WHERE scenario_id=? AND epoch=?",
+                   (state.id,state.epoch))
+    next_revision,next_closures=plans.infrastructure(state.id,state.epoch)
+    assert store.infrastructure_changed(state.id,state.epoch,next_revision,set(next_closures))==[mission.mission_id]
+    blocked_again=store.get(mission.mission_id)
+    second_proposal=store.propose_route(blocked_again.mission_id,blocked_again.mission_version,
+        city,state,next_closures,next_revision)
+    assert second_proposal.route_proposal["route"]["reachable"]
+    assert future_road not in second_proposal.route_proposal["route"].get("road_ids",[])
+
     # A separate scenario closes the road segment underneath a stopped unit;
     # no synthetic free spur may make that impassable edge traversable.
     second_dir=tmp_path/"closed-current"

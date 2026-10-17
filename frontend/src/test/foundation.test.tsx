@@ -1,11 +1,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useNavigate } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CityState } from "../api/client";
 import type { Layers } from "../scene/CityScene";
 import { parseCity } from "../api/client";
 import { toScene } from "../scene/coordinates";
-import App from "../App";
+import App, { RouteLoadingState } from "../App";
 import fixture from "./fixtures/city.json";
 import scenarioFixture from "./fixtures/scenario.json";
 
@@ -121,6 +121,38 @@ describe("connected application", () => {
     expect(
       screen.getByText(/not trained or validated on observed disaster outcomes/i),
     ).toBeInTheDocument();
+  });
+  it("loads a route-specific fallback without exposing prior workspace controls",()=>{
+    render(<RouteLoadingState pathname="/robustness"/>);
+    expect(screen.getByRole("status")).toHaveAttribute("aria-busy","true");
+    expect(screen.getByRole("heading",{name:"Loading Decision Robustness"})).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveAttribute("data-loading-route","/robustness");
+    expect(screen.queryByRole("button",{name:"Generate recommendation"})).not.toBeInTheDocument();
+  });
+  it("supports first lazy navigation, back, forward, and a second visit",async()=>{
+    connectedFetch();
+    function HistoryControls(){const navigate=useNavigate();return <><button onClick={()=>navigate(-1)}>Test browser back</button><button onClick={()=>navigate(1)}>Test browser forward</button></>;}
+    render(<MemoryRouter initialEntries={["/"]}><HistoryControls/><App/></MemoryRouter>);
+    await screen.findByRole("heading",{name:"Situation overview"});
+    fireEvent.click(screen.getAllByRole("link",{name:"Scenario Lab"})[0]);
+    await screen.findByRole("heading",{name:"Scenario Lab"});
+    fireEvent.click(screen.getByRole("button",{name:"Test browser back"}));
+    await screen.findByRole("heading",{name:"Situation overview"});
+    fireEvent.click(screen.getByRole("button",{name:"Test browser forward"}));
+    await screen.findByRole("heading",{name:"Scenario Lab"});
+    fireEvent.click(screen.getByRole("link",{name:"Model Intelligence Lab"}));
+    await screen.findByRole("heading",{name:"Model Intelligence Lab"});
+    fireEvent.click(screen.getByRole("button",{name:"Test browser back"}));
+    await screen.findByRole("heading",{name:"Scenario Lab"});
+    fireEvent.click(screen.getByRole("link",{name:"Model Intelligence Lab"}));
+    await screen.findByRole("heading",{name:"Model Intelligence Lab"});
+    expect(screen.getByRole("link",{name:"Model Intelligence Lab"})).toHaveAttribute("aria-current","page");
+  });
+  it("renders a direct Scenario Lab route without requiring prior Command Center navigation",async()=>{
+    connectedFetch();
+    render(<MemoryRouter initialEntries={["/scenarios"]}><App/></MemoryRouter>);
+    await screen.findByRole("heading",{name:"Scenario Lab"});
+    expect(screen.getByRole("link",{name:"Scenario Lab"})).toHaveAttribute("aria-current","page");
   });
   it("shows a real connection failure and recovers on retry", async () => {
     vi.stubGlobal(

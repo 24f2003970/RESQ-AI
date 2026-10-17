@@ -9,7 +9,7 @@ import App from "./App";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <MotionConfig reducedMotion="user">
-      <BrowserRouter>
+      <BrowserRouter useTransitions={false}>
         <App />
       </BrowserRouter>
     </MotionConfig>
