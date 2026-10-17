@@ -48,7 +48,7 @@ The foreground WebGL 2 `?perf=1` snapshots are recorded in `GPU_PERFORMANCE_RC1.
 
 Model artifact SHA-256: `9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73`. Normalized `model_metadata.json` SHA-256: `7542b7d10be467ef560ec76bbe105ffc8001c063dfff177375cbef42cb0bf2d4`. Calibration artifact SHA-256: `64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6`. Support artifact SHA-256: `f01bcc84be76cc94b2df955ba5c9a90881e9823454c7aaa6da675833dc5f26f3`. Dataset SHA-256: `c560bdb345ad083f3f8e1d9d8a2d4928d2705bd7787f4e9640567a439040387d`.
 
-PR #14: https://github.com/24f2003970/RESQ-AI/pull/14 (open, unmerged). Initial hosted run: https://github.com/24f2003970/RESQ-AI/actions/runs/39020974658 on implementation commit `3da8c11757cc5211c6ddd694bc0e0def53370734`; backend and frontend jobs were queued/in progress at 2026-10-17 09:24 UTC. A documentation follow-up commit will update this record and trigger the final hosted checks.
+PR #14: https://github.com/24f2003970/RESQ-AI/pull/14 (open, unmerged). Hosted workflow: https://github.com/24f2003970/RESQ-AI/actions/runs/39021015304 on revision `41ddae0d2394dcf7a6e38ac032e2e3dfa577c929`; backend and frontend jobs both succeeded at 2026-10-17 09:25 UTC. A documentation-only follow-up records the completed outcome and triggers a fresh run for the updated PR head.
 
 
 
