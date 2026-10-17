@@ -6,7 +6,7 @@
     "python": "3.12.5",
     "scikit_learn": "1.9.1"
   },
-  "generated_at_utc": "2026-10-17T15:30:03.118465+00:00",
+  "generated_at_utc": "2026-10-17T16:28:36.508050+00:00",
   "limitations": [
     "Ten scenario groups cover specified conditions but do not estimate real-world outcome rates.",
     "Scenario seeds are distinct; configuration families are not repeated enough for inferential comparisons.",
@@ -50,7 +50,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.165,
+        "assignment_runtime_ms": 0.08,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -65,6 +65,7 @@
           "unreachable_destinations": 0
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "improved",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -85,8 +86,8 @@
           "simulated_travel_minutes": -0.4,
           "total_distance_m": -208.0
         },
-        "planning_wall_ms": 28.782,
-        "routing_runtime_ms": 28.364,
+        "planning_wall_ms": 14.72,
+        "routing_runtime_ms": 14.518,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 50,
         "unreachable_destinations": 0
@@ -97,7 +98,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151500",
-      "scenario_runtime_ms": 298.36,
+      "scenario_runtime_ms": 186.163,
       "seed": 151500,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -128,7 +129,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.189,
+        "assignment_runtime_ms": 0.123,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -143,6 +144,7 @@
           "unreachable_destinations": 0
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "improved",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -163,8 +165,8 @@
           "simulated_travel_minutes": 0.0,
           "total_distance_m": 71.2
         },
-        "planning_wall_ms": 66.25,
-        "routing_runtime_ms": 65.754,
+        "planning_wall_ms": 35.177,
+        "routing_runtime_ms": 34.858,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 86,
         "unreachable_destinations": 0
@@ -175,7 +177,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151501",
-      "scenario_runtime_ms": 419.009,
+      "scenario_runtime_ms": 158.773,
       "seed": 151501,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -206,7 +208,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.289,
+        "assignment_runtime_ms": 0.15,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -221,6 +223,7 @@
           "unreachable_destinations": 41
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "improved",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -241,8 +244,8 @@
           "simulated_travel_minutes": -1.8,
           "total_distance_m": -520.0
         },
-        "planning_wall_ms": 186.562,
-        "routing_runtime_ms": 185.656,
+        "planning_wall_ms": 82.135,
+        "routing_runtime_ms": 81.597,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 62,
         "unreachable_destinations": 41
@@ -253,7 +256,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151502",
-      "scenario_runtime_ms": 540.814,
+      "scenario_runtime_ms": 217.751,
       "seed": 151502,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -284,7 +287,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.205,
+        "assignment_runtime_ms": 0.061,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 2,
@@ -299,6 +302,7 @@
           "unreachable_destinations": 10
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "improved",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 2,
@@ -319,8 +323,8 @@
           "simulated_travel_minutes": -0.7,
           "total_distance_m": -312.0
         },
-        "planning_wall_ms": 28.603,
-        "routing_runtime_ms": 27.962,
+        "planning_wall_ms": 13.735,
+        "routing_runtime_ms": 13.555,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 16,
         "unreachable_destinations": 10
@@ -331,7 +335,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151503",
-      "scenario_runtime_ms": 354.525,
+      "scenario_runtime_ms": 153.265,
       "seed": 151503,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -362,7 +366,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.007,
+        "assignment_runtime_ms": 0.004,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 0,
@@ -377,6 +381,7 @@
           "unreachable_destinations": 0
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "tied",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 0,
@@ -397,8 +402,8 @@
           "simulated_travel_minutes": 0,
           "total_distance_m": 0
         },
-        "planning_wall_ms": 0.99,
-        "routing_runtime_ms": 0.844,
+        "planning_wall_ms": 0.589,
+        "routing_runtime_ms": 0.502,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 0,
         "unreachable_destinations": 0
@@ -409,7 +414,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151504",
-      "scenario_runtime_ms": 347.971,
+      "scenario_runtime_ms": 118.025,
       "seed": 151504,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -442,7 +447,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.133,
+        "assignment_runtime_ms": 0.078,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -457,6 +462,7 @@
           "unreachable_destinations": 0
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "improved",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -477,8 +483,8 @@
           "simulated_travel_minutes": -1.6,
           "total_distance_m": -728.0
         },
-        "planning_wall_ms": 33.519,
-        "routing_runtime_ms": 32.868,
+        "planning_wall_ms": 13.014,
+        "routing_runtime_ms": 12.791,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 50,
         "unreachable_destinations": 0
@@ -489,7 +495,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151505",
-      "scenario_runtime_ms": 340.839,
+      "scenario_runtime_ms": 239.706,
       "seed": 151505,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -520,7 +526,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.172,
+        "assignment_runtime_ms": 2.104,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -535,6 +541,7 @@
           "unreachable_destinations": 0
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "improved",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -555,8 +562,8 @@
           "simulated_travel_minutes": 0.4,
           "total_distance_m": 216.0
         },
-        "planning_wall_ms": 31.999,
-        "routing_runtime_ms": 31.549,
+        "planning_wall_ms": 29.704,
+        "routing_runtime_ms": 27.122,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 46,
         "unreachable_destinations": 0
@@ -567,7 +574,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151506",
-      "scenario_runtime_ms": 368.118,
+      "scenario_runtime_ms": 272.383,
       "seed": 151506,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -598,7 +605,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.092,
+        "assignment_runtime_ms": 0.05,
         "conventional_baseline": {
           "available_unit_count": 2,
           "destinations_covered": 2,
@@ -613,6 +620,7 @@
           "unreachable_destinations": 0
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "improved",
         "optimized": {
           "available_unit_count": 2,
           "destinations_covered": 2,
@@ -633,8 +641,8 @@
           "simulated_travel_minutes": 0.2,
           "total_distance_m": 104.0
         },
-        "planning_wall_ms": 20.407,
-        "routing_runtime_ms": 20.126,
+        "planning_wall_ms": 6.316,
+        "routing_runtime_ms": 6.156,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 13,
         "unreachable_destinations": 0
@@ -645,7 +653,7 @@
         "team_count": 1
       },
       "scenario_group": "part15-seed-151507",
-      "scenario_runtime_ms": 336.47,
+      "scenario_runtime_ms": 253.183,
       "seed": 151507,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -676,7 +684,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.124,
+        "assignment_runtime_ms": 0.106,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -691,6 +699,7 @@
           "unreachable_destinations": 0
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "improved",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 4,
@@ -711,8 +720,8 @@
           "simulated_travel_minutes": 2.5,
           "total_distance_m": 1240.0
         },
-        "planning_wall_ms": 27.582,
-        "routing_runtime_ms": 27.248,
+        "planning_wall_ms": 23.933,
+        "routing_runtime_ms": 23.64,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 36,
         "unreachable_destinations": 0
@@ -723,7 +732,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151508",
-      "scenario_runtime_ms": 378.858,
+      "scenario_runtime_ms": 280.807,
       "seed": 151508,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -765,7 +774,7 @@
         "tick": 6
       },
       "planner": {
-        "assignment_runtime_ms": 0.078,
+        "assignment_runtime_ms": 0.08,
         "conventional_baseline": {
           "available_unit_count": 4,
           "destinations_covered": 0,
@@ -780,6 +789,7 @@
           "unreachable_destinations": 9
         },
         "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "objective_outcome": "tied",
         "optimized": {
           "available_unit_count": 4,
           "destinations_covered": 0,
@@ -800,8 +810,8 @@
           "simulated_travel_minutes": 0,
           "total_distance_m": 0
         },
-        "planning_wall_ms": 3.041,
-        "routing_runtime_ms": 2.591,
+        "planning_wall_ms": 3.234,
+        "routing_runtime_ms": 2.924,
         "solver_status": "optimal_linear_sum_assignment",
         "supported_unit_destination_routes": 0,
         "unreachable_destinations": 9
@@ -812,7 +822,7 @@
         "team_count": 2
       },
       "scenario_group": "part15-seed-151509",
-      "scenario_runtime_ms": 357.298,
+      "scenario_runtime_ms": 353.839,
       "seed": 151509,
       "tick_observations_counted_as_independent": 1,
       "ticks_within_group": 6
@@ -822,18 +832,19 @@
   "summary": {
     "all_roads_closed_assignments": 0,
     "assignment_objective_outcomes": {
-      "equal_within_0_01": 2,
       "improved": 8,
-      "lower": 0
+      "lower": 0,
+      "tied": 2
     },
     "groups_with_zero_ground_assignments": 2,
     "independent_scenario_groups": 10,
+    "objective_delta_tolerance": "0.01",
     "scenario_seed_range": [
       151500,
       151509
     ],
     "ticks_per_group": 6,
-    "total_runtime_ms": 3768.693
+    "total_runtime_ms": 2245.968
   },
   "title": "RESQ-AI Part 15 bounded scientific evaluation"
 }

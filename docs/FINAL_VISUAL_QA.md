@@ -1,26 +1,28 @@
 # Final visual QA checklist
 
-## Observed in Part 15
+**Part 16 status: BLOCKED.** The computer-use helper stopped because it could not verify the current Edge URL. Browser tools were not retried or bypassed. This is a tool safety restriction, not an application defect. All browser-measured items below remain **BLOCKED** until a separately authorized, URL-verifiable session is available.
 
-- [x] Verified local app URL in Edge: `http://127.0.0.1:5173/`.
-- [x] Captured the Command Center, flood scenario, proposal/routes, model reliability, agent trace, approved mission, and early en-route movement. See `VISUAL_EVIDENCE_GALLERY.md`.
-- [x] The window was observed at 807×729 and maximized to 1536×912 screenshot dimensions. These are window-image dimensions; exact CSS viewport values were not available from the supported capture tool.
-- [x] App data came from scenario `scenario-riverside-2026`, epoch 0, using the displayed 2026 flood-demo scenario. The screenshot values matched real local backend responses.
+## Previous genuine Part 15 capture
 
-## Not verified in Part 15
+The gallery contains ten unaltered screenshots from the URL-verified local app. The recorded dimensions (807×729 and 1536×912) are outer-window images, not measured CSS viewport sizes. See `VISUAL_EVIDENCE_GALLERY.md` for scenario/epoch and capture limitations.
 
-- [ ] Exact desktop CSS viewport sizes 1366×768, 1440×900, and 1920×1080. The supported computer-use helper did not provide a safe, independently verified viewport setter; no claim is made for these dimensions.
-- [ ] Robustness Lab, Judge Mode, and Demo B all-roads-closed screenshots saved to this gallery.
-- [ ] Fresh screenshots of blocked mission, approved route revision, arrival, explicit completion, and resource restoration.
-- [ ] Reduced-motion preference behavior.
-- [ ] WebGL context-loss and recovery behavior.
-- [ ] Full accessibility audit, including keyboard-only operation and assistive-technology labels.
+## Part 16 target matrix
 
-## Manual follow-up
+| CSS viewport | Actual `innerWidth × innerHeight` | Command Center | Mission controls | Judge / analytical labs | Tables / overflow | Status |
+|---|---|---|---|---|---|---|
+| 1366×768 | Not measured | Not checked | Not checked | Not checked | Not checked | BLOCKED |
+| 1440×900 | Not measured | Not checked | Not checked | Not checked | Not checked | BLOCKED |
+| 1920×1080 | Not measured | Not checked | Not checked | Not checked | Not checked | BLOCKED |
+| Narrow responsive size | Not measured | Not checked | Not checked | Not checked | Not checked | BLOCKED |
 
-1. Start with the disposable local demo instructions in `LOCAL_DEMO_QUICKSTART.md`; record the app version/commit and browser version.
-2. Set each target viewport in a supported browser-resize tool and record the CSS viewport separately from the outer window size.
-3. At each size, inspect 3D prominence, navigation, proposal approval controls, mission operations, chart/table legibility, loading overlays, and Judge Mode. Capture actual screenshots without altering application state to create a desired outcome.
-4. Follow `PART_08_2_BROWSER_WALKTHROUGH.md` and `PART_14_VERIFICATION.md` for dispatch, turns, closure, route revision, arrival, completion, and return-to-service. Record scenario ID, epoch, route, mission state, and backend response for each capture.
-5. Use the UI's reduced-motion and low-graphics controls where available. Restore original preference settings at the end.
-6. Test context loss only when the supported browser/helper offers a safe recovery test; otherwise leave it pending. Do not use undocumented browser scripting or report a simulated screenshot as proof.
+If no permitted helper can set and independently measure CSS size, retain these pending statuses and include observed outer-window dimensions separately.
+
+## Accessibility and graphics
+
+- **BLOCKED:** Keyboard-only path, focus visibility, labels/roles/announcements, and contrast need browser verification.
+- **BLOCKED:** Reduced-motion behavior and low-graphics mode need a real browser session.
+- **BLOCKED:** WebGL fallback and context-loss behavior need a real browser session.
+- **BLOCKED:** Part 16 React render stability walkthrough was not performed; prior bounded walkthroughs did not reproduce the historical error.
+- **PENDING:** Record whether the known upstream `THREE.Clock` deprecation warning remains in the next URL-verified browser session.
+
+Record actual outcomes in `PART_16_VERIFICATION.md`. Do not infer browser accessibility from a unit test.
