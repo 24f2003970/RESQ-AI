@@ -1,0 +1,839 @@
+{
+  "calibrator_artifact_sha256": "64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6",
+  "environment": {
+    "numpy": "2.5.4",
+    "os": "Windows-11-10.0.26300-SP0",
+    "python": "3.12.5",
+    "scikit_learn": "1.9.1"
+  },
+  "generated_at_utc": "2026-10-17T15:30:03.118465+00:00",
+  "limitations": [
+    "Ten scenario groups cover specified conditions but do not estimate real-world outcome rates.",
+    "Scenario seeds are distinct; configuration families are not repeated enough for inferential comparisons.",
+    "Ground-truth flood exposure and ML labels come from the same synthetic simulator family.",
+    "Travel speeds, route connectivity, access spurs, and occupant counts are synthetic assumptions.",
+    "Model-unavailable fallback is supplied deliberately to exercise degraded planning, not caused by removing production files."
+  ],
+  "method": {
+    "evaluation_database": "Each group uses a disposable temporary SQLite database. It is removed after that case completes; no operational scenario database is opened for writes.",
+    "planner_comparison": "The current conventional nearest-feasible-unit baseline and current SciPy linear-sum assignment use the same frozen state, priority destinations, unit inventory, route map, graph, depth constraints, closures, bridge state, and route costs.",
+    "routing": "The current shared NetworkX router with synthetic 90 m endpoint access-spur limit, modeled flood/bridge/manual-closure state, and unit-specific depth rules.",
+    "scenario_groups": "Ten independent deterministic seeds; one final state and one planner comparison per generated group.",
+    "within_group_ticks": "6 deterministic five-minute flood ticks; correlated ticks are not counted as independent observations."
+  },
+  "model_artifact_sha256": "9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73",
+  "reproduction": "cd backend; .\\.venv\\Scripts\\python.exe run_part15_evaluation.py",
+  "scenario_groups": [
+    {
+      "case": "mild_demo_rainfall",
+      "configuration": {
+        "drainage": 0.2,
+        "preset": "mild",
+        "rainfall": 30.0,
+        "river": 0.6
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": null,
+        "manual_road_closures": []
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 4,
+        "exposed_roads": 4,
+        "maximum_flood_depth_m": 0.1916,
+        "physically_affected_buildings": 9,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.165,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 2.3,
+          "objective_value": 12.65,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 13.76,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 1904.0,
+          "total_simulated_travel_minutes": 7.4,
+          "unreachable_destinations": 0
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 2.0,
+          "objective_value": 20.27,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 21.32,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 1696.0,
+          "total_simulated_travel_minutes": 7.0,
+          "unreachable_destinations": 0
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 7.62,
+          "priority_weighted_coverage": 7.56,
+          "simulated_travel_minutes": -0.4,
+          "total_distance_m": -208.0
+        },
+        "planning_wall_ms": 28.782,
+        "routing_runtime_ms": 28.364,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 50,
+        "unreachable_destinations": 0
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151500",
+      "scenario_runtime_ms": 298.36,
+      "seed": 151500,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "moderate_flood",
+      "configuration": {
+        "drainage": 0.5,
+        "preset": "heavy",
+        "rainfall": 75.0,
+        "river": 0.25
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": null,
+        "manual_road_closures": []
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 0,
+        "exposed_roads": 0,
+        "maximum_flood_depth_m": 0.0599,
+        "physically_affected_buildings": 0,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.189,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 1.8,
+          "objective_value": 3.9,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 4.8,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 1611.0,
+          "total_simulated_travel_minutes": 6.0,
+          "unreachable_destinations": 0
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 2.4,
+          "objective_value": 12.55,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 13.45,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 1682.2,
+          "total_simulated_travel_minutes": 6.0,
+          "unreachable_destinations": 0
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 8.65,
+          "priority_weighted_coverage": 8.65,
+          "simulated_travel_minutes": 0.0,
+          "total_distance_m": 71.2
+        },
+        "planning_wall_ms": 66.25,
+        "routing_runtime_ms": 65.754,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 86,
+        "unreachable_destinations": 0
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151501",
+      "scenario_runtime_ms": 419.009,
+      "seed": 151501,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "severe_flood",
+      "configuration": {
+        "drainage": 0.2,
+        "preset": "extreme",
+        "rainfall": 180.0,
+        "river": 1.4
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": null,
+        "manual_road_closures": []
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 6,
+        "exposed_roads": 8,
+        "maximum_flood_depth_m": 0.6991,
+        "physically_affected_buildings": 70,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.289,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 2.1,
+          "objective_value": 11.2,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 12.28,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 1255.8,
+          "total_simulated_travel_minutes": 7.2,
+          "unreachable_destinations": 41
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 1.5,
+          "objective_value": 36.62,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 37.43,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 735.8,
+          "total_simulated_travel_minutes": 5.4,
+          "unreachable_destinations": 41
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 25.42,
+          "priority_weighted_coverage": 25.15,
+          "simulated_travel_minutes": -1.8,
+          "total_distance_m": -520.0
+        },
+        "planning_wall_ms": 186.562,
+        "routing_runtime_ms": 185.656,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 62,
+        "unreachable_destinations": 41
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151502",
+      "scenario_runtime_ms": 540.814,
+      "seed": 151502,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "increased_river_stage",
+      "configuration": {
+        "drainage": 0.55,
+        "preset": "heavy",
+        "rainfall": 40.0,
+        "river": 1.1
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": null,
+        "manual_road_closures": []
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 6,
+        "exposed_roads": 6,
+        "maximum_flood_depth_m": 0.4633,
+        "physically_affected_buildings": 18,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.205,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 2,
+          "maximum_estimated_arrival_minutes": 1.8,
+          "objective_value": 1.24,
+          "occupants_targeted": 4,
+          "priority_weighted_coverage": 1.78,
+          "reserved_unit_count": 0,
+          "resource_utilization": 0.5,
+          "total_distance_m": 904.0,
+          "total_simulated_travel_minutes": 3.6,
+          "unreachable_destinations": 10
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 2,
+          "maximum_estimated_arrival_minutes": 1.6,
+          "objective_value": 4.32,
+          "occupants_targeted": 4,
+          "priority_weighted_coverage": 4.75,
+          "reserved_unit_count": 0,
+          "resource_utilization": 0.5,
+          "total_distance_m": 592.0,
+          "total_simulated_travel_minutes": 2.9,
+          "unreachable_destinations": 10
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 3.08,
+          "priority_weighted_coverage": 2.97,
+          "simulated_travel_minutes": -0.7,
+          "total_distance_m": -312.0
+        },
+        "planning_wall_ms": 28.603,
+        "routing_runtime_ms": 27.962,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 16,
+        "unreachable_destinations": 10
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151503",
+      "scenario_runtime_ms": 354.525,
+      "seed": 151503,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "reduced_drainage",
+      "configuration": {
+        "drainage": 0.05,
+        "preset": "heavy",
+        "rainfall": 55.0,
+        "river": 0.2
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": null,
+        "manual_road_closures": []
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 0,
+        "exposed_roads": 0,
+        "maximum_flood_depth_m": 0.0343,
+        "physically_affected_buildings": 0,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.007,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 0,
+          "maximum_estimated_arrival_minutes": 0,
+          "objective_value": 0.0,
+          "occupants_targeted": 0,
+          "priority_weighted_coverage": 0,
+          "reserved_unit_count": 0,
+          "resource_utilization": 0.0,
+          "total_distance_m": 0,
+          "total_simulated_travel_minutes": 0,
+          "unreachable_destinations": 0
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 0,
+          "maximum_estimated_arrival_minutes": 0,
+          "objective_value": 0.0,
+          "occupants_targeted": 0,
+          "priority_weighted_coverage": 0,
+          "reserved_unit_count": 0,
+          "resource_utilization": 0.0,
+          "total_distance_m": 0,
+          "total_simulated_travel_minutes": 0,
+          "unreachable_destinations": 0
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 0.0,
+          "priority_weighted_coverage": 0,
+          "simulated_travel_minutes": 0,
+          "total_distance_m": 0
+        },
+        "planning_wall_ms": 0.99,
+        "routing_runtime_ms": 0.844,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 0,
+        "unreachable_destinations": 0
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151504",
+      "scenario_runtime_ms": 347.971,
+      "seed": 151504,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "important_road_closure",
+      "configuration": {
+        "drainage": 0.2,
+        "preset": "mild",
+        "rainfall": 30.0,
+        "river": 0.6
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": null,
+        "manual_road_closures": [
+          "road-ns-2"
+        ]
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 5,
+        "exposed_roads": 5,
+        "maximum_flood_depth_m": 0.1462,
+        "physically_affected_buildings": 10,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.133,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 3.7,
+          "objective_value": 7.01,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 8.57,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 3352.0,
+          "total_simulated_travel_minutes": 10.4,
+          "unreachable_destinations": 0
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 3.0,
+          "objective_value": 25.61,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 26.93,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 2624.0,
+          "total_simulated_travel_minutes": 8.8,
+          "unreachable_destinations": 0
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 18.6,
+          "priority_weighted_coverage": 18.36,
+          "simulated_travel_minutes": -1.6,
+          "total_distance_m": -728.0
+        },
+        "planning_wall_ms": 33.519,
+        "routing_runtime_ms": 32.868,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 50,
+        "unreachable_destinations": 0
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151505",
+      "scenario_runtime_ms": 340.839,
+      "seed": 151505,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "bridge_disruption",
+      "configuration": {
+        "drainage": 0.2,
+        "preset": "mild",
+        "rainfall": 30.0,
+        "river": 0.6
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": "bridge-2",
+        "manual_road_closures": []
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 4,
+        "exposed_roads": 4,
+        "maximum_flood_depth_m": 0.1527,
+        "physically_affected_buildings": 7,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.172,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 2.3,
+          "objective_value": 6.58,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 7.77,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 2104.0,
+          "total_simulated_travel_minutes": 7.9,
+          "unreachable_destinations": 0
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 2.6,
+          "objective_value": 17.83,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 19.08,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 2320.0,
+          "total_simulated_travel_minutes": 8.3,
+          "unreachable_destinations": 0
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 11.25,
+          "priority_weighted_coverage": 11.31,
+          "simulated_travel_minutes": 0.4,
+          "total_distance_m": 216.0
+        },
+        "planning_wall_ms": 31.999,
+        "routing_runtime_ms": 31.549,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 46,
+        "unreachable_destinations": 0
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151506",
+      "scenario_runtime_ms": 368.118,
+      "seed": 151506,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "limited_rescue_resources",
+      "configuration": {
+        "drainage": 0.4,
+        "preset": "heavy",
+        "rainfall": 65.0,
+        "river": 0.3
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": null,
+        "manual_road_closures": []
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 0,
+        "exposed_roads": 0,
+        "maximum_flood_depth_m": 0.034,
+        "physically_affected_buildings": 0,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.092,
+        "conventional_baseline": {
+          "available_unit_count": 2,
+          "destinations_covered": 2,
+          "maximum_estimated_arrival_minutes": 1.3,
+          "objective_value": 1.04,
+          "occupants_targeted": 8,
+          "priority_weighted_coverage": 1.43,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 659.2,
+          "total_simulated_travel_minutes": 2.6,
+          "unreachable_destinations": 0
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 2,
+          "destinations_covered": 2,
+          "maximum_estimated_arrival_minutes": 1.9,
+          "objective_value": 4.82,
+          "occupants_targeted": 8,
+          "priority_weighted_coverage": 5.24,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 763.2,
+          "total_simulated_travel_minutes": 2.8,
+          "unreachable_destinations": 0
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 3.78,
+          "priority_weighted_coverage": 3.81,
+          "simulated_travel_minutes": 0.2,
+          "total_distance_m": 104.0
+        },
+        "planning_wall_ms": 20.407,
+        "routing_runtime_ms": 20.126,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 13,
+        "unreachable_destinations": 0
+      },
+      "resource_inventory": {
+        "ambulance_count": 1,
+        "ground_unit_count": 2,
+        "team_count": 1
+      },
+      "scenario_group": "part15-seed-151507",
+      "scenario_runtime_ms": 336.47,
+      "seed": 151507,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "model_unavailable_fallback",
+      "configuration": {
+        "drainage": 0.2,
+        "preset": "mild",
+        "rainfall": 30.0,
+        "river": 0.6
+      },
+      "infrastructure": {
+        "all_roads_closed": false,
+        "closed_bridge": null,
+        "manual_road_closures": []
+      },
+      "ml": {
+        "predicted_rows": 0,
+        "status": "unavailable_simulated_fallback",
+        "unavailable_reason": "Evaluation deliberately supplied no future-exposure predictions."
+      },
+      "physical_state": {
+        "closed_bridges": 5,
+        "exposed_roads": 5,
+        "maximum_flood_depth_m": 0.1995,
+        "physically_affected_buildings": 9,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.124,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 2.2,
+          "objective_value": 9.87,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 10.92,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 1696.0,
+          "total_simulated_travel_minutes": 7.0,
+          "unreachable_destinations": 0
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 4,
+          "maximum_estimated_arrival_minutes": 3.0,
+          "objective_value": 18.61,
+          "occupants_targeted": 16,
+          "priority_weighted_coverage": 20.03,
+          "reserved_unit_count": 0,
+          "resource_utilization": 1.0,
+          "total_distance_m": 2936.0,
+          "total_simulated_travel_minutes": 9.5,
+          "unreachable_destinations": 0
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 8.74,
+          "priority_weighted_coverage": 9.11,
+          "simulated_travel_minutes": 2.5,
+          "total_distance_m": 1240.0
+        },
+        "planning_wall_ms": 27.582,
+        "routing_runtime_ms": 27.248,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 36,
+        "unreachable_destinations": 0
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151508",
+      "scenario_runtime_ms": 378.858,
+      "seed": 151508,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    },
+    {
+      "case": "graph_inaccessible_all_roads_closed",
+      "configuration": {
+        "drainage": 0.2,
+        "preset": "mild",
+        "rainfall": 30.0,
+        "river": 0.6
+      },
+      "infrastructure": {
+        "all_roads_closed": true,
+        "closed_bridge": null,
+        "manual_road_closures": [
+          "road-ew-0",
+          "road-ew-1",
+          "road-ew-2",
+          "road-ew-3",
+          "road-ns-0",
+          "road-ns-1",
+          "road-ns-2",
+          "road-ns-3",
+          "road-ns-4",
+          "road-ns-5"
+        ]
+      },
+      "ml": {
+        "predicted_rows": 72,
+        "status": "ready",
+        "unavailable_reason": null
+      },
+      "physical_state": {
+        "closed_bridges": 5,
+        "exposed_roads": 5,
+        "maximum_flood_depth_m": 0.1772,
+        "physically_affected_buildings": 5,
+        "tick": 6
+      },
+      "planner": {
+        "assignment_runtime_ms": 0.078,
+        "conventional_baseline": {
+          "available_unit_count": 4,
+          "destinations_covered": 0,
+          "maximum_estimated_arrival_minutes": 0,
+          "objective_value": 0.0,
+          "occupants_targeted": 0,
+          "priority_weighted_coverage": 0,
+          "reserved_unit_count": 0,
+          "resource_utilization": 0.0,
+          "total_distance_m": 0,
+          "total_simulated_travel_minutes": 0,
+          "unreachable_destinations": 9
+        },
+        "objective_definition": "Maximize sum(priority_score \u00d7 capacity-covered occupant fraction - 0.15 \u00d7 synthetic route minutes), with each unit assigned at most once and each destination at most once.",
+        "optimized": {
+          "available_unit_count": 4,
+          "destinations_covered": 0,
+          "maximum_estimated_arrival_minutes": 0,
+          "objective_value": 0.0,
+          "occupants_targeted": 0,
+          "priority_weighted_coverage": 0,
+          "reserved_unit_count": 0,
+          "resource_utilization": 0.0,
+          "total_distance_m": 0,
+          "total_simulated_travel_minutes": 0,
+          "unreachable_destinations": 9
+        },
+        "optimized_minus_baseline": {
+          "destinations_covered": 0,
+          "objective_value": 0.0,
+          "priority_weighted_coverage": 0,
+          "simulated_travel_minutes": 0,
+          "total_distance_m": 0
+        },
+        "planning_wall_ms": 3.041,
+        "routing_runtime_ms": 2.591,
+        "solver_status": "optimal_linear_sum_assignment",
+        "supported_unit_destination_routes": 0,
+        "unreachable_destinations": 9
+      },
+      "resource_inventory": {
+        "ambulance_count": 2,
+        "ground_unit_count": 4,
+        "team_count": 2
+      },
+      "scenario_group": "part15-seed-151509",
+      "scenario_runtime_ms": 357.298,
+      "seed": 151509,
+      "tick_observations_counted_as_independent": 1,
+      "ticks_within_group": 6
+    }
+  ],
+  "scope": "Synthetic simulator and synthetic graph only; not an operational safety or field-performance evaluation.",
+  "summary": {
+    "all_roads_closed_assignments": 0,
+    "assignment_objective_outcomes": {
+      "equal_within_0_01": 2,
+      "improved": 8,
+      "lower": 0
+    },
+    "groups_with_zero_ground_assignments": 2,
+    "independent_scenario_groups": 10,
+    "scenario_seed_range": [
+      151500,
+      151509
+    ],
+    "ticks_per_group": 6,
+    "total_runtime_ms": 3768.693
+  },
+  "title": "RESQ-AI Part 15 bounded scientific evaluation"
+}
