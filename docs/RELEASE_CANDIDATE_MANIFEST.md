@@ -5,7 +5,7 @@
 | Candidate | `RESQ-AI-RC1` (Part 14) |
 | Repository branch | `feature/part-14-release-candidate` |
 | Base | Part 13 merge `f93b20e41b7c091be93ed72e31793576f7c8c466` |
-| Commit | Final implementation SHA is recorded in `PART_14_VERIFICATION.md` after delivery |
+| Commit | RC1 implementation commit `3da8c11757cc5211c6ddd694bc0e0def53370734`; hosted verification may append a documentation-only commit |
 | Application | Backend API 0.4.0; frontend package 0.2.0 |
 | Python / Node | Python 3.12.5; Node 24.12.0 (frontend minimum 22.12; CI uses Node 22) |
 | Tested OS / browser | Windows 11 workstation; Codex in-app Chromium-backed browser, WebGL 2. Exact browser build/user-agent unavailable. |
@@ -22,6 +22,6 @@
 | External runtime dependency | No cloud inference/API key; Python/npm dependencies required locally. No formal OS-level isolation test. |
 | Verification totals | 89 backend; 40 frontend; lint/typecheck/contracts/build pass; Part 10 17/17; Part 14 14/14; see verification file. |
 | Known limitations | Synthetic-only assumptions; boat routing/field safety unsupported; CityScene chunk warning; partial browser mission walkthrough; React console errors require review. |
-| Verification timestamp | 2026-10-17 local verification; exact final verification time to be added after hosted checks |
+| Verification timestamp | Local verification completed 2026-10-17; hosted checks were triggered at 2026-10-17 09:23 UTC; final run URL is in `PART_14_VERIFICATION.md` |
 
 This manifest describes an educational simulation prototype. It is not an operational certification, public production release, or emergency-response safety determination.
