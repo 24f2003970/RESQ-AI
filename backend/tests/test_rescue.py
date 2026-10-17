@@ -2,7 +2,7 @@ import math
 import time
 from types import SimpleNamespace
 from app.city_service import generate_city
-from app.rescue import build_road_graph, priorities, route, _assign
+from app.rescue import build_road_graph, priorities, route, _assign, generate_plan
 from app.rescue import PlanStore, RescuePlan
 from app.scenarios import ScenarioStore
 from app.schemas import ParameterUpdate, ScenarioCreate
@@ -45,6 +45,121 @@ def test_manual_closure_removes_segment_from_accessible_route_graph():
     graph = build_road_graph(city, manual_closures=[road.id for road in city.roads])
     assert all(data["status"] == "manually_blocked" for _, _, data in graph.edges(data=True))
     assert route(graph, city.rescue_units[0].position, city.buildings[0].position, "ambulance")["reachable"] is False
+
+
+def test_all_corridors_closed_never_produces_ground_assignments(tmp_path):
+    city=generate_city(2026)
+    state=ScenarioStore(tmp_path/"all-roads-closed.sqlite3").create(
+        ScenarioCreate(name="All roads closed",seed=2026,preset="heavy"),"all-roads-closed-key").state
+    predictions=SimpleNamespace(predictions=[])
+    closed=[road.id for road in city.roads]
+    graph=build_road_graph(city,state,closed)
+    plan=generate_plan(city,state,predictions,closed)
+    assert route(graph,city.rescue_units[0].position,city.buildings[0].position,"ambulance")["reachable"] is False
+    assert plan.missions==[]
+    assert plan.available_assignments==[]
+    assert all("traversable road corridor" in item["reason"] for item in plan.unreachable)
+
+
+def test_two_access_spurs_cannot_bypass_a_closed_isolated_intersection():
+    city=generate_city(2026)
+    open_graph=build_road_graph(city)
+    isolated=next(node for node in open_graph.nodes if open_graph.degree[node]>0)
+    incident_roads={data["road_id"] for _,_,data in open_graph.edges(isolated,data=True)}
+    graph=build_road_graph(city,manual_closures=incident_roads)
+    x,y=graph.nodes[isolated]["xy"]
+    position={"x_m":x,"y_m":y,"elevation_m":0.0}
+    result=route(graph,position,position,"ambulance")
+    assert result["reachable"] is False
+    assert "access spurs alone" in result["reason"] or "traversable road corridor" in result["reason"]
+
+
+def test_co_located_endpoints_on_a_permitted_intersection_are_explicitly_allowed():
+    city=generate_city(2026)
+    graph=build_road_graph(city)
+    node=next(node for node in graph.nodes if graph.degree[node]>0)
+    x,y=graph.nodes[node]["xy"]
+    position={"x_m":x,"y_m":y,"elevation_m":graph.nodes[node]["elevation_m"]}
+    result=route(graph,position,position,"ambulance")
+    assert result["reachable"] is True
+    assert result["accessibility"]=="co_located_on_open_road_network"
+    assert result["road_ids"]==[] and result["distance_m"]==0
+
+
+def test_open_detour_and_building_access_spur_survive_a_single_road_closure():
+    city=generate_city(2026)
+    baseline_graph=build_road_graph(city)
+    found=None
+    for unit in city.rescue_units:
+        if unit.type=="boat":continue
+        for building in city.buildings:
+            baseline=route(baseline_graph,unit.position,building.position,unit.type)
+            if not baseline["reachable"] or not baseline["road_ids"]:continue
+            for road_id in baseline["road_ids"]:
+                changed=route(build_road_graph(city,manual_closures=[road_id]),unit.position,building.position,unit.type)
+                if changed["reachable"] and road_id not in changed["road_ids"]:
+                    found=(unit,building,road_id,changed)
+                    break
+            if found:break
+        if found:break
+    assert found is not None,"the synthetic grid should have a genuine alternate corridor"
+    unit,building,closed_road,detour=found
+    assert closed_road not in detour["road_ids"]
+    assert detour["road_ids"]
+    assert "access:unit" in detour["edge_ids"] and "access:building" in detour["edge_ids"]
+    graph=build_road_graph(city,manual_closures=[closed_road])
+    by_edge={data["edge_id"]:data for _,_,data in graph.edges(data=True)}
+    for edge_id in detour["edge_ids"]:
+        if edge_id.startswith("access:"):continue
+        assert edge_id in by_edge
+        assert by_edge[edge_id]["status"] not in ("closed","flooded","manually_blocked")
+        assert by_edge[edge_id]["road_id"]!=closed_road
+
+
+def test_shared_router_enforces_unit_depth_limits_and_connected_edge_references():
+    import networkx as nx
+    graph=nx.Graph()
+    graph.add_node("a",xy=(0.0,0.0),elevation_m=0.0,kind="intersection")
+    graph.add_node("b",xy=(100.0,0.0),elevation_m=0.0,kind="intersection")
+    graph.add_edge("a","b",edge_id="road-test:segment:0-1",road_id="road-test",bridge_id=None,
+        length_m=100.0,xy=[(0.0,0.0),(100.0,0.0)],status="open",depth_m=.16,speed_kmh=30.0)
+    start={"x_m":0.0,"y_m":0.0,"elevation_m":0.0};end={"x_m":100.0,"y_m":0.0,"elevation_m":0.0}
+    ambulance=route(graph,start,end,"ambulance")
+    rescue_team=route(graph,start,end,"rescue_team")
+    assert ambulance["reachable"] is False
+    assert rescue_team["reachable"] is True
+    assert rescue_team["edge_ids"].count("road-test:segment:0-1")==1
+    graph.edges["a","b"]["depth_m"]=.31
+    assert route(graph,start,end,"rescue_team")["reachable"] is False
+
+
+def test_bridge_closure_removes_the_span_from_every_returned_route(tmp_path):
+    from app.robustness import Counterfactual, RobustnessRunner
+    city=generate_city(2026)
+    bridge=city.bridges[0]
+    base=build_road_graph(city)
+    crossing=None
+    for unit in city.rescue_units:
+        if unit.type=="boat":continue
+        for building in city.buildings:
+            candidate=route(base,unit.position,building.position,unit.type)
+            if not candidate["reachable"]:continue
+            if any(edge_id in {data["edge_id"] for _,_,data in base.edges(data=True) if data.get("bridge_id")==bridge.id}
+                   for edge_id in candidate["edge_ids"]):
+                crossing=(unit,building)
+                break
+        if crossing:break
+    if crossing is None:
+        pytest.skip("the deterministic city has no assigned test pair crossing the selected bridge")
+    unit,building=crossing
+    condition=Counterfactual(condition_id="closed-bridge",label="Bridge closed",category="bridge_closure",closed_asset_ids=[bridge.id])
+    state=ScenarioStore(tmp_path/"bridge-route.sqlite3").create(ScenarioCreate(name="Bridge",seed=2026),"bridge-state").state
+    altered=RobustnessRunner._apply_bridge_closures(state,city,condition)
+    closed_graph=build_road_graph(city,altered,[])
+    result=route(closed_graph,unit.position,building.position,unit.type)
+    closed_span_ids={data["edge_id"] for _,_,data in closed_graph.edges(data=True) if data.get("bridge_id")==bridge.id}
+    if result["reachable"]:
+        assert not closed_span_ids.intersection(result["edge_ids"])
 
 
 def test_priority_components_respond_to_local_road_closure(tmp_path):

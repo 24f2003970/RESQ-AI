@@ -26,7 +26,7 @@ from .rescue import PlanStore, RescuePlan, build_road_graph, generate_plan, rout
 from .schemas import ImpactAssessment, MassBalance, ScenarioState, SimulationParameters as ScenarioParameters
 from .scenarios import ScenarioError
 
-ROBUSTNESS_ALGORITHM_VERSION = "frozen-counterfactual-v1"
+ROBUSTNESS_ALGORITHM_VERSION = "frozen-counterfactual-v2"
 MAX_VARIANTS = 12
 MAX_HORIZON_TICKS = 12
 PRIORITY_THRESHOLD = 70.0
@@ -96,6 +96,7 @@ class RobustnessStudy(BaseModel):
     frozen_available_unit_ids: list[str]
     frozen_reserved_unit_ids: list[str]
     frozen_resource_positions: dict[str, dict]
+    frozen_manual_closure_road_ids: list[str] = Field(default_factory=list)
     baseline: dict
     conditions: list[Counterfactual]
     evaluation_horizon_ticks: int
@@ -140,11 +141,17 @@ class RobustnessRepository:
             original.infrastructure_revision) != (state.id, state.state_version, state.epoch, revision):
             raise ScenarioError(409, "Original rescue plan does not match the frozen study snapshot.")
         snapshot = state.model_dump(mode="json")
-        snapshot_sha = hashlib.sha256(json.dumps(snapshot, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        frozen_closures = sorted(set(baseline.get("manual_closure_road_ids", [])))
+        snapshot_identity = {"scenario_state": snapshot, "infrastructure_revision": revision,
+            "manual_closure_road_ids": frozen_closures,
+            "reserved_unit_ids": sorted(reserved_ids), "available_unit_ids": sorted(available_ids),
+            "resource_positions": resource_positions or {}}
+        snapshot_sha = hashlib.sha256(json.dumps(snapshot_identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         plan_identity = original.model_dump(mode="json")
         for volatile in ("plan_id", "generated_at", "timings_ms"):
             plan_identity.pop(volatile, None)
         canonical = {"snapshot": snapshot_sha, "revision": revision,
+                     "manual_closure_road_ids": frozen_closures,
                      "plan": plan_identity, "request": request.model_dump(mode="json"),
                      "available_units": sorted(available_ids), "reserved_units": sorted(reserved_ids),
                      "resource_positions": resource_positions or {},
@@ -160,12 +167,14 @@ class RobustnessRepository:
                 simulation_state_version=state.state_version, infrastructure_revision=revision,
                 simulation_tick=state.tick, seed=state.seed, original_plan_id=original.plan_id,
                 snapshot_sha256=snapshot_sha, frozen_available_unit_ids=sorted(available_ids),
-            frozen_reserved_unit_ids=sorted(reserved_ids), frozen_resource_positions=resource_positions or {}, baseline=baseline,
+                frozen_reserved_unit_ids=sorted(reserved_ids), frozen_resource_positions=resource_positions or {},
+                frozen_manual_closure_road_ids=frozen_closures, baseline=baseline,
                 conditions=request.conditions, evaluation_horizon_ticks=request.evaluation_horizon_ticks,
                 algorithm_version=ROBUSTNESS_ALGORITHM_VERSION, status="pending", created_at_utc=now,
                 reproduction={"idempotency_sha256": key, "snapshot_sha256": snapshot_sha,
                     "seed": state.seed, "tick": state.tick, "epoch": state.epoch,
                     "state_version": state.state_version, "infrastructure_revision": revision,
+                    "manual_closure_road_ids": frozen_closures,
                     "physical_engine": "flood-grid-v1", "allocation_engine": "scipy-linear-sum-assignment-v1",
                     "isolation": "Dedicated experiments database; no live scenario, plan, mission, resource, closure, or agent-outbox writes."})
             db.execute("INSERT INTO robustness_studies VALUES(?,?,?,?,?,?,?,?)", (study_id,state.id,key,
@@ -337,7 +346,7 @@ class RobustnessRunner:
     @staticmethod
     def _original_feasibility(original, state, city, closures, unavailable, reservations):
         graph = build_road_graph(city, state, closures)
-        edge_status = {data["edge_id"]: data["status"] for _, _, data in graph.edges(data=True)}
+        edge_data = {data["edge_id"]: data for _, _, data in graph.edges(data=True)}
         unit_map = {unit.id: unit for unit in city.rescue_units}
         out = []
         for mission in original.missions:
@@ -349,10 +358,14 @@ class RobustnessRunner:
             if unit_id in reservations and unit_id not in {m["unit_id"] for m in original.missions}:
                 reasons.append("Resource is reserved by another approved mission.")
             route_data = mission.get("route", {})
-            invalid_edges = [edge for edge in route_data.get("edge_ids", []) if edge in edge_status and edge_status[edge] in ("closed", "flooded", "manually_blocked")]
-            missing_edges = [edge for edge in route_data.get("edge_ids", []) if not edge.startswith("access:") and edge not in edge_status]
-            if invalid_edges: reasons.append("Original route contains an inaccessible road or bridge segment.")
+            depth_limit = {"ambulance":.15,"rescue_team":.30}.get(unit.type if unit else "",0.0)
+            invalid_edges = [edge for edge in route_data.get("edge_ids", []) if edge in edge_data and (
+                edge_data[edge]["status"] in ("closed", "flooded", "manually_blocked") or edge_data[edge]["depth_m"]>depth_limit)]
+            missing_edges = [edge for edge in route_data.get("edge_ids", []) if not edge.startswith("access:") and edge not in edge_data]
+            if invalid_edges: reasons.append("Original route contains a closed, flooded, manually blocked, or unit-depth-incompatible road or bridge segment.")
             if missing_edges: reasons.append("An original route segment is absent from the counterfactual road graph.")
+            if not any(edge in edge_data for edge in route_data.get("edge_ids", [])) and route_data.get("accessibility")!="co_located_on_open_road_network":
+                reasons.append("Stored route has no traversable road segment; access spurs alone do not establish reachability.")
             building = next((item for item in city.buildings if item.id == destination_id), None)
             if not building: reasons.append("Destination is absent from the frozen city.")
             elif unit and not any(reason.startswith("Resource unavailable") for reason in reasons):
@@ -386,6 +399,13 @@ class RobustnessRunner:
         self.repository.update(study_id, status="running")
         started = time.perf_counter()
         city = self._position_city(generate_city(base.seed), record.frozen_resource_positions)
+        known_road_ids = {road.id for road in city.roads}
+        invalid_frozen_closures = set(record.frozen_manual_closure_road_ids) - known_road_ids
+        if invalid_frozen_closures:
+            self.repository.update(study_id,status="failed",completed_at_utc=datetime.now(timezone.utc).isoformat(),
+                error="Frozen snapshot contains unknown manually closed road ID(s): " + ", ".join(sorted(invalid_frozen_closures)))
+            return
+        frozen_manual_closures = set(record.frozen_manual_closure_road_ids)
         frozen_reserved = set(record.frozen_reserved_unit_ids)
         baseline_plan = original
         results = []
@@ -394,17 +414,18 @@ class RobustnessRunner:
                 variant_started = time.perf_counter()
                 state = self._variant_state(base, condition, request.evaluation_horizon_ticks)
                 state = self._apply_bridge_closures(state, city, condition)
-                closed_roads = self._closure_roads(city, condition) if condition.category in ("road_closure", "bridge_closure") else []
+                additional_road_closures = set(self._closure_roads(city, condition))
+                effective_closed_roads = sorted(frozen_manual_closures | additional_road_closures)
                 variant_city, removed = self._resource_set(city, condition.unavailable_unit_ids,
                     condition.unavailable_unit_type, condition.unavailable_count)
                 unavailable = set(removed)
                 predictions, reliability = _as_prediction_set(state, condition.reliability_mode if condition.category == "ml_reliability" else "actual")
                 if condition.category == "ml_reliability" and condition.reliability_mode in ("injected_unavailable", "no_forecast_destinations"):
                     if condition.reliability_mode == "injected_unavailable": predictions = None
-                original_feasibility = self._original_feasibility(original, state, city, closed_roads, unavailable, frozen_reserved)
+                original_feasibility = self._original_feasibility(original, state, city, effective_closed_roads, unavailable, frozen_reserved)
                 feasible_original = sum(row["original_route_feasible"] for row in original_feasibility)
                 active_reservations = frozen_reserved - {m["unit_id"] for m in original.missions}
-                proposed = generate_plan(variant_city, state, predictions, closed_roads,
+                proposed = generate_plan(variant_city, state, predictions, effective_closed_roads,
                     infrastructure_revision=record.infrastructure_revision,
                     reserved_unit_ids=active_reservations)
                 # The algorithm's returned plan ID is analytical only; it is never saved in live rescue plans.
@@ -416,6 +437,8 @@ class RobustnessRunner:
                                           for unit_id, destination_id in old_destination_by_unit.items())
                 changed_assignments += sum(unit_id not in old_destination_by_unit for unit_id in new_destination_by_unit)
                 results.append({"condition": condition.model_dump(mode="json"),
+                    "effective_manual_closure_road_ids": effective_closed_roads,
+                    "effective_closed_bridge_ids": sorted(item.entity_id for item in state.impacts.bridges if item.status == "closed"),
                     "original_plan_feasibility": {"feasible_assignments": feasible_original,
                         "total_original_assignments": len(original_feasibility), "assignments": original_feasibility,
                         "invalidated_routes": sum(not row["original_route_feasible"] for row in original_feasibility),
@@ -425,7 +448,7 @@ class RobustnessRunner:
                         "unreachable": proposed.unreachable,
                         "reassigned_units": changed_assignments,
                         "unserved_destinations": len(proposed.unreachable),
-                        "manual_closure_road_ids": sorted(closed_roads)},
+                        "manual_closure_road_ids": effective_closed_roads},
                     "reliability": reliability,
                     "resource_availability": {"available_unit_ids": sorted(u.id for u in variant_city.rescue_units if u.type != "boat"),
                         "unavailable_unit_ids": removed, "reserved_unit_ids_excluded": sorted(active_reservations)},
@@ -442,15 +465,17 @@ class RobustnessRunner:
                 if asset_id in {bridge.id for bridge in city.bridges}:
                     perturbation = Counterfactual(condition_id=f"critical-{asset_id}", label=f"Close {asset_id}", category="bridge_closure", closed_asset_ids=[asset_id])
                     altered_state = self._apply_bridge_closures(base, city, perturbation)
-                    altered_closures = []
+                    altered_closures = sorted(frozen_manual_closures)
                 else:
                     altered_state = base
-                    altered_closures = [asset_id]
+                    altered_closures = sorted(frozen_manual_closures | {asset_id})
                 altered = generate_plan(city, altered_state, base_predictions, altered_closures,
                     infrastructure_revision=record.infrastructure_revision,
                     reserved_unit_ids=frozen_reserved - {m["unit_id"] for m in original.missions})
                 affected = [mission for mission in original.missions if asset_id in mission.get("route", {}).get("road_ids", []) or asset_id in {bridge.id for bridge in city.bridges if bridge.road_id in mission.get("route", {}).get("road_ids", [])}]
                 dependencies[asset_id] = {"asset_id": asset_id, "dependent_assignments": len(affected),
+                    "effective_manual_closure_road_ids": altered_closures,
+                    "effective_closed_bridge_ids": sorted(item.entity_id for item in altered_state.impacts.bridges if item.status == "closed"),
                     "affected_priority_weighted_coverage": round(sum(next((p["priority_score"] for p in original.priorities if p["building_id"] == m["destination_id"]), 0) for m in affected),2),
                     "feasible_after_closure": any(m["destination_id"] in {x["destination_id"] for x in altered.missions} for m in affected),
                     "alternate_route_assignments": [m for m in altered.missions if m["destination_id"] in {x["destination_id"] for x in affected}],
@@ -476,7 +501,8 @@ class RobustnessRunner:
             output = {"conditions": results, "critical_infrastructure": ranked_dependencies,
                 "contingencies": contingencies,
                 "baseline": baseline_summary,
-                "interpretation": "Conditions are deterministic analytical cases, not probability-weighted forecasts. Original-route feasibility and counterfactual reoptimization are reported separately. Coverage is the sum of existing priority scores times the assigned occupant-capacity fraction; denominator is the sum of the condition-specific eligible destination priority scores.",
+                "frozen_manual_closure_road_ids": sorted(frozen_manual_closures),
+                "interpretation": "Conditions are deterministic analytical cases, not probability-weighted forecasts. Original-route feasibility and counterfactual reoptimization are reported separately. Feasibility means connected, traversable geometry in the synthetic road graph under documented unit-depth and short access-spur assumptions; access spurs alone never establish road reachability. This is not surveyed-road access or field safety. Coverage is the sum of existing priority scores times the assigned occupant-capacity fraction; denominator is the sum of the condition-specific eligible destination priority scores.",
                 "study_runtime_ms": round((time.perf_counter()-started)*1000,3)}
             self.repository.update(study_id, status="completed", completed_at_utc=datetime.now(timezone.utc).isoformat(), results=output)
         except Exception as exc:

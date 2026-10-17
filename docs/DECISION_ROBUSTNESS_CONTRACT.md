@@ -4,7 +4,7 @@
 
 A study contains a unique study ID; source scenario ID; scenario epoch, simulation state version, tick, seed and infrastructure revision; original rescue proposal ID; frozen available and reserved unit IDs; frozen resource positions; a SHA-256 snapshot identity; baseline plan reference and metrics; intervention definitions; evaluation horizon; algorithm version; per-condition outputs; study status; completion time; and reproduction metadata.
 
-The snapshot hash covers the serialized scenario state, including the physical depth grid, parameters, impacts, and version identity. The canonical idempotency identity also includes the infrastructure revision, semantically relevant original plan, request conditions, and algorithm version. Volatile plan IDs, timestamps, and timing fields do not change the idempotency identity.
+The snapshot hash covers the serialized scenario state, including the physical depth grid, parameters, impacts, and version identity. The canonical idempotency identity also includes the infrastructure revision, the exact frozen manual road-closure IDs, semantically relevant original plan, request conditions, and algorithm version. The frozen closure IDs are also stored in reproduction metadata and retained as an analytical baseline for every condition. Volatile plan IDs, timestamps, and timing fields do not change the idempotency identity.
 
 ## Status values
 

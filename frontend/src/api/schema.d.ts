@@ -2186,6 +2186,8 @@ export interface components {
                     [key: string]: unknown;
                 };
             };
+            /** Frozen Manual Closure Road Ids */
+            frozen_manual_closure_road_ids?: string[];
             /** Baseline */
             baseline: {
                 [key: string]: unknown;

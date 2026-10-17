@@ -18,7 +18,9 @@ Environmental variants call the existing deterministic flood `step` repeatedly, 
 
 Each condition has two distinct calculations. Original-plan feasibility retains the saved assignments and checks saved route edges, resource availability, destination accessibility, and route reachability under the variant. It never silently moves an original assignment. Reoptimization then runs `generate_plan`, including current priority calculation, accessible routes, capacity constraints, and SciPy `linear_sum_assignment`. The solver result is marked `optimal_linear_sum_assignment` only when that existing solver returns successfully.
 
-Critical road/bridge dependencies are ranked by closing each infrastructure asset traversed by the original plan and rerunning the same planner. Contingency suggestions are extracted from actual changed assignments, include their computed route geometry and trade-offs, and are explicitly marked commander-review-only.
+Critical road/bridge dependencies are ranked by closing each infrastructure asset traversed by the original plan and rerunning the same planner. Frozen live manual road closures are unioned with every hypothetical road closure, including baseline-only conditions, and are included in the study identity and reproduction record. Bridge closures remain span-specific. Contingency suggestions are extracted from actual changed assignments, include their computed route geometry and trade-offs, and are explicitly marked commander-review-only.
+
+The shared router removes blocked edges and isolated nodes before attaching ground-unit access. It requires a connected traversable road segment, except for explicitly identified co-located endpoints already on the same open network node. Short destination access spurs remain available only from that network; they cannot bypass a closure. Depth thresholds remain unit-specific. “Reachable” and “feasible” therefore mean supported by this synthetic graph and its access assumptions, not surveyed access or field safety.
 
 ## Data and metric interpretation
 
@@ -28,7 +30,7 @@ The baseline is the saved live proposal (or a non-persisted proposal generated f
 
 ## Product integration
 
-The Robustness Lab reuses the existing `CityScene` with one canvas. Hypothetical routes and closures use dashed overlays and a persistent “Hypothetical” label; no mission entity or animation is created. The results matrix, fragility view, dependency inspector, and contingency list render only saved computation results. Command Center and Judge Mode link to the lab; Judge Mode adds no approval or dispatch controls.
+The Robustness Lab reuses the existing `CityScene` with one canvas. Hypothetical routes and closures use dashed overlays and a persistent “Hypothetical” label; no mission entity or animation is created. The 3D water layer remains the live baseline; hypothetical flood differences appear in computed metrics, and no synthetic water geometry is invented. Scenario changes immediately hide prior study results; asynchronous responses are tied to scenario/epoch/version identity. Historical records remain browsable only for their own scenario and cannot draw route overlays on a mismatched live scene. The results matrix, fragility view, dependency inspector, and contingency list render only saved computation results. Command Center and Judge Mode link to the lab; Judge Mode adds no approval or dispatch controls.
 
 ## Reproduction
 

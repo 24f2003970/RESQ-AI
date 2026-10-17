@@ -113,13 +113,21 @@ def build_road_graph(city, state: ScenarioState | None = None, manual_closures=(
 
 
 def _nearest_node(g, position):
+    candidates = [node for node in g.nodes if g.degree[node] > 0 and g.nodes[node].get("kind", "intersection") == "intersection"]
+    if not candidates:
+        return None
     x,y = _xy(position)
-    return min(g.nodes, key=lambda n: (math.dist(g.nodes[n]["xy"], (x,y)), n))
+    return min(candidates, key=lambda n: (math.dist(g.nodes[n]["xy"], (x,y)), n))
 
 
 def _allowed_graph(g, unit_type):
+    """Return only edges and vertices belonging to a traversable road network.
+
+    Isolated intersections from blocked or unit-incompatible corridors are not
+    vehicle-access anchors. A building/unit spur may attach only to a vertex
+    incident to at least one permitted road edge.
+    """
     allowed = nx.Graph()
-    allowed.add_nodes_from(g.nodes(data=True))
     for a,b,data in g.edges(data=True):
         if data["status"] in ("closed", "flooded", "manually_blocked"):
             continue
@@ -127,6 +135,8 @@ def _allowed_graph(g, unit_type):
             continue
         if unit_type == "rescue_team" and data["depth_m"] > .30:
             continue
+        allowed.add_node(a, **{**g.nodes[a], "kind":g.nodes[a].get("kind","intersection")})
+        allowed.add_node(b, **{**g.nodes[b], "kind":g.nodes[b].get("kind","intersection")})
         penalty = 1.0 + data["depth_m"] * 4 + (0.4 if data["status"] == "caution" else 0)
         speed = data["speed_kmh"] * (0.55 if data["status"] == "caution" else 1.0)
         allowed.add_edge(a,b,**data, speed=speed*1000/3600, cost=data["length_m"]*penalty)
@@ -149,7 +159,7 @@ def _route_result(allowed, nodes):
 
 def _nearest_node_within(g, point, limit):
     node = _nearest_node(g, point)
-    return node if math.dist(g.nodes[node]["xy"], point) <= limit else None
+    return node if node is not None and math.dist(g.nodes[node]["xy"], point) <= limit else None
 
 
 def route(g, start_position, destination_position, unit_type="ambulance"):
@@ -160,7 +170,9 @@ def route(g, start_position, destination_position, unit_type="ambulance"):
     start_road, end_road = _nearest_node_within(allowed, (sx,sy), 90), _nearest_node_within(allowed, (ex,ey), 90)
     start, end = "access:unit", "access:destination"
     if start_road is None or end_road is None:
-        return {"reachable": False, "reason": "Unit or destination is beyond the documented 90 m road-access spur limit."}
+        if not allowed.edges:
+            return {"reachable": False, "reason": "No traversable road corridor supports a ground-vehicle route under current closures, flooding, bridge status, and unit-depth limits."}
+        return {"reachable": False, "reason": "Unit or destination cannot attach to a permitted road-network component within the documented 90 m access-spur limit."}
     allowed.add_node(start, xy=(sx,sy), elevation_m=float(getattr(start_position,"elevation_m",0) if not isinstance(start_position,dict) else start_position.get("elevation_m",0)), kind="unit_access")
     allowed.add_node(end, xy=(ex,ey), elevation_m=float(getattr(destination_position,"elevation_m",0) if not isinstance(destination_position,dict) else destination_position.get("elevation_m",0)), kind="building_access")
     for node, anchor, point, identity in ((start,start_road,(sx,sy),"unit"),(end,end_road,(ex,ey),"building")):
@@ -172,7 +184,20 @@ def route(g, start_position, destination_position, unit_type="ambulance"):
         nodes = nx.shortest_path(allowed, start, end, weight="cost", method="dijkstra")
     except (nx.NetworkXNoPath, nx.NodeNotFound):
         return {"reachable": False, "reason": "No route is available under this unit's accessibility policy."}
-    return _route_result(allowed, nodes)
+    traversed = [allowed.edges[a,b] for a,b in zip(nodes,nodes[1:]) if allowed.edges[a,b].get("road_id")]
+    if not traversed:
+        # Two access spurs are not a road route. Permit the zero-road case only
+        # when both endpoints are co-located at the same live network node.
+        co_located = math.dist((sx,sy),(ex,ey)) <= 0.02
+        same_anchor = start_road == end_road and allowed.degree[start_road] > 0
+        on_anchor = math.dist((sx,sy),allowed.nodes[start_road]["xy"]) <= 0.02
+        if not (co_located and same_anchor and on_anchor):
+            return {"reachable":False,"reason":"No traversable road segment connects the endpoints; access spurs alone do not establish vehicle reachability."}
+    result = _route_result(allowed, nodes)
+    if not traversed:
+        result["accessibility"] = "co_located_on_open_road_network"
+        result["explanation"] = "Co-located endpoints share the same permitted road-network node; no travel across access spurs is inferred."
+    return result
 
 
 def route_from_mission_segment(g, saved_route, traversed_distance_m, segment_index,
@@ -254,9 +279,9 @@ def route_from_mission_segment(g, saved_route, traversed_distance_m, segment_ind
                              cost=partial*data["cost"]/max(data["length_m"],1e-9))
 
     ex,ey=_xy(destination_position)
-    end_road=_nearest_node_within(g,(ex,ey),90)
+    end_road=_nearest_node_within(allowed,(ex,ey),90)
     if end_road is None:
-        return {"reachable":False,"reason":"Destination is beyond the documented 90 m building-access spur limit."}
+        return {"reachable":False,"reason":"Destination cannot attach to a permitted road-network component within the documented 90 m building-access spur limit."}
     end="access:destination"
     end_z=float(getattr(destination_position,"elevation_m",0) if not isinstance(destination_position,dict) else destination_position.get("elevation_m",0))
     allowed.add_node(end,xy=(ex,ey),elevation_m=end_z,kind="building_access")
@@ -268,6 +293,13 @@ def route_from_mission_segment(g, saved_route, traversed_distance_m, segment_ind
         nodes=nx.shortest_path(allowed,start,end,weight="cost",method="dijkstra")
     except (nx.NetworkXNoPath,nx.NodeNotFound):
         return {"reachable":False,"reason":"No safe route is connected to the unit's current traversable road segment."}
+    traversed=[allowed.edges[a,b] for a,b in zip(nodes,nodes[1:]) if allowed.edges[a,b].get("road_id")]
+    if not traversed:
+        co_located=math.dist((sx,sy),(ex,ey))<=0.02
+        same_anchor=any(math.dist((sx,sy),allowed.nodes[node]["xy"])<=0.02 and node==end_road
+                        and allowed.degree[node]>0 for node in exact_nodes)
+        if not (co_located and same_anchor):
+            return {"reachable":False,"reason":"No traversable road segment connects the stopped unit to its destination; access spurs alone do not establish safe egress."}
     return _route_result(allowed,nodes)
 
 
@@ -367,18 +399,33 @@ def generate_plan(city, state, prediction_set, closures=(), *, infrastructure_re
     route_map=route_map_override
     if route_map is None:
         route_map={}
+        route_failures={}
         for u in units:
             for d in ranked:
                 b=next(x for x in city.buildings if x.id==d["building_id"])
                 r=route(g,u["position"],b.position,u["type"])
                 if r["reachable"]: route_map[(u["id"],b.id)]=r
+                else: route_failures.setdefault(b.id,[]).append(r.get("reason","No supported route was found."))
+    else:
+        route_failures={}
     routing_ms = round((time.perf_counter() - routing_started) * 1000, 3)
     assignment_started = time.perf_counter()
     optimized=_assign(units,ranked,route_map,True)
     baseline=_assign(units,ranked,route_map,False)
     assignment_ms = round((time.perf_counter() - assignment_started) * 1000, 3)
     reachable_destinations={destination_id for _,destination_id in route_map}
-    unreachable=[{"building_id":d["building_id"],"reason":"No compatible ground unit has a route under current infrastructure conditions."} for d in ranked if d["building_id"] not in reachable_destinations]
+    unreachable=[]
+    for destination in ranked:
+        building_id=destination["building_id"]
+        if building_id in reachable_destinations:continue
+        reasons=sorted(set(route_failures.get(building_id,[])))
+        if not units:
+            reason="No compatible non-boat ground unit is available in the current resource inventory."
+        elif reasons:
+            reason="No compatible ground unit has a connected traversable route under the synthetic graph assumptions. " + " ".join(reasons[:3])
+        else:
+            reason="No compatible ground unit has a connected traversable route under current infrastructure conditions."
+        unreachable.append({"building_id":building_id,"reason":reason})
     def metrics(missions):
         priority_by_id={d["building_id"]:d["priority_score"] for d in ranked}
         total_priority=sum(priority_by_id[m["destination_id"]]*m["occupants_targeted"]/max(next(d["occupants"] for d in ranked if d["building_id"]==m["destination_id"]),1) for m in missions)

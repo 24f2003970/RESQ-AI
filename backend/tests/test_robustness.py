@@ -138,7 +138,7 @@ def test_original_plan_closure_failure_is_separate_from_valid_reoptimization(tmp
     original = next(row for row in condition_result["original_plan_feasibility"]["assignments"]
         if row["destination_id"] == target["destination_id"])
     assert original["original_route_feasible"] is False
-    assert any("inaccessible" in reason for reason in original["failure_reasons"])
+    assert any("closed" in reason or "inaccessible" in reason for reason in original["failure_reasons"])
     graph = build_road_graph(city,state,[closed_road])
     edge_status = {data["edge_id"]:data["status"] for _,_,data in graph.edges(data=True)}
     for mission in condition_result["reoptimized_plan"]["missions"]:
@@ -159,6 +159,88 @@ def test_bad_frozen_identity_and_unknown_assets_are_rejected(tmp_path, monkeypat
     wrong_request = request.model_copy(update={"expected_state_version":state.state_version + 1})
     with pytest.raises(Exception, match="do not match"):
         repository.create(wrong_request, state, revision, [], reserved, plan, {})
+
+
+def test_frozen_live_closures_survive_all_counterfactual_families_without_live_mutation(tmp_path, monkeypatch):
+    live_path, scenarios, state, plans, repository, runner, city, revision, reserved, _plan = _fixture(tmp_path, monkeypatch)
+    plans.infrastructure(state.id,state.epoch)
+    bridge_roads={bridge.road_id for bridge in city.bridges}
+    manual_road=next(road.id for road in city.roads if road.id not in bridge_roads)
+    extra_road=next(road.id for road in city.roads if road.id not in bridge_roads and road.id!=manual_road)
+    bridge=city.bridges[0]
+    with sqlite3.connect(live_path) as db:
+        db.execute("INSERT INTO road_closures(scenario_id,epoch,road_id,reason,active) VALUES(?,?,?,?,1)",
+            (state.id,state.epoch,manual_road,"frozen pre-existing closure"))
+        db.execute("UPDATE scenario_infrastructure SET revision=? WHERE scenario_id=? AND epoch=?",
+            (revision+1,state.id,state.epoch))
+    frozen_revision,live_closures=read_infrastructure(live_path,state.id,state.epoch)
+    assert live_closures==[manual_road]
+    predictions=ScenarioPredictionSet(model_version="test-model",scenario_id=state.id,
+        scenario_state_version=state.state_version,scenario_tick=state.tick,scenario_epoch=state.epoch,
+        horizon_ticks=6,horizon_minutes=30,target_definition="synthetic test",reliability_status="available",
+        calibration_status="validated_synthetic",probabilities_calibrated=True,predictions=[])
+    monkeypatch.setattr("app.robustness.predict_state",lambda _state:predictions)
+    plan=generate_plan(city,state,predictions,live_closures,infrastructure_revision=frozen_revision)
+    conditions=[
+        Counterfactual(condition_id="baseline",label="Baseline",category="baseline"),
+        Counterfactual(condition_id="rain",label="Environmental change",category="environment",rainfall_mm_h=240),
+        Counterfactual(condition_id="resource",label="Resource loss",category="resources",unavailable_unit_type="ambulance",unavailable_count=1),
+        Counterfactual(condition_id="bridge",label="Bridge closure",category="bridge_closure",closed_asset_ids=[bridge.id]),
+        Counterfactual(condition_id="extra-road",label="Additional road closure",category="road_closure",closed_asset_ids=[extra_road]),
+    ]
+    request=RobustnessStudyCreate(scenario_id=state.id,expected_state_version=state.state_version,
+        expected_epoch=state.epoch,expected_infrastructure_revision=frozen_revision,evaluation_horizon_ticks=1,
+        conditions=conditions)
+    available=sorted(unit.id for unit in city.rescue_units if unit.status=="standby" and unit.type!="boat")
+    baseline={"missions":plan.missions,"metrics":plan.comparison["optimized"],"manual_closure_road_ids":live_closures}
+    study=repository.create(request,state,frozen_revision,available,reserved,plan,baseline)
+    assert study.frozen_manual_closure_road_ids==[manual_road]
+    assert study.reproduction["manual_closure_road_ids"]==[manual_road]
+    alternate_identity=repository.create(request,state,frozen_revision,available,reserved,plan,
+        {**baseline,"manual_closure_road_ids":[]})
+    assert alternate_identity.study_id!=study.study_id
+    assert alternate_identity.snapshot_sha256!=study.snapshot_sha256
+    with sqlite3.connect(live_path) as db:
+        operational_before={
+            "closure_rows":db.execute("SELECT scenario_id,epoch,road_id,reason,active FROM road_closures ORDER BY road_id").fetchall(),
+            "infrastructure":db.execute("SELECT scenario_id,epoch,revision FROM scenario_infrastructure ORDER BY scenario_id,epoch").fetchall(),
+        }
+    runner.run(study.study_id)
+    completed=repository.get(study.study_id)
+    assert completed and completed.status=="completed",completed.error if completed else "missing study"
+    assert completed.snapshot_sha256==completed.reproduction["snapshot_sha256"]
+    assert completed.results["frozen_manual_closure_road_ids"]==[manual_road]
+    for item in completed.results["conditions"]:
+        condition=next(candidate for candidate in conditions if candidate.condition_id==item["condition"]["condition_id"])
+        effective=set(item["effective_manual_closure_road_ids"])
+        assert manual_road in effective
+        expected=set(live_closures)
+        if condition.category=="road_closure":expected.add(extra_road)
+        assert effective==expected
+        variant=runner._variant_state(state,condition,1)
+        variant=runner._apply_bridge_closures(variant,city,condition)
+        graph=build_road_graph(city,variant,effective)
+        edge_map={data["edge_id"]:data for _,_,data in graph.edges(data=True)}
+        for mission in item["reoptimized_plan"]["missions"]:
+            assert manual_road not in mission["route"]["road_ids"]
+            if condition.category=="road_closure":assert extra_road not in mission["route"]["road_ids"]
+            for edge_id in mission["route"]["edge_ids"]:
+                if edge_id.startswith("access:"):continue
+                assert edge_id in edge_map
+                edge=edge_map[edge_id]
+                assert edge["status"] not in ("closed","flooded","manually_blocked")
+                assert not (edge.get("bridge_id") and edge.get("status")=="closed")
+        assert item["reoptimized_plan"]["manual_closure_road_ids"]==sorted(expected)
+    for dependency in completed.results["critical_infrastructure"]:
+        assert manual_road in dependency["effective_manual_closure_road_ids"]
+        assert all(manual_road not in mission["route"]["road_ids"] for mission in dependency["alternate_route_assignments"])
+    with sqlite3.connect(live_path) as db:
+        operational_after={
+            "closure_rows":db.execute("SELECT scenario_id,epoch,road_id,reason,active FROM road_closures ORDER BY road_id").fetchall(),
+            "infrastructure":db.execute("SELECT scenario_id,epoch,revision FROM scenario_infrastructure ORDER BY scenario_id,epoch").fetchall(),
+        }
+    assert operational_after==operational_before
+    assert scenarios.get(state.id).state.state_version==state.state_version
 
 
 def test_missing_ml_metadata_is_reported_as_unavailable(monkeypatch):
@@ -203,6 +285,15 @@ def test_api_study_creation_is_analytical_and_becomes_historical_after_change(tm
         assert study["results"]["conditions"][0]["reliability"]["failure_injection"]=="analytical_failure_injection"
         assert study["results"]["conditions"][0]["reoptimized_plan"]["missions"]==[]
         assert plans.latest_valid(state.id,state) is None
+        plans.infrastructure(state.id,state.epoch)
+        closed_road=generate_city(state.seed).roads[0].id
+        with sqlite3.connect(live_path) as db:
+            db.execute("INSERT INTO road_closures(scenario_id,epoch,road_id,reason,active) VALUES(?,?,?,?,1)",
+                (state.id,state.epoch,closed_road,"post-study infrastructure change"))
+            db.execute("UPDATE scenario_infrastructure SET revision=revision+1 WHERE scenario_id=? AND epoch=?",(state.id,state.epoch))
+        stale_closure=client.get(f"/api/v1/robustness-studies/{study['study_id']}").json()
+        assert stale_closure["stale"] is True
+        assert "infrastructure revision changed" in stale_closure["stale_reason"]
         changed=scenarios.update_parameters(state.id,ParameterUpdate(expected_version=state.state_version,rainfall_mm_h=10)).state
         historical=client.get(f"/api/v1/robustness-studies/{study['study_id']}").json()
         assert historical["stale"] is True

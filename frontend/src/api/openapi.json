@@ -5842,6 +5842,13 @@
             "type": "object",
             "title": "Frozen Resource Positions"
           },
+          "frozen_manual_closure_road_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Frozen Manual Closure Road Ids"
+          },
           "baseline": {
             "additionalProperties": true,
             "type": "object",
