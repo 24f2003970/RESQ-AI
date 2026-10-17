@@ -16,11 +16,11 @@ It is not an operational forecast, public warning, rescue dispatch authority, or
 
 ## Calibration
 
-A Platt sigmoid calibrator is fit from scenario-grouped out-of-fold scores from development groups. It is adopted only after nested group evaluation improves Brier score by at least .001 without worsening log loss by more than .01. Its output is labeled **calibrated synthetic probability** and only describes the synthetic target under this simulator's generated distribution.
+A Platt sigmoid calibrator is adopted only after fully nested scenario-grouped development evaluation: each outer-fold base estimator and calibrator use outer-training groups only, with inner grouped OOF scores used for Platt fitting. The fixed gate requires at least .001 Brier improvement and no more than .01 log-loss regression. After that decision, the production calibrator is refit on grouped OOF scores across all development groups. This run's nested development Brier was .03219 raw / .02979 calibrated; log loss was .11330 / .10235. Its output is labeled **calibrated synthetic probability** and only describes the synthetic target under this simulator's generated distribution.
 
 ## Evaluation
 
-Held-out synthetic test F1 .9660; precision .9783; recall .9541; balanced accuracy .9631; ROC-AUC .9945; average precision .9960. Raw/calibrated Brier: .03053/.02792; log loss: .10667/.09419; ECE: .02654/.00501 using 10 fixed-width bins. See `ML_EVALUATION.md` and `backend/ml_artifacts/reliability_evaluation.json` for exact values and failures.
+Final synthetic test metrics are reported separately from the development adoption gate. Test F1 .9660; precision .9783; recall .9541; balanced accuracy .9631; ROC-AUC .9945; average precision .9960. Raw/calibrated Brier: .03053/.02792; log loss: .10667/.09419; ECE: .02654/.00501 using 10 fixed-width bins. The untouched test split did not select or fit calibration. See `ML_EVALUATION.md` and `backend/ml_artifacts/reliability_evaluation.json` for exact values, split audit, artifact hashes, and failures.
 
 ## Important limits
 

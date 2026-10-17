@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import hashlib
 import json
 import time
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -101,6 +101,58 @@ def _support(rows: list[dict[str, str]], fit_groups: set[str]) -> dict[str, Any]
             for index, name in enumerate(FEATURE_NAMES)
         },
     }
+
+
+def _grouped_oof_scores(x: np.ndarray, y: np.ndarray, groups: np.ndarray,
+                        algorithm: str, seed: int, n_splits: int = 5) -> np.ndarray:
+    """Produce deterministic group-held-out scores for calibrator fitting."""
+    predictions = np.full(len(groups), np.nan)
+    for fit_idx, held_idx in GroupKFold(n_splits=n_splits).split(x, y, groups):
+        estimator = _candidate_models(seed)[algorithm]
+        estimator.fit(x[fit_idx], y[fit_idx])
+        predictions[held_idx] = _score(estimator, x[held_idx])
+    if not np.isfinite(predictions).all():
+        raise AssertionError("Every development observation must have one group-held-out score.")
+    return predictions
+
+
+def _nested_grouped_calibration(x: np.ndarray, y: np.ndarray, groups: np.ndarray,
+                                algorithm: str, seed: int, n_splits: int = 5
+                                ) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
+    """Evaluate calibration with an independent, fully nested grouped design.
+
+    Each outer held-out group is excluded from both the outer estimator fit and
+    every inner OOF/calibrator fit. The audit is persisted to make that
+    separation inspectable rather than relying only on a prose assertion.
+    """
+    raw = np.full(len(groups), np.nan)
+    calibrated = np.full(len(groups), np.nan)
+    audit: list[dict[str, Any]] = []
+    for outer_fit, outer_held in GroupKFold(n_splits=n_splits).split(x, y, groups):
+        outer_train_groups = sorted(set(groups[outer_fit].tolist()))
+        outer_validation_groups = sorted(set(groups[outer_held].tolist()))
+        if set(outer_train_groups) & set(outer_validation_groups):
+            raise AssertionError("Outer grouped split contains overlapping scenario IDs.")
+
+        inner_oof = _grouped_oof_scores(x[outer_fit], y[outer_fit], groups[outer_fit],
+                                        algorithm, seed, n_splits)
+        calibrator = _fit_platt(inner_oof, y[outer_fit], groups[outer_fit])
+        outer_estimator = _candidate_models(seed)[algorithm]
+        outer_estimator.fit(x[outer_fit], y[outer_fit])
+        outer_scores = _score(outer_estimator, x[outer_held])
+        raw[outer_held] = outer_scores
+        calibrated[outer_held] = _apply_platt(calibrator, outer_scores)
+        audit.append({
+            "outer_validation_groups": outer_validation_groups,
+            "outer_estimator_fit_groups": outer_train_groups,
+            "inner_oof_estimator_fit_groups": outer_train_groups,
+            "calibrator_fit_groups": outer_train_groups,
+            "inner_grouped_oof_folds": n_splits,
+        })
+
+    if not np.isfinite(raw).all() or not np.isfinite(calibrated).all():
+        raise AssertionError("Every development observation must have one nested outer prediction.")
+    return raw, calibrated, audit
 
 
 def check_distribution_support(row: dict[str, Any], support: dict[str, Any]) -> dict[str, Any]:
@@ -194,35 +246,23 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
         raise ValueError("Dataset groups do not exactly match the saved leak-free split.")
     dev_idx = np.flatnonzero(np.isin(groups, list(dev_groups)))
     test_idx = np.flatnonzero(np.isin(groups, list(test_groups)))
-    estimator = _candidate_models(seed)[metadata["algorithm"]]
-
-    # Group-held-out predictions over development data feed calibration. No
-    # row from a scenario is ever predicted by a model trained on that group.
-    oof = np.full(len(dev_idx), np.nan)
     dev_x, dev_y, dev_groups_array = x[dev_idx], y[dev_idx], groups[dev_idx]
-    folds = GroupKFold(n_splits=5)
-    for train_rel, held_rel in folds.split(dev_x, dev_y, dev_groups_array):
-        fold_model = _candidate_models(seed)[metadata["algorithm"]]
-        fold_model.fit(dev_x[train_rel], dev_y[train_rel])
-        oof[held_rel] = _score(fold_model, dev_x[held_rel])
-    if not np.isfinite(oof).all():
-        raise AssertionError("Every development observation must have one out-of-fold score.")
+    outer_raw, outer_calibrated, fold_audit = _nested_grouped_calibration(
+        dev_x, dev_y, dev_groups_array, metadata["algorithm"], seed, n_splits=5)
+    raw_oof_metrics = calibration_metrics(dev_y, outer_raw)
+    nested_oof_metrics = calibration_metrics(dev_y, outer_calibrated)
+    brier_improvement = raw_oof_metrics["brier_score"] - nested_oof_metrics["brier_score"]
+    log_loss_delta = nested_oof_metrics["log_loss"] - raw_oof_metrics["log_loss"]
+    adopt = brier_improvement >= 0.001 and log_loss_delta <= 0.01
 
-    # Nested group folds estimate whether Platt calibration generalizes within
-    # development groups. The predetermined adoption rule is >=0.001 Brier
-    # improvement and no >0.01 log-loss degradation.
-    oof_y = y[dev_idx]
-    nested = np.full(len(oof), np.nan)
-    for fit_rel, held_rel in folds.split(oof.reshape(-1, 1), oof_y, dev_groups_array):
-        cal = _fit_platt(oof[fit_rel], oof_y[fit_rel], dev_groups_array[fit_rel])
-        nested[held_rel] = _apply_platt(cal, oof[held_rel])
-    raw_oof_metrics, nested_oof_metrics = calibration_metrics(oof_y, oof), calibration_metrics(oof_y, nested)
-    adopt = (raw_oof_metrics["brier_score"] - nested_oof_metrics["brier_score"] >= 0.001 and
-             nested_oof_metrics["log_loss"] <= raw_oof_metrics["log_loss"] + 0.01)
-    final_calibrator = _fit_platt(oof, oof_y, dev_groups_array)
     artifact_dir.mkdir(parents=True, exist_ok=True)
     calibrator_path = artifact_dir / CALIBRATOR_PATH.name
     if adopt:
+        # Production calibrator fit: full development-only grouped OOF scores.
+        # This artifact is separate from the nested adoption evaluation above.
+        production_oof = _grouped_oof_scores(dev_x, dev_y, dev_groups_array,
+                                             metadata["algorithm"], seed, n_splits=5)
+        final_calibrator = _fit_platt(production_oof, dev_y, dev_groups_array)
         joblib.dump(final_calibrator, calibrator_path, compress=3)
         calibration_artifact_sha = hashlib.sha256(calibrator_path.read_bytes()).hexdigest()
     else:
@@ -235,9 +275,9 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
     test_rows = [rows[index] for index in test_idx]
     test_y = y[test_idx]
     test_groups_array = groups[test_idx]
-    all_calibrated_scores = _apply_platt(final_calibrator, test_scores)
     raw_test_cal = calibration_metrics(test_y, test_scores)
-    calibrated_test_cal = calibration_metrics(test_y, all_calibrated_scores)
+    all_calibrated_scores = _apply_platt(final_calibrator, test_scores) if adopt else None
+    calibrated_test_cal = calibration_metrics(test_y, all_calibrated_scores) if adopt else None
     support = _support(rows, dev_groups)
     support_path = artifact_dir / SUPPORT_PATH.name
     support_path.write_text(json.dumps(support, indent=2), encoding="utf-8")
@@ -248,7 +288,8 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
     probe_rows = [rows[i] for i in dev_idx[: len(batch)]]
     for _ in range(3):
         raw = _score(final_estimator, batch)
-        _apply_platt(final_calibrator, raw)
+        if adopt:
+            _apply_platt(final_calibrator, raw)
         for row in probe_rows:
             check_distribution_support(row, support)
     repeats = 30
@@ -258,16 +299,17 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
     model_ms = (time.perf_counter_ns() - started) / 1e6 / repeats
     started = time.perf_counter_ns()
     for _ in range(repeats):
-        _apply_platt(final_calibrator, raw)
-    calibration_ms = (time.perf_counter_ns() - started) / 1e6 / repeats
+        if adopt:
+            _apply_platt(final_calibrator, raw)
+    calibration_ms = ((time.perf_counter_ns() - started) / 1e6 / repeats) if adopt else None
     started = time.perf_counter_ns()
     for _ in range(repeats):
         [check_distribution_support(row, support) for row in probe_rows]
     support_ms = (time.perf_counter_ns() - started) / 1e6 / repeats
 
     raw_test_order = np.argsort(np.argsort(test_scores))
-    calibrated_test_order = np.argsort(np.argsort(all_calibrated_scores))
-    ranking_flip_fraction = float(np.mean(raw_test_order != calibrated_test_order))
+    calibrated_test_order = np.argsort(np.argsort(all_calibrated_scores)) if adopt else None
+    ranking_flip_fraction = float(np.mean(raw_test_order != calibrated_test_order)) if adopt else None
     failures: dict[str, list[dict[str, Any]]] = {"false_positives": [], "false_negatives": []}
     for local, index in enumerate(test_idx):
         kind = "false_positives" if test_pred[local] == 1 and test_y[local] == 0 else "false_negatives" if test_pred[local] == 0 and test_y[local] == 1 else None
@@ -297,23 +339,29 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
     # intentional sensitivity variants are generated by the separate CLI.
     statuses = [check_distribution_support(row, support)["status"] for row in test_rows]
     report = {
-        "version": "ml-reliability-v1", "model_version": metadata["model_version"],
+        "version": "ml-reliability-v2", "model_version": metadata["model_version"],
         "model_artifact_sha256": metadata["artifact_sha256"], "feature_schema": FEATURE_NAMES,
         "dataset_sha256": dataset_sha, "dataset_configuration": dataset_metadata["configuration"],
         "split_scenario_ids": split, "calibration": {
-            "method": "Platt sigmoid on raw random-forest probability log-odds; 5-fold GroupKFold out-of-fold development scores; equal total sample weight per scenario",
+            "method": "Platt sigmoid on raw random-forest probability log-odds; production fit uses 5-fold GroupKFold OOF scores over development groups; equal total sample weight per scenario",
             "test_groups_used_for_fit_or_choice": False,
-            "adoption_rule": "Adopt only if nested group-held-out development Brier improves by at least 0.001 and log loss is no more than 0.01 worse.",
+            "adoption_rule": "Adopt only if fully nested outer development scenario-group Brier improves by at least 0.001 and log loss is no more than 0.01 worse. This rule was fixed before final test evaluation.",
             "status": "adopted" if adopt else "not_adopted_development_gate_failed",
             "calibrator_artifact": calibrator_path.name if adopt else None,
             "calibrator_sha256": calibration_artifact_sha,
-            "development_oof_raw": raw_oof_metrics, "development_nested_group_cv_calibrated": nested_oof_metrics,
+            "development_nested_outer_raw": raw_oof_metrics,
+            "development_nested_outer_calibrated": nested_oof_metrics,
+            "development_brier_improvement": brier_improvement,
+            "development_log_loss_delta": log_loss_delta,
+            "nested_group_fold_audit": fold_audit,
+            "production_calibrator_fit_groups": sorted(dev_groups) if adopt else [],
+            "production_calibrator_oof_folds": 5 if adopt else None,
             "final_held_out_raw": raw_test_cal, "final_held_out_platt": calibrated_test_cal,
             "held_out_classification_at_threshold_0_5": {
                 "uncalibrated": metrics(test_y, test_pred, test_scores),
-                "platt_calibrated": metrics(test_y, (all_calibrated_scores >= 0.5).astype(int), all_calibrated_scores),
+                "platt_calibrated": metrics(test_y, (all_calibrated_scores >= 0.5).astype(int), all_calibrated_scores) if adopt else None,
             },
-            "ranking_auc_unchanged_by_monotonic_sigmoid": float(roc_auc_score(test_y, all_calibrated_scores)),
+            "ranking_auc_unchanged_by_monotonic_sigmoid": float(roc_auc_score(test_y, all_calibrated_scores)) if adopt else None,
             "ranking_order_change_fraction_test": ranking_flip_fraction,
             "probability_scope": "Synthetic simulator label only; not real-world flood probability.",
         },
@@ -324,11 +372,21 @@ def run_reliability(dataset_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed:
         "distribution_support": {"method": "Per-feature training/development min-max plus 0.5th/99.5th percentile tail flags; missing, invalid, and schema mismatch have separate states.",
             "test_support_counts": {status: statuses.count(status) for status in sorted(set(statuses))},
             "limitations": "Marginal support only; correlations can be implausible while every feature remains individually in range. In-support does not guarantee accuracy; this is not an independently validated hazard score."},
+        "artifact_integrity": {
+            "dataset_sha256": dataset_sha,
+            "model_artifact_sha256": hashlib.sha256((artifact_dir / metadata["artifact_file"]).read_bytes()).hexdigest(),
+            "model_metadata_sha256": hashlib.sha256((artifact_dir / "model_metadata.json").read_bytes()).hexdigest(),
+            "calibrator_sha256": calibration_artifact_sha,
+            "support_sha256": hashlib.sha256(support_path.read_bytes()).hexdigest(),
+        },
+        "runtime_metadata": {"python_version": __import__("platform").python_version(),
+            "numpy_version": np.__version__, "scikit_learn_version": __import__("sklearn").__version__,
+            "seed": seed, "outer_group_folds": 5, "inner_group_folds": 5},
         "performance": {"batch_size": int(len(batch)), "repetitions": repeats,
             "original_model_batch_ms": model_ms, "calibrator_batch_ms": calibration_ms,
             "support_check_batch_ms": support_ms,
             "measurement_note": "Warmed local process timing; environment-specific; batch covers one generated city."},
-        "evaluation_date": "2026-10-16", "scikit_learn_version": __import__("sklearn").__version__,
+        "evaluation_date": date.today().isoformat(), "scikit_learn_version": __import__("sklearn").__version__,
     }
     (artifact_dir / RELIABILITY_PATH.name).write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
@@ -342,8 +400,8 @@ def main() -> None:
     args = parser.parse_args()
     report = run_reliability(args.dataset, args.artifacts, args.seed)
     print(json.dumps({"calibration_status": report["calibration"]["status"],
-        "nested_development_brier_raw": report["calibration"]["development_oof_raw"]["brier_score"],
-        "nested_development_brier_platt": report["calibration"]["development_nested_group_cv_calibrated"]["brier_score"],
+        "nested_development_brier_raw": report["calibration"]["development_nested_outer_raw"]["brier_score"],
+        "nested_development_brier_platt": report["calibration"]["development_nested_outer_calibrated"]["brier_score"],
         "test_raw": report["calibration"]["final_held_out_raw"],
         "test_platt": report["calibration"]["final_held_out_platt"],
         "newly_exposed": report["held_out_failure_analysis"]["newly_exposed"],

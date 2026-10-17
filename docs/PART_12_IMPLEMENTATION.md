@@ -7,7 +7,8 @@ Part 12 adds reproducible calibration, feature-support monitoring, failure/subgr
 ## Implemented behavior
 
 - Reproduced the v1 dataset from 72 scenario seeds and preserved its grouped 42/15/15 train/validation/test membership and model artifact checksum.
-- Fit a scenario-grouped out-of-fold Platt calibrator from development scenarios only. Nested grouped evaluation gates adoption.
+- Gate calibration with fully nested scenario-grouped development validation: each outer fold fits its base model only on outer-training groups, builds inner OOF scores only from those groups, fits Platt only on those scores and labels, then evaluates raw and calibrated scores on the untouched outer fold. Persist an auditable group-membership record for every fold.
+- After the development-only gate, fit the production Platt calibrator from five-fold grouped OOF scores over all 57 development scenarios. Keep the original random-forest artifact and the final 15 scenario test groups unchanged; if the gate fails, remove/disable the calibrator.
 - Evaluated raw and calibrated scores on the original untouched test groups; saved diagram bins, Brier score, log loss, fixed-bin ECE, ranking and threshold metrics.
 - Added interpretable feature-wise support status (`within_observed_support`, `edge_of_observed_support`, `outside_observed_support`, or invalid/schema mismatch), with thresholds fit only on training and validation data.
 - Added false-positive/false-negative examples and scenario-aware subgroup metrics. Small groups are counts-only.
@@ -31,6 +32,8 @@ Copy-Item (Join-Path $audit 'dataset_metadata.json') (Join-Path $audit 'artifact
 ```
 
 The evaluation artifacts contain the exact configuration, split IDs, checksums, and measurements. Timings are local development-machine observations, not service guarantees.
+
+Development adoption metrics and final synthetic test metrics are reported separately in `ML_CALIBRATION.md`, `PART_12_VERIFICATION.md`, and `backend/ml_artifacts/reliability_evaluation.json`. The report records outer validation/fit group IDs, artifact hashes, and runtime versions/seed. The final synthetic test set is evaluated only after the development gate and is never used to fit the calibrator or choose a method or threshold.
 
 ## Limitations
 
