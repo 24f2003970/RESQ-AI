@@ -327,6 +327,9 @@ class MLModelInfo(BaseModel):
     artifact_sha256: str | None = None
     sklearn_version: str | None = None
     probabilities_calibrated: bool = False
+    reliability_status: Literal["available", "degraded", "unavailable"] = "degraded"
+    calibration_status: str = "not_evaluated"
+    reliability_warnings: list[str] = []
     unavailable_reason: str | None = None
 
 
@@ -345,6 +348,7 @@ class MLDatasetInfo(BaseModel):
     random_sampling_seed: int
     configuration: dict[str, Any]
     provenance: str
+    csv_sha256: str | None = None
 
 
 class MLFeatureContribution(BaseModel):
@@ -361,6 +365,9 @@ class BuildingRiskPrediction(BaseModel):
     predicted_future_exposed: bool
     predicted_category: Literal["predicted_exposed", "predicted_not_exposed"]
     uncalibrated_model_score: float
+    calibrated_synthetic_probability: float | None = None
+    distribution_support_status: Literal["within_observed_support", "edge_of_observed_support", "outside_observed_support", "missing_features", "invalid_features", "incompatible_schema", "unavailable"] = "unavailable"
+    reliability_warnings: list[str] = []
     influential_features: list[MLFeatureContribution]
 
 
@@ -369,10 +376,14 @@ class ScenarioPredictionSet(BaseModel):
     scenario_id: str
     scenario_state_version: int
     scenario_tick: int
+    scenario_epoch: int = 0
     horizon_ticks: int
     horizon_minutes: int
     target_definition: str
     probabilities_calibrated: bool = False
+    reliability_status: Literal["available", "degraded", "unavailable"] = "degraded"
+    calibration_status: str = "not_evaluated"
+    reliability_warnings: list[str] = []
     predictions: list[BuildingRiskPrediction]
 
 

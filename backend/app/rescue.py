@@ -272,7 +272,12 @@ def route_from_mission_segment(g, saved_route, traversed_distance_m, segment_ind
 
 
 def priorities(city, state, predictions, closures=(), reserved_unit_ids=()):
-    pred = {p.building_id:p for p in getattr(predictions,"predictions",[])}
+    # Physical flood impacts remain authoritative. A future ML label can only
+    # add an eligible destination when its feature vector is inside the
+    # documented observed support; out-of-support model output is evidence only.
+    pred = {p.building_id:p for p in getattr(predictions,"predictions",[])
+            if getattr(p,"distribution_support_status",None) in
+            ("within_observed_support","edge_of_observed_support")}
     exposed = {i.entity_id:i for i in state.impacts.buildings}
     road_impacts={i.entity_id:i for i in state.impacts.roads}
     bridge_by_road={b.road_id:b for b in city.bridges}
@@ -303,7 +308,7 @@ def priorities(city, state, predictions, closures=(), reserved_unit_ids=()):
         access=1.0 if road_status in ("closed","flooded","manually_blocked") else .5 if road_status=="caution" else 0.0
         critical=1.0 if b.use=="hospital" else .5 if b.use=="shelter" else 0.0
         score=100*(.25*occ+.25*current+.15*depth+.10*forecast+.10*access+.10*scarcity+.05*critical)
-        rows.append({"building_id":b.id,"name":b.name,"use":b.use,"occupants":b.occupants,"current_exposed":bool(impact.water_reaches_building),"current_depth_m":impact.max_depth_m,"predicted_future_exposed":bool(future and future.predicted_future_exposed),"uncalibrated_ml_score":future.uncalibrated_model_score if future else None,"nearest_road_accessibility":road_status,"priority_score":round(score,2),"explanation":f"Score {score:.2f}/100 = occupants {occ:.2f}×0.25 + current exposure {current:.0f}×0.25 + depth {depth:.2f}×0.15 + forecast {forecast:.0f}×0.10 + access deterioration {access:.1f}×0.10 + resource scarcity {scarcity:.2f}×0.10 + criticality {critical:.1f}×0.05."})
+        rows.append({"building_id":b.id,"name":b.name,"use":b.use,"occupants":b.occupants,"current_exposed":bool(impact.water_reaches_building),"current_depth_m":impact.max_depth_m,"predicted_future_exposed":bool(future and future.predicted_future_exposed),"uncalibrated_ml_score":future.uncalibrated_model_score if future else None,"ml_distribution_support":future.distribution_support_status if future else None,"nearest_road_accessibility":road_status,"priority_score":round(score,2),"explanation":f"Score {score:.2f}/100 = occupants {occ:.2f}×0.25 + current exposure {current:.0f}×0.25 + depth {depth:.2f}×0.15 + forecast {forecast:.0f}×0.10 + access deterioration {access:.1f}×0.10 + resource scarcity {scarcity:.2f}×0.10 + criticality {critical:.1f}×0.05."})
     return sorted(rows,key=lambda r:(-r["priority_score"],r["building_id"]))
 
 

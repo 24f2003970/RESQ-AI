@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AgentDashboard, MLModelInfo, RescueRecommendation, ScenarioEnvelope, ScenarioPredictionSet } from "../api/client";
@@ -29,11 +29,12 @@ const typedEnvelope = scenarioFixture as unknown as ScenarioEnvelope;
 const scenario = typedEnvelope.state;
 const predictions = {
   scenario_id: scenario.id,
+  scenario_epoch: scenario.epoch,
   scenario_state_version: scenario.state_version,
   scenario_tick: scenario.tick,
   model_version: "synthetic-v1",
   horizon_minutes: 30,
-  predictions: [{ predicted_future_exposed: true }],
+  predictions: [{ predicted_future_exposed: true, distribution_support_status: "within_observed_support" }],
 } as unknown as ScenarioPredictionSet;
 const plan = {
   plan_id: "plan-current", scenario_id: scenario.id, scenario_version: scenario.state_version,
@@ -62,7 +63,7 @@ function arrange() {
   mocks.unitsRequest.mockResolvedValue([]);
 }
 
-afterEach(() => { vi.clearAllMocks(); });
+afterEach(() => { vi.useRealTimers(); vi.clearAllMocks(); });
 
 describe("Judge Mode", () => {
   it("uses the application scenario, distinguishes physical and predicted exposure, and requires commander review", async () => {
@@ -111,6 +112,22 @@ describe("Judge Mode", () => {
     expect(facts.stages.find((stage) => stage.label === "Proposal")?.status).toBe("unavailable");
   });
 
+  it("rejects another scenario's agent dashboard and excludes unsupported labels", () => {
+    const mixed = judgeFacts({
+      scenario, predictions: { ...predictions, predictions: [
+        { predicted_future_exposed: true, distribution_support_status: "outside_observed_support" },
+        { predicted_future_exposed: true, distribution_support_status: "within_observed_support" },
+      ] as unknown as ScenarioPredictionSet["predictions"] },
+      dashboard: { ...dashboard, scenario_id: "different-scenario" }, recommendation: plan,
+      missions: [], model: { status: "ready", model_version: "synthetic-v1" } as MLModelInfo,
+    });
+    expect(mixed.predicted).toBe(1);
+    expect(mixed.outOfSupportPredictions).toBe(1);
+    expect(mixed.traceCurrent).toBe(false);
+    expect(mixed.recommendationCurrent).toBe(false);
+    expect(mixed.pendingApproval).toBe(false);
+  });
+
   it("synchronizes the commander stage only after a persisted decision is returned", () => {
     const proposed = judgeFacts({ scenario, predictions, dashboard, recommendation: plan, missions: [], model: { status: "ready", model_version: "synthetic-v1" } as MLModelInfo });
     const approved = judgeFacts({ scenario: { ...scenario, state_version: scenario.state_version + 1 }, predictions, dashboard, recommendation: { ...plan, status: "approved" }, missions: [], model: { status: "ready", model_version: "synthetic-v1" } as MLModelInfo });
@@ -130,6 +147,31 @@ describe("Judge Mode", () => {
     expect(document.activeElement).toBe(lowGraphics);
     fireEvent.click(lowGraphics);
     expect(lowGraphics).not.toBeChecked();
+  });
+
+  it("does not let an older overlapping poll replace newer dashboard evidence", async () => {
+    arrange();
+    vi.useFakeTimers();
+    render(<MemoryRouter initialEntries={["/judge"]}><App/></MemoryRouter>);
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); });
+    expect(screen.getByText("Persisted assessment trace is available.")).toBeInTheDocument();
+    let resolveOlder!: (value: AgentDashboard) => void;
+    mocks.dashboardRequest.mockImplementationOnce(() => new Promise<AgentDashboard>((resolve) => { resolveOlder = resolve; }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(4000); });
+
+    mocks.dashboardRequest.mockResolvedValueOnce({
+      ...dashboard,
+      latest_trace: { ...dashboard.latest_trace!, summary: "Newer dashboard evidence." } as NonNullable<AgentDashboard["latest_trace"]>,
+    });
+    await act(async () => { await vi.advanceTimersByTimeAsync(4000); });
+    expect(screen.getByText("Newer dashboard evidence.")).toBeInTheDocument();
+
+    await act(async () => {
+      resolveOlder({ ...dashboard, latest_trace: { ...dashboard.latest_trace!, summary: "Older delayed evidence." } as NonNullable<AgentDashboard["latest_trace"]> });
+      await Promise.resolve(); await Promise.resolve();
+    });
+    expect(screen.getByText("Newer dashboard evidence.")).toBeInTheDocument();
+    expect(screen.queryByText("Older delayed evidence.")).not.toBeInTheDocument();
   });
 
   it("keeps backend exposure evidence available when the 3D scene fails", async () => {

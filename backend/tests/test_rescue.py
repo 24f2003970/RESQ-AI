@@ -50,7 +50,7 @@ def test_manual_closure_removes_segment_from_accessible_route_graph():
 def test_priority_components_respond_to_local_road_closure(tmp_path):
     state=ScenarioStore(tmp_path/"priority.sqlite3").create(ScenarioCreate(name="Priority",seed=2026,preset="heavy"),"priority-key").state
     city=generate_city(2026)
-    future=SimpleNamespace(predictions=[SimpleNamespace(building_id=city.buildings[0].id,predicted_future_exposed=True,uncalibrated_model_score=.7)])
+    future=SimpleNamespace(predictions=[SimpleNamespace(building_id=city.buildings[0].id,predicted_future_exposed=True,uncalibrated_model_score=.7,distribution_support_status="within_observed_support")])
     ranked=priorities(city,state,future)
     assert ranked
     building=next(item for item in city.buildings if item.id==ranked[0]["building_id"])
@@ -65,6 +65,17 @@ def test_priority_components_respond_to_local_road_closure(tmp_path):
     blocked=priorities(city,state,future,[road_id])
     blocked_row=next(item for item in blocked if item["building_id"]==building.id)
     assert blocked_row["priority_score"]>=ranked[0]["priority_score"]
+
+
+def test_out_of_support_future_label_does_not_create_a_forecast_destination(tmp_path):
+    state=ScenarioStore(tmp_path/"priority-support.sqlite3").create(ScenarioCreate(name="Support",seed=12,preset="mild"),"priority-support-key").state
+    city=generate_city(12)
+    physical={item.entity_id:item.water_reaches_building for item in state.impacts.buildings}
+    dry=next(building for building in city.buildings if not physical[building.id])
+    future=SimpleNamespace(predictions=[SimpleNamespace(building_id=dry.id,predicted_future_exposed=True,
+        uncalibrated_model_score=.99,distribution_support_status="outside_observed_support")])
+    ranked=priorities(city,state,future)
+    assert dry.id not in {item["building_id"] for item in ranked}
 
 
 def test_capacity_weighted_optimizer_and_nearest_baseline_are_distinct():

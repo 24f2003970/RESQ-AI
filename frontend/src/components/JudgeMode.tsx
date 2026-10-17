@@ -50,13 +50,15 @@ export default function JudgeMode({
       return;
     }
     let live = true;
+    let latestRefresh = 0;
     const controller = new AbortController();
     const refresh = async () => {
+      const refreshId = ++latestRefresh;
       const [nextDashboard, nextRecommendation, nextMissions, nextUnits] = await Promise.allSettled([
         fetchAgentDashboard(scenarioId, controller.signal), fetchLatestRecommendation(scenarioId, controller.signal),
         fetchMissions(scenarioId, controller.signal), fetchMissionUnits(scenarioId, controller.signal),
       ]);
-      if (!live || controller.signal.aborted) return;
+      if (!live || controller.signal.aborted || refreshId !== latestRefresh) return;
       const errors: string[] = [];
       if (nextDashboard.status === "fulfilled") setDashboard(nextDashboard.value); else errors.push("agent status");
       if (nextRecommendation.status === "fulfilled") setRecommendation(nextRecommendation.value); else errors.push("rescue recommendation");
@@ -81,10 +83,10 @@ export default function JudgeMode({
   const layerState = { ...defaultLayers, predictedRisk: showPredicted };
   const currentUnits = units.filter((unit) => unit.scenario_id === scenario?.id && unit.scenario_epoch === scenario?.epoch);
   const currentMissions = missions.filter((mission) => mission.scenario_id === scenario?.id && mission.scenario_epoch === scenario?.epoch);
-  const currentRuns = dashboard?.latest_runs.filter((run) => run.scenario_id === scenario?.id && run.scenario_epoch === scenario?.epoch && run.simulation_state_version === scenario?.state_version && run.infrastructure_revision === dashboard.infrastructure_revision) ?? [];
+  const currentRuns = facts.dashboardCurrent ? dashboard?.latest_runs.filter((run) => run.scenario_id === scenario?.id && run.scenario_epoch === scenario?.epoch && run.simulation_state_version === scenario?.state_version && run.infrastructure_revision === dashboard.infrastructure_revision) ?? [] : [];
   const availableUnits = currentUnits.filter((unit) => unit.status === "available").length;
   const committedUnits = currentUnits.filter((unit) => unit.status !== "available").length;
-  const latestTraceId = dashboard?.latest_trace?.event_id;
+  const latestTraceId = facts.traceCurrent ? dashboard?.latest_trace?.event_id : undefined;
 
   return <main className="judge-mode" aria-label="Judge presentation mode">
     <header className="judge-header">
@@ -108,7 +110,7 @@ export default function JudgeMode({
     <section className="judge-kpis" aria-label="Current backend metrics">
       <article><span><WavesIcon/> Simulated flood depth</span><strong>{scenario ? `${scenario.maximum_depth_m.toFixed(2)} m` : "—"}</strong><small>Peak physical simulation cell depth</small></article>
       <article><span><Building2 size={15}/> Physically exposed buildings</span><strong>{facts.exposed ?? "—"}</strong><small>Current flood simulation threshold</small></article>
-      <article><span><Cpu size={15}/> Predicted future exposure</span><strong>{facts.predicted ?? "—"}</strong><small>{facts.predictionCurrent ? `${predictions?.horizon_minutes} min · local synthetic model` : "No current-version inference loaded"}</small></article>
+      <article><span><Cpu size={15}/> Predicted future exposure</span><strong>{facts.predicted ?? "—"}</strong><small>{facts.predictionCurrent ? `${predictions?.horizon_minutes} min · local synthetic model` : "No current-version inference loaded"}</small>{facts.outOfSupportPredictions ? <small>{facts.outOfSupportPredictions} out-of-support labels excluded from planning</small> : null}</article>
       <article><span><Truck size={15}/> Rescue resources</span><strong>{units.length ? `${availableUnits} available` : "—"}</strong><small>{units.length ? `${committedUnits} committed or unavailable · backend inventory` : "Loading lifecycle records"}</small></article>
     </section>
     <div className="judge-layout">
@@ -116,11 +118,12 @@ export default function JudgeMode({
         <div className="judge-city-heading"><div><span className="live-dot"/><div><h2>Riverside Digital Twin</h2><small>{scenario ? `${scenario.status} · simulated T+${Math.floor(scenario.simulated_seconds / 60)} min · version ${scenario.state_version}` : "Scenario is loading"}</small></div></div>
           <div className="judge-controls"><label><input type="checkbox" checked={lowGraphics} onChange={(event) => setLowGraphics(event.target.checked)}/> Low graphics</label><label><input type="checkbox" checked={showPredicted} disabled={!facts.predictionCurrent} onChange={(event) => setShowPredicted(event.target.checked)}/> Predicted risk layer</label></div>
         </div>
-        <div className="judge-city-canvas"><SceneErrorBoundary fallback={<SceneFallback city={city} scenario={scenario}/>}><Suspense fallback={<div className="scene-loading" role="status">Loading the 3D city…</div>}><LazyCityScene city={city} scenario={scenario} selected={selectedBuilding} onSelect={setSelectedBuildingId} layers={layerState} lowGraphics={lowGraphics} predictions={facts.predictionCurrent ? predictions : null} routeLines={currentPlan?.status === "proposed" ? assignments.map((item) => item.route.polyline) : []} manualClosureIds={dashboard?.manual_closure_road_ids ?? []} missions={currentMissions} missionUnits={currentUnits} selectedMissionId={null} onSelectMission={() => {}}/></Suspense></SceneErrorBoundary></div>
+        <div className="judge-city-canvas"><SceneErrorBoundary fallback={<SceneFallback city={city} scenario={scenario}/>}><Suspense fallback={<div className="scene-loading" role="status">Loading the 3D city…</div>}><LazyCityScene city={city} scenario={scenario} selected={selectedBuilding} onSelect={setSelectedBuildingId} layers={layerState} lowGraphics={lowGraphics} predictions={facts.predictionCurrent && predictions ? { ...predictions, predictions: predictions.predictions.filter((item) => item.distribution_support_status === "within_observed_support" || item.distribution_support_status === "edge_of_observed_support") } : null} routeLines={currentPlan?.status === "proposed" ? assignments.map((item) => item.route.polyline) : []} manualClosureIds={facts.dashboardCurrent ? dashboard?.manual_closure_road_ids ?? [] : []} missions={currentMissions} missionUnits={currentUnits} selectedMissionId={null} onSelectMission={() => {}}/></Suspense></SceneErrorBoundary></div>
         <div className="judge-map-footer"><span>Simulated flood depth</span><span>{currentPlan?.status === "proposed" ? "Proposed route overlay" : currentMissions.some((mission) => ["en_route", "blocked", "arrived"].includes(mission.status)) ? "Backend mission routes" : "Select a building to inspect"}</span><span>Fictional city · local meters</span></div>
       </section>
       <aside className="judge-evidence-column" aria-label="Live system evidence">
         <section className="judge-card"><div className="judge-card-title"><h2>Agent coordination</h2><Badge tone={facts.traceCurrent && dashboard?.latest_trace?.status === "completed" ? "green" : dashboard?.latest_trace ? "amber" : ""}>{facts.traceCurrent ? dashboard?.latest_trace?.status : dashboard?.latest_trace ? "Older version" : "Waiting"}</Badge></div>
+          <p>Model reliability: {model?.status === "ready" ? model.reliability_status : "model unavailable"} · calibration: {model?.calibration_status ?? "unknown"}. Current flood conditions remain simulator outputs.</p>
           <p>{facts.traceCurrent ? dashboard?.latest_trace?.summary : dashboard?.latest_trace ? "The latest trace belongs to an earlier scenario or infrastructure revision; it remains historical evidence." : "No persisted six-agent trace is available for this scenario yet."}</p>
           {currentRuns.length ? <ol className="judge-agent-list">{currentRuns.map((run) => <li key={run.run_id}><span>{run.agent_name.replaceAll("_", " ")}</span><Badge tone={run.status === "completed" ? "green" : run.status === "failed" ? "red" : "amber"}>{run.status}</Badge></li>)}</ol> : <small>No agent runs match the current scenario version; previous traces remain historical evidence.</small>}
           {latestTraceId && <Link className="judge-evidence-link" to={`/decisions?event=${encodeURIComponent(latestTraceId)}`}>View decision evidence <ArrowUpRight size={14}/></Link>}

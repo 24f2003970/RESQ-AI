@@ -713,6 +713,38 @@
         }
       }
     },
+    "/api/v1/ml/reliability": {
+      "get": {
+        "summary": "Ml Reliability Info",
+        "operationId": "ml_reliability_info_api_v1_ml_reliability_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ml/sensitivity": {
+      "get": {
+        "summary": "Ml Sensitivity Info",
+        "operationId": "ml_sensitivity_info_api_v1_ml_sensitivity_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/ml/features": {
       "get": {
         "summary": "Ml Feature Info",
@@ -3281,6 +3313,39 @@
             "type": "number",
             "title": "Uncalibrated Model Score"
           },
+          "calibrated_synthetic_probability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calibrated Synthetic Probability"
+          },
+          "distribution_support_status": {
+            "type": "string",
+            "enum": [
+              "within_observed_support",
+              "edge_of_observed_support",
+              "outside_observed_support",
+              "missing_features",
+              "invalid_features",
+              "incompatible_schema",
+              "unavailable"
+            ],
+            "title": "Distribution Support Status",
+            "default": "unavailable"
+          },
+          "reliability_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reliability Warnings",
+            "default": []
+          },
           "influential_features": {
             "items": {
               "$ref": "#/components/schemas/MLFeatureContribution"
@@ -4115,6 +4180,17 @@
           "provenance": {
             "type": "string",
             "title": "Provenance"
+          },
+          "csv_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Csv Sha256"
           }
         },
         "type": "object",
@@ -4443,6 +4519,29 @@
             "type": "boolean",
             "title": "Probabilities Calibrated",
             "default": false
+          },
+          "reliability_status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "degraded",
+              "unavailable"
+            ],
+            "title": "Reliability Status",
+            "default": "degraded"
+          },
+          "calibration_status": {
+            "type": "string",
+            "title": "Calibration Status",
+            "default": "not_evaluated"
+          },
+          "reliability_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reliability Warnings",
+            "default": []
           },
           "unavailable_reason": {
             "anyOf": [
@@ -5520,6 +5619,11 @@
             "type": "integer",
             "title": "Scenario Tick"
           },
+          "scenario_epoch": {
+            "type": "integer",
+            "title": "Scenario Epoch",
+            "default": 0
+          },
           "horizon_ticks": {
             "type": "integer",
             "title": "Horizon Ticks"
@@ -5536,6 +5640,29 @@
             "type": "boolean",
             "title": "Probabilities Calibrated",
             "default": false
+          },
+          "reliability_status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "degraded",
+              "unavailable"
+            ],
+            "title": "Reliability Status",
+            "default": "degraded"
+          },
+          "calibration_status": {
+            "type": "string",
+            "title": "Calibration Status",
+            "default": "not_evaluated"
+          },
+          "reliability_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reliability Warnings",
+            "default": []
           },
           "predictions": {
             "items": {

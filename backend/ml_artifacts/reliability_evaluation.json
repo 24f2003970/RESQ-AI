@@ -1,0 +1,2706 @@
+{
+  "version": "ml-reliability-v2",
+  "model_version": "1.0.0",
+  "model_artifact_sha256": "9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73",
+  "feature_schema": [
+    "current_depth_max_m",
+    "current_depth_mean_m",
+    "current_exposed_fraction",
+    "neighborhood_depth_max_m",
+    "neighborhood_depth_mean_m",
+    "neighborhood_wet_fraction_005m",
+    "neighborhood_wet_fraction_030m",
+    "terrain_elevation_m",
+    "terrain_neighborhood_mean_m",
+    "distance_to_canal_m",
+    "river_level_m",
+    "terrain_minus_river_m",
+    "rainfall_mm_h",
+    "drainage_effectiveness",
+    "simulation_tick",
+    "building_height_m",
+    "building_floors",
+    "building_width_m",
+    "building_depth_m",
+    "x_m",
+    "y_m",
+    "use_residential",
+    "use_commercial",
+    "use_hospital",
+    "use_shelter"
+  ],
+  "dataset_sha256": "c560bdb345ad083f3f8e1d9d8a2d4928d2705bd7787f4e9640567a439040387d",
+  "dataset_configuration": {
+    "scenario_count": 72,
+    "first_scenario_seed": 73000,
+    "sampling_seed": 44117,
+    "horizon_ticks": 6,
+    "observation_ticks": [
+      0,
+      3,
+      6,
+      9,
+      12
+    ]
+  },
+  "split_scenario_ids": {
+    "train": [
+      "synthetic-73003",
+      "synthetic-73004",
+      "synthetic-73005",
+      "synthetic-73006",
+      "synthetic-73007",
+      "synthetic-73014",
+      "synthetic-73015",
+      "synthetic-73016",
+      "synthetic-73017",
+      "synthetic-73018",
+      "synthetic-73020",
+      "synthetic-73022",
+      "synthetic-73023",
+      "synthetic-73025",
+      "synthetic-73026",
+      "synthetic-73029",
+      "synthetic-73030",
+      "synthetic-73035",
+      "synthetic-73036",
+      "synthetic-73039",
+      "synthetic-73041",
+      "synthetic-73042",
+      "synthetic-73043",
+      "synthetic-73044",
+      "synthetic-73046",
+      "synthetic-73047",
+      "synthetic-73053",
+      "synthetic-73054",
+      "synthetic-73055",
+      "synthetic-73056",
+      "synthetic-73057",
+      "synthetic-73058",
+      "synthetic-73059",
+      "synthetic-73060",
+      "synthetic-73061",
+      "synthetic-73062",
+      "synthetic-73063",
+      "synthetic-73065",
+      "synthetic-73067",
+      "synthetic-73069",
+      "synthetic-73070",
+      "synthetic-73071"
+    ],
+    "validation": [
+      "synthetic-73002",
+      "synthetic-73013",
+      "synthetic-73021",
+      "synthetic-73024",
+      "synthetic-73027",
+      "synthetic-73032",
+      "synthetic-73034",
+      "synthetic-73037",
+      "synthetic-73038",
+      "synthetic-73045",
+      "synthetic-73049",
+      "synthetic-73051",
+      "synthetic-73052",
+      "synthetic-73064",
+      "synthetic-73066"
+    ],
+    "test": [
+      "synthetic-73000",
+      "synthetic-73001",
+      "synthetic-73008",
+      "synthetic-73009",
+      "synthetic-73010",
+      "synthetic-73011",
+      "synthetic-73012",
+      "synthetic-73019",
+      "synthetic-73028",
+      "synthetic-73031",
+      "synthetic-73033",
+      "synthetic-73040",
+      "synthetic-73048",
+      "synthetic-73050",
+      "synthetic-73068"
+    ]
+  },
+  "calibration": {
+    "method": "Platt sigmoid on raw random-forest probability log-odds; production fit uses 5-fold GroupKFold OOF scores over development groups; equal total sample weight per scenario",
+    "test_groups_used_for_fit_or_choice": false,
+    "adoption_rule": "Adopt only if fully nested outer development scenario-group Brier improves by at least 0.001 and log loss is no more than 0.01 worse. This rule was fixed before final test evaluation.",
+    "status": "adopted",
+    "calibrator_artifact": "flood_exposure_platt_v1.joblib",
+    "calibrator_sha256": "64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6",
+    "development_nested_outer_raw": {
+      "brier_score": 0.03218927544376991,
+      "log_loss": 0.1133040331025655,
+      "expected_calibration_error": 0.028141380836898322,
+      "ece_method": "10 fixed-width [0,1] bins; empty bins omitted from weighted sum; bin counts retained",
+      "reliability_diagram": [
+        {
+          "bin": 0,
+          "lower": 0.0,
+          "upper": 0.1,
+          "count": 4390,
+          "mean_score": 0.030920763030242767,
+          "observed_frequency": 0.011389521640091117
+        },
+        {
+          "bin": 1,
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 951,
+          "mean_score": 0.13575836668272745,
+          "observed_frequency": 0.09674027339642481
+        },
+        {
+          "bin": 2,
+          "lower": 0.2,
+          "upper": 0.30000000000000004,
+          "count": 410,
+          "mean_score": 0.24661695884056078,
+          "observed_frequency": 0.1926829268292683
+        },
+        {
+          "bin": 3,
+          "lower": 0.30000000000000004,
+          "upper": 0.4,
+          "count": 399,
+          "mean_score": 0.348581521508151,
+          "observed_frequency": 0.2907268170426065
+        },
+        {
+          "bin": 4,
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 350,
+          "mean_score": 0.44946856578970273,
+          "observed_frequency": 0.4857142857142857
+        },
+        {
+          "bin": 5,
+          "lower": 0.5,
+          "upper": 0.6000000000000001,
+          "count": 333,
+          "mean_score": 0.5515807105989555,
+          "observed_frequency": 0.6786786786786787
+        },
+        {
+          "bin": 6,
+          "lower": 0.6000000000000001,
+          "upper": 0.7000000000000001,
+          "count": 480,
+          "mean_score": 0.654885891429868,
+          "observed_frequency": 0.825
+        },
+        {
+          "bin": 7,
+          "lower": 0.7000000000000001,
+          "upper": 0.8,
+          "count": 666,
+          "mean_score": 0.7528110580965295,
+          "observed_frequency": 0.8933933933933934
+        },
+        {
+          "bin": 8,
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 796,
+          "mean_score": 0.8500787572603482,
+          "observed_frequency": 0.9698492462311558
+        },
+        {
+          "bin": 9,
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 11745,
+          "mean_score": 0.9916742225489619,
+          "observed_frequency": 0.9988080034057045
+        }
+      ],
+      "sklearn_reliability_curve": [
+        {
+          "mean_predicted": 0.030920763030242875,
+          "observed_fraction": 0.011389521640091117
+        },
+        {
+          "mean_predicted": 0.13575836668272734,
+          "observed_fraction": 0.09674027339642481
+        },
+        {
+          "mean_predicted": 0.24661695884056092,
+          "observed_fraction": 0.1926829268292683
+        },
+        {
+          "mean_predicted": 0.3485815215081511,
+          "observed_fraction": 0.2907268170426065
+        },
+        {
+          "mean_predicted": 0.44946856578970296,
+          "observed_fraction": 0.4857142857142857
+        },
+        {
+          "mean_predicted": 0.551580710598956,
+          "observed_fraction": 0.6786786786786787
+        },
+        {
+          "mean_predicted": 0.6548858914298682,
+          "observed_fraction": 0.825
+        },
+        {
+          "mean_predicted": 0.7528110580965298,
+          "observed_fraction": 0.8933933933933934
+        },
+        {
+          "mean_predicted": 0.8500787572603496,
+          "observed_fraction": 0.9698492462311558
+        },
+        {
+          "mean_predicted": 0.991674222548834,
+          "observed_fraction": 0.9988080034057045
+        }
+      ]
+    },
+    "development_nested_outer_calibrated": {
+      "brier_score": 0.029792627318029594,
+      "log_loss": 0.10234911360534699,
+      "expected_calibration_error": 0.004884690205107893,
+      "ece_method": "10 fixed-width [0,1] bins; empty bins omitted from weighted sum; bin counts retained",
+      "reliability_diagram": [
+        {
+          "bin": 0,
+          "lower": 0.0,
+          "upper": 0.1,
+          "count": 5264,
+          "mean_score": 0.014427742701022784,
+          "observed_frequency": 0.026025835866261397
+        },
+        {
+          "bin": 1,
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 373,
+          "mean_score": 0.1465849723660067,
+          "observed_frequency": 0.14745308310991956
+        },
+        {
+          "bin": 2,
+          "lower": 0.2,
+          "upper": 0.30000000000000004,
+          "count": 289,
+          "mean_score": 0.24832974635404342,
+          "observed_frequency": 0.23875432525951557
+        },
+        {
+          "bin": 3,
+          "lower": 0.30000000000000004,
+          "upper": 0.4,
+          "count": 209,
+          "mean_score": 0.34871405094156616,
+          "observed_frequency": 0.35406698564593303
+        },
+        {
+          "bin": 4,
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 231,
+          "mean_score": 0.44958813672600606,
+          "observed_frequency": 0.47186147186147187
+        },
+        {
+          "bin": 5,
+          "lower": 0.5,
+          "upper": 0.6000000000000001,
+          "count": 180,
+          "mean_score": 0.5499801779455227,
+          "observed_frequency": 0.5222222222222223
+        },
+        {
+          "bin": 6,
+          "lower": 0.6000000000000001,
+          "upper": 0.7000000000000001,
+          "count": 210,
+          "mean_score": 0.64860421241778,
+          "observed_frequency": 0.6761904761904762
+        },
+        {
+          "bin": 7,
+          "lower": 0.7000000000000001,
+          "upper": 0.8,
+          "count": 324,
+          "mean_score": 0.753233322854738,
+          "observed_frequency": 0.7839506172839507
+        },
+        {
+          "bin": 8,
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 599,
+          "mean_score": 0.8547740214630543,
+          "observed_frequency": 0.8614357262103506
+        },
+        {
+          "bin": 9,
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 12841,
+          "mean_score": 0.9946192537300413,
+          "observed_frequency": 0.995015964488747
+        }
+      ],
+      "sklearn_reliability_curve": [
+        {
+          "mean_predicted": 0.014427742701022808,
+          "observed_fraction": 0.026025835866261397
+        },
+        {
+          "mean_predicted": 0.14658497236600684,
+          "observed_fraction": 0.14745308310991956
+        },
+        {
+          "mean_predicted": 0.24832974635404348,
+          "observed_fraction": 0.23875432525951557
+        },
+        {
+          "mean_predicted": 0.3487140509415663,
+          "observed_fraction": 0.35406698564593303
+        },
+        {
+          "mean_predicted": 0.44958813672600584,
+          "observed_fraction": 0.47186147186147187
+        },
+        {
+          "mean_predicted": 0.5499801779455227,
+          "observed_fraction": 0.5222222222222223
+        },
+        {
+          "mean_predicted": 0.6486042124177798,
+          "observed_fraction": 0.6761904761904762
+        },
+        {
+          "mean_predicted": 0.7532333228547387,
+          "observed_fraction": 0.7839506172839507
+        },
+        {
+          "mean_predicted": 0.8547740214630535,
+          "observed_fraction": 0.8614357262103506
+        },
+        {
+          "mean_predicted": 0.9946192537298828,
+          "observed_fraction": 0.995015964488747
+        }
+      ]
+    },
+    "development_brier_improvement": 0.0023966481257403187,
+    "development_log_loss_delta": -0.01095491949721851,
+    "nested_group_fold_audit": [
+      {
+        "outer_validation_groups": [
+          "synthetic-73003",
+          "synthetic-73013",
+          "synthetic-73018",
+          "synthetic-73024",
+          "synthetic-73030",
+          "synthetic-73037",
+          "synthetic-73043",
+          "synthetic-73049",
+          "synthetic-73055",
+          "synthetic-73060",
+          "synthetic-73065",
+          "synthetic-73071"
+        ],
+        "outer_estimator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73070"
+        ],
+        "inner_oof_estimator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73070"
+        ],
+        "calibrator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73070"
+        ],
+        "inner_grouped_oof_folds": 5
+      },
+      {
+        "outer_validation_groups": [
+          "synthetic-73002",
+          "synthetic-73007",
+          "synthetic-73017",
+          "synthetic-73023",
+          "synthetic-73029",
+          "synthetic-73036",
+          "synthetic-73042",
+          "synthetic-73047",
+          "synthetic-73054",
+          "synthetic-73059",
+          "synthetic-73064",
+          "synthetic-73070"
+        ],
+        "outer_estimator_fit_groups": [
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73071"
+        ],
+        "inner_oof_estimator_fit_groups": [
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73071"
+        ],
+        "calibrator_fit_groups": [
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73071"
+        ],
+        "inner_grouped_oof_folds": 5
+      },
+      {
+        "outer_validation_groups": [
+          "synthetic-73006",
+          "synthetic-73016",
+          "synthetic-73022",
+          "synthetic-73027",
+          "synthetic-73035",
+          "synthetic-73041",
+          "synthetic-73046",
+          "synthetic-73053",
+          "synthetic-73058",
+          "synthetic-73063",
+          "synthetic-73069"
+        ],
+        "outer_estimator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "inner_oof_estimator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "calibrator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73005",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73015",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73021",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73026",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73034",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73039",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73045",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73052",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73057",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73062",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73067",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "inner_grouped_oof_folds": 5
+      },
+      {
+        "outer_validation_groups": [
+          "synthetic-73005",
+          "synthetic-73015",
+          "synthetic-73021",
+          "synthetic-73026",
+          "synthetic-73034",
+          "synthetic-73039",
+          "synthetic-73045",
+          "synthetic-73052",
+          "synthetic-73057",
+          "synthetic-73062",
+          "synthetic-73067"
+        ],
+        "outer_estimator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73069",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "inner_oof_estimator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73069",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "calibrator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73004",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73014",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73020",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73025",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73032",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73038",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73044",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73051",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73056",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73061",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73066",
+          "synthetic-73069",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "inner_grouped_oof_folds": 5
+      },
+      {
+        "outer_validation_groups": [
+          "synthetic-73004",
+          "synthetic-73014",
+          "synthetic-73020",
+          "synthetic-73025",
+          "synthetic-73032",
+          "synthetic-73038",
+          "synthetic-73044",
+          "synthetic-73051",
+          "synthetic-73056",
+          "synthetic-73061",
+          "synthetic-73066"
+        ],
+        "outer_estimator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "inner_oof_estimator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "calibrator_fit_groups": [
+          "synthetic-73002",
+          "synthetic-73003",
+          "synthetic-73005",
+          "synthetic-73006",
+          "synthetic-73007",
+          "synthetic-73013",
+          "synthetic-73015",
+          "synthetic-73016",
+          "synthetic-73017",
+          "synthetic-73018",
+          "synthetic-73021",
+          "synthetic-73022",
+          "synthetic-73023",
+          "synthetic-73024",
+          "synthetic-73026",
+          "synthetic-73027",
+          "synthetic-73029",
+          "synthetic-73030",
+          "synthetic-73034",
+          "synthetic-73035",
+          "synthetic-73036",
+          "synthetic-73037",
+          "synthetic-73039",
+          "synthetic-73041",
+          "synthetic-73042",
+          "synthetic-73043",
+          "synthetic-73045",
+          "synthetic-73046",
+          "synthetic-73047",
+          "synthetic-73049",
+          "synthetic-73052",
+          "synthetic-73053",
+          "synthetic-73054",
+          "synthetic-73055",
+          "synthetic-73057",
+          "synthetic-73058",
+          "synthetic-73059",
+          "synthetic-73060",
+          "synthetic-73062",
+          "synthetic-73063",
+          "synthetic-73064",
+          "synthetic-73065",
+          "synthetic-73067",
+          "synthetic-73069",
+          "synthetic-73070",
+          "synthetic-73071"
+        ],
+        "inner_grouped_oof_folds": 5
+      }
+    ],
+    "production_calibrator_fit_groups": [
+      "synthetic-73002",
+      "synthetic-73003",
+      "synthetic-73004",
+      "synthetic-73005",
+      "synthetic-73006",
+      "synthetic-73007",
+      "synthetic-73013",
+      "synthetic-73014",
+      "synthetic-73015",
+      "synthetic-73016",
+      "synthetic-73017",
+      "synthetic-73018",
+      "synthetic-73020",
+      "synthetic-73021",
+      "synthetic-73022",
+      "synthetic-73023",
+      "synthetic-73024",
+      "synthetic-73025",
+      "synthetic-73026",
+      "synthetic-73027",
+      "synthetic-73029",
+      "synthetic-73030",
+      "synthetic-73032",
+      "synthetic-73034",
+      "synthetic-73035",
+      "synthetic-73036",
+      "synthetic-73037",
+      "synthetic-73038",
+      "synthetic-73039",
+      "synthetic-73041",
+      "synthetic-73042",
+      "synthetic-73043",
+      "synthetic-73044",
+      "synthetic-73045",
+      "synthetic-73046",
+      "synthetic-73047",
+      "synthetic-73049",
+      "synthetic-73051",
+      "synthetic-73052",
+      "synthetic-73053",
+      "synthetic-73054",
+      "synthetic-73055",
+      "synthetic-73056",
+      "synthetic-73057",
+      "synthetic-73058",
+      "synthetic-73059",
+      "synthetic-73060",
+      "synthetic-73061",
+      "synthetic-73062",
+      "synthetic-73063",
+      "synthetic-73064",
+      "synthetic-73065",
+      "synthetic-73066",
+      "synthetic-73067",
+      "synthetic-73069",
+      "synthetic-73070",
+      "synthetic-73071"
+    ],
+    "production_calibrator_oof_folds": 5,
+    "final_held_out_raw": {
+      "brier_score": 0.030526440868303074,
+      "log_loss": 0.10666613309320318,
+      "expected_calibration_error": 0.02653783829868751,
+      "ece_method": "10 fixed-width [0,1] bins; empty bins omitted from weighted sum; bin counts retained",
+      "reliability_diagram": [
+        {
+          "bin": 0,
+          "lower": 0.0,
+          "upper": 0.1,
+          "count": 1857,
+          "mean_score": 0.022592616528828057,
+          "observed_frequency": 0.0059235325794291865
+        },
+        {
+          "bin": 1,
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 194,
+          "mean_score": 0.13825065634308867,
+          "observed_frequency": 0.06701030927835051
+        },
+        {
+          "bin": 2,
+          "lower": 0.2,
+          "upper": 0.30000000000000004,
+          "count": 131,
+          "mean_score": 0.2445747251489728,
+          "observed_frequency": 0.20610687022900764
+        },
+        {
+          "bin": 3,
+          "lower": 0.30000000000000004,
+          "upper": 0.4,
+          "count": 138,
+          "mean_score": 0.3505388430088826,
+          "observed_frequency": 0.35507246376811596
+        },
+        {
+          "bin": 4,
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 85,
+          "mean_score": 0.4495340434651287,
+          "observed_frequency": 0.4823529411764706
+        },
+        {
+          "bin": 5,
+          "lower": 0.5,
+          "upper": 0.6000000000000001,
+          "count": 95,
+          "mean_score": 0.5486678578054486,
+          "observed_frequency": 0.7052631578947368
+        },
+        {
+          "bin": 6,
+          "lower": 0.6000000000000001,
+          "upper": 0.7000000000000001,
+          "count": 97,
+          "mean_score": 0.6452383247625914,
+          "observed_frequency": 0.8556701030927835
+        },
+        {
+          "bin": 7,
+          "lower": 0.7000000000000001,
+          "upper": 0.8,
+          "count": 129,
+          "mean_score": 0.755971657269729,
+          "observed_frequency": 0.9224806201550387
+        },
+        {
+          "bin": 8,
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 172,
+          "mean_score": 0.8517081489723138,
+          "observed_frequency": 0.9534883720930233
+        },
+        {
+          "bin": 9,
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 2502,
+          "mean_score": 0.9916864967913318,
+          "observed_frequency": 0.9980015987210232
+        }
+      ],
+      "sklearn_reliability_curve": [
+        {
+          "mean_predicted": 0.022592616528828005,
+          "observed_fraction": 0.0059235325794291865
+        },
+        {
+          "mean_predicted": 0.13825065634308872,
+          "observed_fraction": 0.06701030927835051
+        },
+        {
+          "mean_predicted": 0.24457472514897285,
+          "observed_fraction": 0.20610687022900764
+        },
+        {
+          "mean_predicted": 0.3505388430088826,
+          "observed_fraction": 0.35507246376811596
+        },
+        {
+          "mean_predicted": 0.4495340434651284,
+          "observed_fraction": 0.4823529411764706
+        },
+        {
+          "mean_predicted": 0.5486678578054487,
+          "observed_fraction": 0.7052631578947368
+        },
+        {
+          "mean_predicted": 0.6452383247625915,
+          "observed_fraction": 0.8556701030927835
+        },
+        {
+          "mean_predicted": 0.7559716572697288,
+          "observed_fraction": 0.9224806201550387
+        },
+        {
+          "mean_predicted": 0.851708148972314,
+          "observed_fraction": 0.9534883720930233
+        },
+        {
+          "mean_predicted": 0.9916864967913683,
+          "observed_fraction": 0.9980015987210232
+        }
+      ]
+    },
+    "final_held_out_platt": {
+      "brier_score": 0.027916921142542774,
+      "log_loss": 0.09418956599217757,
+      "expected_calibration_error": 0.005008796248346172,
+      "ece_method": "10 fixed-width [0,1] bins; empty bins omitted from weighted sum; bin counts retained",
+      "reliability_diagram": [
+        {
+          "bin": 0,
+          "lower": 0.0,
+          "upper": 0.1,
+          "count": 1999,
+          "mean_score": 0.01117928735504436,
+          "observed_frequency": 0.009004502251125562
+        },
+        {
+          "bin": 1,
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 119,
+          "mean_score": 0.15178717783411866,
+          "observed_frequency": 0.14285714285714285
+        },
+        {
+          "bin": 2,
+          "lower": 0.2,
+          "upper": 0.30000000000000004,
+          "count": 73,
+          "mean_score": 0.24916520991993973,
+          "observed_frequency": 0.2328767123287671
+        },
+        {
+          "bin": 3,
+          "lower": 0.30000000000000004,
+          "upper": 0.4,
+          "count": 94,
+          "mean_score": 0.3505237469037182,
+          "observed_frequency": 0.3617021276595745
+        },
+        {
+          "bin": 4,
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 65,
+          "mean_score": 0.44188948477324086,
+          "observed_frequency": 0.4307692307692308
+        },
+        {
+          "bin": 5,
+          "lower": 0.5,
+          "upper": 0.6000000000000001,
+          "count": 55,
+          "mean_score": 0.5482389504257996,
+          "observed_frequency": 0.4909090909090909
+        },
+        {
+          "bin": 6,
+          "lower": 0.6000000000000001,
+          "upper": 0.7000000000000001,
+          "count": 74,
+          "mean_score": 0.6518404557332085,
+          "observed_frequency": 0.6621621621621622
+        },
+        {
+          "bin": 7,
+          "lower": 0.7000000000000001,
+          "upper": 0.8,
+          "count": 79,
+          "mean_score": 0.7579430313809817,
+          "observed_frequency": 0.8860759493670886
+        },
+        {
+          "bin": 8,
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 116,
+          "mean_score": 0.8599328162593667,
+          "observed_frequency": 0.8793103448275862
+        },
+        {
+          "bin": 9,
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 2726,
+          "mean_score": 0.9946395976326601,
+          "observed_frequency": 0.9937637564196625
+        }
+      ],
+      "sklearn_reliability_curve": [
+        {
+          "mean_predicted": 0.011179287355044336,
+          "observed_fraction": 0.009004502251125562
+        },
+        {
+          "mean_predicted": 0.1517871778341187,
+          "observed_fraction": 0.14285714285714285
+        },
+        {
+          "mean_predicted": 0.24916520991993973,
+          "observed_fraction": 0.2328767123287671
+        },
+        {
+          "mean_predicted": 0.3505237469037181,
+          "observed_fraction": 0.3617021276595745
+        },
+        {
+          "mean_predicted": 0.44188948477324086,
+          "observed_fraction": 0.4307692307692308
+        },
+        {
+          "mean_predicted": 0.5482389504257995,
+          "observed_fraction": 0.4909090909090909
+        },
+        {
+          "mean_predicted": 0.6518404557332087,
+          "observed_fraction": 0.6621621621621622
+        },
+        {
+          "mean_predicted": 0.7579430313809818,
+          "observed_fraction": 0.8860759493670886
+        },
+        {
+          "mean_predicted": 0.8599328162593673,
+          "observed_fraction": 0.8793103448275862
+        },
+        {
+          "mean_predicted": 0.9946395976327026,
+          "observed_fraction": 0.9937637564196625
+        }
+      ]
+    },
+    "held_out_classification_at_threshold_0_5": {
+      "uncalibrated": {
+        "precision": 0.9782971619365609,
+        "recall": 0.9540866167372192,
+        "f1": 0.9660402242004615,
+        "balanced_accuracy": 0.9630888214643588,
+        "support": {
+          "negative": 2329,
+          "positive": 3071
+        },
+        "confusion_matrix": {
+          "true_negative": 2264,
+          "false_positive": 65,
+          "false_negative": 141,
+          "true_positive": 2930
+        },
+        "roc_auc": 0.9944937048042471,
+        "pr_auc_average_precision": 0.9959852666857474,
+        "brier_score_uncalibrated": 0.030526440868303036
+      },
+      "platt_calibrated": {
+        "precision": 0.9695081967213115,
+        "recall": 0.9628785411917942,
+        "f1": 0.966181996405816,
+        "balanced_accuracy": 0.961473620102123,
+        "support": {
+          "negative": 2329,
+          "positive": 3071
+        },
+        "confusion_matrix": {
+          "true_negative": 2236,
+          "false_positive": 93,
+          "false_negative": 114,
+          "true_positive": 2957
+        },
+        "roc_auc": 0.9944937048042471,
+        "pr_auc_average_precision": 0.9959852666857474,
+        "brier_score_uncalibrated": 0.027916921142542742
+      }
+    },
+    "ranking_auc_unchanged_by_monotonic_sigmoid": 0.9944937048042471,
+    "ranking_order_change_fraction_test": 0.0,
+    "probability_scope": "Synthetic simulator label only; not real-world flood probability."
+  },
+  "held_out_failure_analysis": {
+    "test_observation_count": 5400,
+    "test_scenario_count": 15,
+    "subgroups": {
+      "all_test": {
+        "observation_count": 5400,
+        "scenario_count": 15,
+        "positive_count": 3071,
+        "negative_count": 2329,
+        "precision": 0.9782971619365609,
+        "recall": 0.9540866167372192,
+        "f1": 0.9660402242004615,
+        "balanced_accuracy": 0.9630888214643588,
+        "support": {
+          "negative": 2329,
+          "positive": 3071
+        },
+        "confusion_matrix": {
+          "true_negative": 2264,
+          "false_positive": 65,
+          "false_negative": 141,
+          "true_positive": 2930
+        },
+        "roc_auc": 0.9944937048042471,
+        "pr_auc_average_precision": 0.9959852666857474,
+        "brier_score_uncalibrated": 0.030526440868303036,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "rainfall_mm_h:0-65": {
+        "observation_count": 2160,
+        "scenario_count": 6,
+        "positive_count": 483,
+        "negative_count": 1677,
+        "precision": 0.981941309255079,
+        "recall": 0.9006211180124224,
+        "f1": 0.9395248380129589,
+        "balanced_accuracy": 0.947925347318674,
+        "support": {
+          "negative": 1677,
+          "positive": 483
+        },
+        "confusion_matrix": {
+          "true_negative": 1669,
+          "false_positive": 8,
+          "false_negative": 48,
+          "true_positive": 435
+        },
+        "roc_auc": 0.9968345327293759,
+        "pr_auc_average_precision": 0.9905857145040358,
+        "brier_score_uncalibrated": 0.01929993225913245,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "rainfall_mm_h:65-130": {
+        "observation_count": 1440,
+        "scenario_count": 4,
+        "positive_count": 929,
+        "negative_count": 511,
+        "precision": 0.9650655021834061,
+        "recall": 0.9515608180839612,
+        "f1": 0.9582655826558265,
+        "balanced_accuracy": 0.9444692544431548,
+        "support": {
+          "negative": 511,
+          "positive": 929
+        },
+        "confusion_matrix": {
+          "true_negative": 479,
+          "false_positive": 32,
+          "false_negative": 45,
+          "true_positive": 884
+        },
+        "roc_auc": 0.9847846831494,
+        "pr_auc_average_precision": 0.9918843357542452,
+        "brier_score_uncalibrated": 0.045015064217648774,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "rainfall_mm_h:130-195": {
+        "observation_count": 1440,
+        "scenario_count": 4,
+        "positive_count": 1299,
+        "negative_count": 141,
+        "precision": 0.9804075235109718,
+        "recall": 0.9630484988452656,
+        "f1": 0.9716504854368933,
+        "balanced_accuracy": 0.8928717671531292,
+        "support": {
+          "negative": 141,
+          "positive": 1299
+        },
+        "confusion_matrix": {
+          "true_negative": 116,
+          "false_positive": 25,
+          "false_negative": 48,
+          "true_positive": 1251
+        },
+        "roc_auc": 0.9772274362712179,
+        "pr_auc_average_precision": 0.9975726577561925,
+        "brier_score_uncalibrated": 0.039498142607809,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "rainfall_mm_h:195+": {
+        "observation_count": 360,
+        "scenario_count": 1,
+        "positive_count": 360,
+        "negative_count": 0,
+        "status": "insufficient_scenario_support"
+      },
+      "river_stage:below_0m": {
+        "observation_count": 1440,
+        "scenario_count": 4,
+        "positive_count": 485,
+        "negative_count": 955,
+        "precision": 0.9662447257383966,
+        "recall": 0.9443298969072165,
+        "f1": 0.9551616266944735,
+        "balanced_accuracy": 0.9637879851028228,
+        "support": {
+          "negative": 955,
+          "positive": 485
+        },
+        "confusion_matrix": {
+          "true_negative": 939,
+          "false_positive": 16,
+          "false_negative": 27,
+          "true_positive": 458
+        },
+        "roc_auc": 0.9944513412856912,
+        "pr_auc_average_precision": 0.990184761634643,
+        "brier_score_uncalibrated": 0.026773026581744297,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "river_stage:0_to_0.8m": {
+        "observation_count": 1800,
+        "scenario_count": 5,
+        "positive_count": 1292,
+        "negative_count": 508,
+        "precision": 0.9724919093851133,
+        "recall": 0.9303405572755418,
+        "f1": 0.9509493670886076,
+        "balanced_accuracy": 0.931705711708637,
+        "support": {
+          "negative": 508,
+          "positive": 1292
+        },
+        "confusion_matrix": {
+          "true_negative": 474,
+          "false_positive": 34,
+          "false_negative": 90,
+          "true_positive": 1202
+        },
+        "roc_auc": 0.9824617269203577,
+        "pr_auc_average_precision": 0.9932937918484721,
+        "brier_score_uncalibrated": 0.05188237102012171,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "river_stage:0.8m_plus": {
+        "observation_count": 2160,
+        "scenario_count": 6,
+        "positive_count": 1294,
+        "negative_count": 866,
+        "precision": 0.9883268482490273,
+        "recall": 0.98145285935085,
+        "f1": 0.9848778596355177,
+        "balanced_accuracy": 0.9820659215922841,
+        "support": {
+          "negative": 866,
+          "positive": 1294
+        },
+        "confusion_matrix": {
+          "true_negative": 851,
+          "false_positive": 15,
+          "false_negative": 24,
+          "true_positive": 1270
+        },
+        "roc_auc": 0.9988193866878933,
+        "pr_auc_average_precision": 0.9992276550026555,
+        "brier_score_uncalibrated": 0.015232108599493309,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "drainage:low_below_0.33": {
+        "observation_count": 1440,
+        "scenario_count": 4,
+        "positive_count": 774,
+        "negative_count": 666,
+        "precision": 0.9791666666666666,
+        "recall": 0.9108527131782945,
+        "f1": 0.9437751004016064,
+        "balanced_accuracy": 0.944165095327886,
+        "support": {
+          "negative": 666,
+          "positive": 774
+        },
+        "confusion_matrix": {
+          "true_negative": 651,
+          "false_positive": 15,
+          "false_negative": 69,
+          "true_positive": 705
+        },
+        "roc_auc": 0.988265397180126,
+        "pr_auc_average_precision": 0.9910804678666488,
+        "brier_score_uncalibrated": 0.04470696255492367,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "drainage:mid_0.33_to_0.66": {
+        "observation_count": 2160,
+        "scenario_count": 6,
+        "positive_count": 904,
+        "negative_count": 1256,
+        "precision": 0.9900662251655629,
+        "recall": 0.9922566371681416,
+        "f1": 0.9911602209944751,
+        "balanced_accuracy": 0.9925455160363001,
+        "support": {
+          "negative": 1256,
+          "positive": 904
+        },
+        "confusion_matrix": {
+          "true_negative": 1247,
+          "false_positive": 9,
+          "false_negative": 7,
+          "true_positive": 897
+        },
+        "roc_auc": 0.9997868637619075,
+        "pr_auc_average_precision": 0.9997067554918713,
+        "brier_score_uncalibrated": 0.007039554334858685,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "drainage:high_0.66_plus": {
+        "observation_count": 1800,
+        "scenario_count": 5,
+        "positive_count": 1393,
+        "negative_count": 407,
+        "precision": 0.9700511322132944,
+        "recall": 0.9533381191672649,
+        "f1": 0.9616220130340333,
+        "balanced_accuracy": 0.926300509215082,
+        "support": {
+          "negative": 407,
+          "positive": 1393
+        },
+        "confusion_matrix": {
+          "true_negative": 366,
+          "false_positive": 41,
+          "false_negative": 65,
+          "true_positive": 1328
+        },
+        "roc_auc": 0.9816333333921274,
+        "pr_auc_average_precision": 0.9947469490154585,
+        "brier_score_uncalibrated": 0.04736628735913975,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "currently_dry": {
+        "observation_count": 3648,
+        "scenario_count": 15,
+        "positive_count": 1319,
+        "negative_count": 2329,
+        "precision": 0.9477071600965407,
+        "recall": 0.8931008339651251,
+        "f1": 0.9195940671350508,
+        "balanced_accuracy": 0.9325959300783118,
+        "support": {
+          "negative": 2329,
+          "positive": 1319
+        },
+        "confusion_matrix": {
+          "true_negative": 2264,
+          "false_positive": 65,
+          "false_negative": 141,
+          "true_positive": 1178
+        },
+        "roc_auc": 0.9871824127403074,
+        "pr_auc_average_precision": 0.9785712556342675,
+        "brier_score_uncalibrated": 0.045178226130831264,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "newly_exposed": {
+        "observation_count": 1319,
+        "scenario_count": 13,
+        "positive_count": 1319,
+        "negative_count": 0,
+        "status": "insufficient_class_support"
+      },
+      "near_exposure_threshold_0.03_to_0.07m": {
+        "observation_count": 1196,
+        "scenario_count": 12,
+        "positive_count": 1136,
+        "negative_count": 60,
+        "precision": 0.9798598949211909,
+        "recall": 0.9850352112676056,
+        "f1": 0.9824407374890255,
+        "balanced_accuracy": 0.8008509389671361,
+        "support": {
+          "negative": 60,
+          "positive": 1136
+        },
+        "confusion_matrix": {
+          "true_negative": 37,
+          "false_positive": 23,
+          "false_negative": 17,
+          "true_positive": 1119
+        },
+        "roc_auc": 0.9672975352112676,
+        "pr_auc_average_precision": 0.9981884944717643,
+        "brier_score_uncalibrated": 0.027366919460614956,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "simulation_tick:0": {
+        "observation_count": 1080,
+        "scenario_count": 15,
+        "positive_count": 347,
+        "negative_count": 733,
+        "precision": 0.9385113268608414,
+        "recall": 0.8357348703170029,
+        "f1": 0.8841463414634146,
+        "balanced_accuracy": 0.9049069985964278,
+        "support": {
+          "negative": 733,
+          "positive": 347
+        },
+        "confusion_matrix": {
+          "true_negative": 714,
+          "false_positive": 19,
+          "false_negative": 57,
+          "true_positive": 290
+        },
+        "roc_auc": 0.9807942567554285,
+        "pr_auc_average_precision": 0.966281683928373,
+        "brier_score_uncalibrated": 0.05697916732454898,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "simulation_tick:3": {
+        "observation_count": 1080,
+        "scenario_count": 15,
+        "positive_count": 570,
+        "negative_count": 510,
+        "precision": 0.9780621572212066,
+        "recall": 0.9385964912280702,
+        "f1": 0.9579230080572964,
+        "balanced_accuracy": 0.9575335397316822,
+        "support": {
+          "negative": 510,
+          "positive": 570
+        },
+        "confusion_matrix": {
+          "true_negative": 498,
+          "false_positive": 12,
+          "false_negative": 35,
+          "true_positive": 535
+        },
+        "roc_auc": 0.9923907808737531,
+        "pr_auc_average_precision": 0.9934365941336079,
+        "brier_score_uncalibrated": 0.037671662109061026,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "simulation_tick:6": {
+        "observation_count": 1080,
+        "scenario_count": 15,
+        "positive_count": 669,
+        "negative_count": 411,
+        "precision": 0.9833836858006042,
+        "recall": 0.9730941704035875,
+        "f1": 0.9782118707738543,
+        "balanced_accuracy": 0.9731650900679738,
+        "support": {
+          "negative": 411,
+          "positive": 669
+        },
+        "confusion_matrix": {
+          "true_negative": 400,
+          "false_positive": 11,
+          "false_negative": 18,
+          "true_positive": 651
+        },
+        "roc_auc": 0.9968067966496822,
+        "pr_auc_average_precision": 0.9980094463724491,
+        "brier_score_uncalibrated": 0.022134773521348405,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "simulation_tick:9": {
+        "observation_count": 1080,
+        "scenario_count": 15,
+        "positive_count": 729,
+        "negative_count": 351,
+        "precision": 0.9929577464788732,
+        "recall": 0.9670781893004116,
+        "f1": 0.9798471160528145,
+        "balanced_accuracy": 0.9764165875276987,
+        "support": {
+          "negative": 351,
+          "positive": 729
+        },
+        "confusion_matrix": {
+          "true_negative": 346,
+          "false_positive": 5,
+          "false_negative": 24,
+          "true_positive": 705
+        },
+        "roc_auc": 0.9977059469514888,
+        "pr_auc_average_precision": 0.9989199839267214,
+        "brier_score_uncalibrated": 0.020160096005811725,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "simulation_tick:12": {
+        "observation_count": 1080,
+        "scenario_count": 15,
+        "positive_count": 756,
+        "negative_count": 324,
+        "precision": 0.9765319426336375,
+        "recall": 0.9907407407407407,
+        "f1": 0.9835850295469468,
+        "balanced_accuracy": 0.9675925925925926,
+        "support": {
+          "negative": 324,
+          "positive": 756
+        },
+        "confusion_matrix": {
+          "true_negative": 306,
+          "false_positive": 18,
+          "false_negative": 7,
+          "true_positive": 749
+        },
+        "roc_auc": 0.9982444967012868,
+        "pr_auc_average_precision": 0.9992506855208232,
+        "brier_score_uncalibrated": 0.015686505380745067,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "terrain_elevation_m:q1": {
+        "observation_count": 1350,
+        "scenario_count": 15,
+        "positive_count": 1070,
+        "negative_count": 280,
+        "precision": 0.990521327014218,
+        "recall": 0.9766355140186916,
+        "f1": 0.9835294117647059,
+        "balanced_accuracy": 0.970460614152203,
+        "support": {
+          "negative": 280,
+          "positive": 1070
+        },
+        "confusion_matrix": {
+          "true_negative": 270,
+          "false_positive": 10,
+          "false_negative": 25,
+          "true_positive": 1045
+        },
+        "roc_auc": 0.9973197596795728,
+        "pr_auc_average_precision": 0.9993129124308707,
+        "brier_score_uncalibrated": 0.01766014149780835,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "terrain_elevation_m:q2": {
+        "observation_count": 1350,
+        "scenario_count": 15,
+        "positive_count": 697,
+        "negative_count": 653,
+        "precision": 0.9700149925037481,
+        "recall": 0.9282639885222381,
+        "f1": 0.9486803519061584,
+        "balanced_accuracy": 0.9488180585796488,
+        "support": {
+          "negative": 653,
+          "positive": 697
+        },
+        "confusion_matrix": {
+          "true_negative": 633,
+          "false_positive": 20,
+          "false_negative": 50,
+          "true_positive": 647
+        },
+        "roc_auc": 0.9903436517474803,
+        "pr_auc_average_precision": 0.9916774353562254,
+        "brier_score_uncalibrated": 0.04019925156301201,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "terrain_elevation_m:q3": {
+        "observation_count": 1350,
+        "scenario_count": 15,
+        "positive_count": 676,
+        "negative_count": 674,
+        "precision": 0.9830508474576272,
+        "recall": 0.9437869822485208,
+        "f1": 0.9630188679245283,
+        "balanced_accuracy": 0.9637332537355363,
+        "support": {
+          "negative": 674,
+          "positive": 676
+        },
+        "confusion_matrix": {
+          "true_negative": 663,
+          "false_positive": 11,
+          "false_negative": 38,
+          "true_positive": 638
+        },
+        "roc_auc": 0.994598616402999,
+        "pr_auc_average_precision": 0.9948078443740056,
+        "brier_score_uncalibrated": 0.031465997232876824,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "terrain_elevation_m:q4": {
+        "observation_count": 1350,
+        "scenario_count": 15,
+        "positive_count": 628,
+        "negative_count": 722,
+        "precision": 0.9615384615384616,
+        "recall": 0.9554140127388535,
+        "f1": 0.9584664536741214,
+        "balanced_accuracy": 0.9610865077544684,
+        "support": {
+          "negative": 722,
+          "positive": 628
+        },
+        "confusion_matrix": {
+          "true_negative": 698,
+          "false_positive": 24,
+          "false_negative": 28,
+          "true_positive": 600
+        },
+        "roc_auc": 0.9932468196975845,
+        "pr_auc_average_precision": 0.9924186743951539,
+        "brier_score_uncalibrated": 0.03278037317951498,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "distance_to_canal_m:q1": {
+        "observation_count": 1350,
+        "scenario_count": 15,
+        "positive_count": 1070,
+        "negative_count": 280,
+        "precision": 0.990521327014218,
+        "recall": 0.9766355140186916,
+        "f1": 0.9835294117647059,
+        "balanced_accuracy": 0.970460614152203,
+        "support": {
+          "negative": 280,
+          "positive": 1070
+        },
+        "confusion_matrix": {
+          "true_negative": 270,
+          "false_positive": 10,
+          "false_negative": 25,
+          "true_positive": 1045
+        },
+        "roc_auc": 0.9973197596795728,
+        "pr_auc_average_precision": 0.9993129124308707,
+        "brier_score_uncalibrated": 0.01766014149780835,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "distance_to_canal_m:q2": {
+        "observation_count": 1350,
+        "scenario_count": 15,
+        "positive_count": 697,
+        "negative_count": 653,
+        "precision": 0.9700149925037481,
+        "recall": 0.9282639885222381,
+        "f1": 0.9486803519061584,
+        "balanced_accuracy": 0.9488180585796488,
+        "support": {
+          "negative": 653,
+          "positive": 697
+        },
+        "confusion_matrix": {
+          "true_negative": 633,
+          "false_positive": 20,
+          "false_negative": 50,
+          "true_positive": 647
+        },
+        "roc_auc": 0.9903436517474803,
+        "pr_auc_average_precision": 0.9916774353562254,
+        "brier_score_uncalibrated": 0.04019925156301201,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "distance_to_canal_m:q3": {
+        "observation_count": 1350,
+        "scenario_count": 15,
+        "positive_count": 664,
+        "negative_count": 686,
+        "precision": 0.9828660436137072,
+        "recall": 0.9503012048192772,
+        "f1": 0.9663093415007658,
+        "balanced_accuracy": 0.9671331096982683,
+        "support": {
+          "negative": 686,
+          "positive": 664
+        },
+        "confusion_matrix": {
+          "true_negative": 675,
+          "false_positive": 11,
+          "false_negative": 33,
+          "true_positive": 631
+        },
+        "roc_auc": 0.9951965295584672,
+        "pr_auc_average_precision": 0.9951808136105819,
+        "brier_score_uncalibrated": 0.029979158455519364,
+        "status": "descriptive_synthetic_subgroup"
+      },
+      "distance_to_canal_m:q4": {
+        "observation_count": 1350,
+        "scenario_count": 15,
+        "positive_count": 640,
+        "negative_count": 710,
+        "precision": 0.9619651347068146,
+        "recall": 0.9484375,
+        "f1": 0.955153422501967,
+        "balanced_accuracy": 0.9573173415492958,
+        "support": {
+          "negative": 710,
+          "positive": 640
+        },
+        "confusion_matrix": {
+          "true_negative": 686,
+          "false_positive": 24,
+          "false_negative": 33,
+          "true_positive": 607
+        },
+        "roc_auc": 0.9925572183098591,
+        "pr_auc_average_precision": 0.9920095159425746,
+        "brier_score_uncalibrated": 0.03426721195687244,
+        "status": "descriptive_synthetic_subgroup"
+      }
+    },
+    "newly_exposed": {
+      "definition": "current footprint max depth <0.05 m and future target is exposure within 30 simulated minutes",
+      "observation_count_currently_dry": 3648,
+      "positive_newly_exposed_count": 1319,
+      "scenario_count": 15,
+      "precision": 0.9477071600965407,
+      "recall": 0.8931008339651251,
+      "f1": 0.9195940671350508,
+      "false_negative_count": 141
+    },
+    "false_positives": [
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 12,
+        "building_id": "building-2-1-1",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.6679980999468111,
+        "calibrated_synthetic_probability": 0.8156292799727443,
+        "relevant_features": {
+          "current_depth_max_m": 0.0284,
+          "neighborhood_depth_max_m": 0.18110529312605755,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.1273302188556602,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 12,
+        "building_id": "building-2-2-3",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.5234463003167402,
+        "calibrated_synthetic_probability": 0.6330744276224322,
+        "relevant_features": {
+          "current_depth_max_m": 0.0254,
+          "neighborhood_depth_max_m": 0.1591057495978061,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.0898585205580607,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 12,
+        "building_id": "building-3-1-1",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.5052385899339091,
+        "calibrated_synthetic_probability": 0.6063579136963883,
+        "relevant_features": {
+          "current_depth_max_m": 0.0241,
+          "neighborhood_depth_max_m": 0.21411223070070717,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.0844096494294253,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 6,
+        "building_id": "building-1-0-1",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.7891601735352136,
+        "calibrated_synthetic_probability": 0.9207517336917002,
+        "relevant_features": {
+          "current_depth_max_m": 0.0333,
+          "neighborhood_depth_max_m": 0.03576585829351797,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 1.931066289375066,
+          "distance_to_canal_m": 141.0,
+          "simulation_tick": 6.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 9,
+        "building_id": "building-hospital",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.8512528027171521,
+        "calibrated_synthetic_probability": 0.9574295725420566,
+        "relevant_features": {
+          "current_depth_max_m": 0.0387,
+          "neighborhood_depth_max_m": 0.05168141506269695,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 1.1466594111745636,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 9.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 12,
+        "building_id": "building-0-0-1",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.8552787172670465,
+        "calibrated_synthetic_probability": 0.9594223895576725,
+        "relevant_features": {
+          "current_depth_max_m": 0.0431,
+          "neighborhood_depth_max_m": 0.05080538721447282,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 2.0039532918186,
+          "distance_to_canal_m": 141.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 12,
+        "building_id": "building-1-1-1",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.5671975275453739,
+        "calibrated_synthetic_probability": 0.6942580705259637,
+        "relevant_features": {
+          "current_depth_max_m": 0.035,
+          "neighborhood_depth_max_m": 0.054752791916378066,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 1.1250003286581696,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 12,
+        "building_id": "building-2-0-0",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.5921241805120886,
+        "calibrated_synthetic_probability": 0.7269656564125861,
+        "relevant_features": {
+          "current_depth_max_m": 0.0423,
+          "neighborhood_depth_max_m": 0.06345413944718087,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 1.889464307066729,
+          "distance_to_canal_m": 141.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 12,
+        "building_id": "building-2-0-3",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.6623527531766404,
+        "calibrated_synthetic_probability": 0.8096257592764871,
+        "relevant_features": {
+          "current_depth_max_m": 0.0394,
+          "neighborhood_depth_max_m": 0.10734373215547893,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 1.7265797951759934,
+          "distance_to_canal_m": 107.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 12,
+        "building_id": "building-4-3-3",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.8554659304064092,
+        "calibrated_synthetic_probability": 0.9595139379819355,
+        "relevant_features": {
+          "current_depth_max_m": 0.0447,
+          "neighborhood_depth_max_m": 0.07800156175111417,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 2.055703303769886,
+          "distance_to_canal_m": 141.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73008",
+        "scenario_seed": 73008,
+        "tick": 3,
+        "building_id": "building-0-3-3",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.5139523514876341,
+        "calibrated_synthetic_probability": 0.6192272916605795,
+        "relevant_features": {
+          "current_depth_max_m": 0.0199,
+          "neighborhood_depth_max_m": 0.023601018907196465,
+          "rainfall_mm_h": 101.813162904422,
+          "river_level_m": 1.2429323895841675,
+          "drainage_effectiveness": 0.2268890334014279,
+          "terrain_elevation_m": 1.9859989991743912,
+          "distance_to_canal_m": 141.0,
+          "simulation_tick": 3.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73008",
+        "scenario_seed": 73008,
+        "tick": 3,
+        "building_id": "building-2-3-3",
+        "actual": 0,
+        "predicted": 1,
+        "raw_score_uncalibrated": 0.5177342132833263,
+        "calibrated_synthetic_probability": 0.6247655893044415,
+        "relevant_features": {
+          "current_depth_max_m": 0.0182,
+          "neighborhood_depth_max_m": 0.020822896918227776,
+          "rainfall_mm_h": 101.813162904422,
+          "river_level_m": 1.2429323895841675,
+          "drainage_effectiveness": 0.2268890334014279,
+          "terrain_elevation_m": 1.967999852965707,
+          "distance_to_canal_m": 141.0,
+          "simulation_tick": 3.0
+        }
+      }
+    ],
+    "false_negatives": [
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 9,
+        "building_id": "building-hospital",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.18776689535405788,
+        "calibrated_synthetic_probability": 0.13251976502752225,
+        "relevant_features": {
+          "current_depth_max_m": 0.0217,
+          "neighborhood_depth_max_m": 0.13937363629681163,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.0287869797445839,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 9.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 9,
+        "building_id": "building-1-1-1",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.10504232173179115,
+        "calibrated_synthetic_probability": 0.05053271690843192,
+        "relevant_features": {
+          "current_depth_max_m": 0.0171,
+          "neighborhood_depth_max_m": 0.13937363629681163,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.0247210760813992,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 9.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 9,
+        "building_id": "building-1-2-2",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.4071375284165099,
+        "calibrated_synthetic_probability": 0.4538376584444165,
+        "relevant_features": {
+          "current_depth_max_m": 0.0153,
+          "neighborhood_depth_max_m": 0.18447484206108772,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 0.938720040905886,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 9.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 9,
+        "building_id": "building-2-1-0",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.20783542647274783,
+        "calibrated_synthetic_probability": 0.1568334143094963,
+        "relevant_features": {
+          "current_depth_max_m": 0.0224,
+          "neighborhood_depth_max_m": 0.10821687353670656,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.0403553012952678,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 9.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 9,
+        "building_id": "building-4-1-0",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.4044049324723193,
+        "calibrated_synthetic_probability": 0.44947155562755126,
+        "relevant_features": {
+          "current_depth_max_m": 0.0157,
+          "neighborhood_depth_max_m": 0.1860478969448195,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.0103635099246833,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 9.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 9,
+        "building_id": "building-4-2-2",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.08754481431536976,
+        "calibrated_synthetic_probability": 0.03744032611517515,
+        "relevant_features": {
+          "current_depth_max_m": 0.0185,
+          "neighborhood_depth_max_m": 0.11110421481796003,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.1578261328512716,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 9.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 12,
+        "building_id": "building-0-1-0",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.365403543605305,
+        "calibrated_synthetic_probability": 0.387167755659527,
+        "relevant_features": {
+          "current_depth_max_m": 0.0266,
+          "neighborhood_depth_max_m": 0.15523467168110275,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.1502596780485117,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 12,
+        "building_id": "building-4-1-1",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.3667839463755377,
+        "calibrated_synthetic_probability": 0.38936548717573366,
+        "relevant_features": {
+          "current_depth_max_m": 0.0216,
+          "neighborhood_depth_max_m": 0.1642906306967616,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.105816700133397,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73000",
+        "scenario_seed": 73000,
+        "tick": 12,
+        "building_id": "building-4-2-3",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.3651276109872573,
+        "calibrated_synthetic_probability": 0.3867285715296537,
+        "relevant_features": {
+          "current_depth_max_m": 0.0303,
+          "neighborhood_depth_max_m": 0.1298291530648309,
+          "rainfall_mm_h": 33.353329090040695,
+          "river_level_m": 1.2217915057815274,
+          "drainage_effectiveness": 0.2973066228957111,
+          "terrain_elevation_m": 1.1846520528813078,
+          "distance_to_canal_m": 51.0,
+          "simulation_tick": 12.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 0,
+        "building_id": "building-0-1-2",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.37174543642919594,
+        "calibrated_synthetic_probability": 0.3972726490145168,
+        "relevant_features": {
+          "current_depth_max_m": 0.0,
+          "neighborhood_depth_max_m": 0.6139007672035907,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 0.6443664092992499,
+          "distance_to_canal_m": 17.0,
+          "simulation_tick": 0.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 0,
+        "building_id": "building-4-2-1",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.4088022277894008,
+        "calibrated_synthetic_probability": 0.45649649678790805,
+        "relevant_features": {
+          "current_depth_max_m": 0.0,
+          "neighborhood_depth_max_m": 0.565010263813593,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 0.6082551344744365,
+          "distance_to_canal_m": 17.0,
+          "simulation_tick": 0.0
+        }
+      },
+      {
+        "scenario_id": "synthetic-73001",
+        "scenario_seed": 73001,
+        "tick": 3,
+        "building_id": "building-2-3-0",
+        "actual": 1,
+        "predicted": 0,
+        "raw_score_uncalibrated": 0.08618492093724091,
+        "calibrated_synthetic_probability": 0.036490935156175575,
+        "relevant_features": {
+          "current_depth_max_m": 0.0157,
+          "neighborhood_depth_max_m": 0.01781044090618065,
+          "rainfall_mm_h": 73.88772396296822,
+          "river_level_m": 0.6600873477723461,
+          "drainage_effectiveness": 0.2887728885392216,
+          "terrain_elevation_m": 1.6711361814523609,
+          "distance_to_canal_m": 107.0,
+          "simulation_tick": 3.0
+        }
+      }
+    ],
+    "dependence_note": "Building-tick rows within a scenario are repeated and spatially related; subgroup counts are descriptive and do not imply independent observations."
+  },
+  "distribution_support": {
+    "method": "Per-feature training/development min-max plus 0.5th/99.5th percentile tail flags; missing, invalid, and schema mismatch have separate states.",
+    "test_support_counts": {
+      "edge_of_observed_support": 125,
+      "outside_observed_support": 735,
+      "within_observed_support": 4540
+    },
+    "limitations": "Marginal support only; correlations can be implausible while every feature remains individually in range. In-support does not guarantee accuracy; this is not an independently validated hazard score."
+  },
+  "artifact_integrity": {
+    "dataset_sha256": "c560bdb345ad083f3f8e1d9d8a2d4928d2705bd7787f4e9640567a439040387d",
+    "model_artifact_sha256": "9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73",
+    "model_metadata_sha256": "7542b7d10be467ef560ec76bbe105ffc8001c063dfff177375cbef42cb0bf2d4",
+    "calibrator_sha256": "64d50451b051092b0652a774064349d936c30eae93ce9b73f3790e3a29687ec6",
+    "support_sha256": "f01bcc84be76cc94b2df955ba5c9a90881e9823454c7aaa6da675833dc5f26f3"
+  },
+  "runtime_metadata": {
+    "python_version": "3.12.5",
+    "numpy_version": "2.5.4",
+    "scikit_learn_version": "1.9.1",
+    "seed": 92021,
+    "outer_group_folds": 5,
+    "inner_group_folds": 5
+  },
+  "performance": {
+    "batch_size": 360,
+    "repetitions": 30,
+    "original_model_batch_ms": 2.7390366666666663,
+    "calibrator_batch_ms": 0.07856666666666667,
+    "support_check_batch_ms": 9.942596666666667,
+    "measurement_note": "Warmed local process timing; environment-specific; batch covers one generated city."
+  },
+  "evaluation_date": "2026-10-17",
+  "scikit_learn_version": "1.9.1"
+}

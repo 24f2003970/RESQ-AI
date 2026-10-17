@@ -7,7 +7,7 @@ export function useRisk(scenario: ScenarioState | null) {
   const [error, setError] = useState("");
   useEffect(() => {
     const controller = new AbortController();
-    fetchMLModel(controller.signal).then(setModel).catch((e: unknown) => {
+    fetchMLModel(controller.signal).then((value) => { setModel(value); setError(""); }).catch((e: unknown) => {
       if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "Model service unavailable.");
     });
     return () => controller.abort();
@@ -17,11 +17,12 @@ export function useRisk(scenario: ScenarioState | null) {
     if (!scenario || model?.status !== "ready") return;
     const controller = new AbortController();
     fetchScenarioPredictions(scenario, undefined, controller.signal).then((result) => {
-      if (result.scenario_id === scenario.id && result.scenario_state_version === scenario.state_version && result.scenario_tick === scenario.tick) setPredictions(result);
+      if (result.scenario_id === scenario.id && result.scenario_epoch === scenario.epoch &&
+          result.scenario_state_version === scenario.state_version && result.scenario_tick === scenario.tick) setPredictions(result);
     }).catch((e: unknown) => {
       if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "Predictions unavailable.");
     });
     return () => controller.abort();
-  }, [scenario, scenario?.id, scenario?.state_version, scenario?.tick, model?.status]);
+  }, [scenario, scenario?.id, scenario?.epoch, scenario?.state_version, scenario?.tick, model?.status, model?.model_version]);
   return { model, predictions, error };
 }

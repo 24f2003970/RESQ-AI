@@ -269,7 +269,7 @@ def test_typed_mission_api_persists_dispatch_and_clock_progress(tmp_path,monkeyp
             queued=[(__import__("json").loads(row[0])["event_id"],__import__("json").loads(row[0])["event_type"]) for row in db.execute("SELECT envelope_json FROM agent_event_outbox")]
         dispatch_event=next(event_id for event_id,event_type in queued if event_type=="mission_dispatched")
         from types import SimpleNamespace
-        monkeypatch.setattr("app.agents.predictions",lambda _scenario_id:SimpleNamespace(model_version="mission-test",predictions=[]))
+        monkeypatch.setattr("app.agents.predictions",lambda _scenario_id:SimpleNamespace(model_version="mission-test",reliability_status="available",calibration_status="adopted",reliability_warnings=[],predictions=[]))
         orchestrator=AgentOrchestrator(scenarios,plans)
         orchestrator.process_event(dispatch_event)
         trace=orchestrator.get_trace(dispatch_event)

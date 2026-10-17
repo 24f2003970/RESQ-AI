@@ -129,6 +129,29 @@
       "title": "Probabilities Calibrated",
       "type": "boolean"
     },
+    "reliability_status": {
+      "default": "degraded",
+      "enum": [
+        "available",
+        "degraded",
+        "unavailable"
+      ],
+      "title": "Reliability Status",
+      "type": "string"
+    },
+    "calibration_status": {
+      "default": "not_evaluated",
+      "title": "Calibration Status",
+      "type": "string"
+    },
+    "reliability_warnings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Reliability Warnings",
+      "type": "array"
+    },
     "unavailable_reason": {
       "anyOf": [
         {

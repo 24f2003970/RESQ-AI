@@ -129,3 +129,7 @@ Local PowerShell setup and launch scripts validate runtimes, local dependencies,
 ## Part 11 Judge Mode
 
 Judge Mode is a presentation route inside the same React application. It receives the same `useScenario` snapshot as Command Center, and reads current model inference, persisted agent status, recommendation, missions and unit resources from the existing APIs. Prediction counts are shown only when scenario ID, state version and tick match; recommendations must match the current epoch, state version and infrastructure revision. The mode contains no approval action. A proposed plan links to the existing commander controls. If WebGL scene rendering throws, a backend-derived building exposure table remains available. See [PART_11_IMPLEMENTATION.md](PART_11_IMPLEMENTATION.md) and [JUDGE_MODE_GUIDE.md](JUDGE_MODE_GUIDE.md).
+
+# ML reliability layer (Part 12)
+
+The local inference service validates model, calibrator, feature-schema, and support artifacts before exposing future synthetic exposure estimates. Calibration and reliability reports are generated offline and served from saved artifacts. Out-of-support future labels are excluded from forecast-driven rescue eligibility; the deterministic flood simulator remains authoritative for current water state. Agent traces expose degraded model states and support warnings, and the commander approval boundary remains unchanged. See ML_CALIBRATION.md, DISTRIBUTION_SHIFT.md, and PART_12_IMPLEMENTATION.md.

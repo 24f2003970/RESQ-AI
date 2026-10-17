@@ -5,7 +5,22 @@
   "artifact_file": "flood_exposure_v1.joblib",
   "artifact_sha256": "9375c9f2bd919d5124f1320eab04b406c4bf2ae7e63c791fee713122ff843b73",
   "artifact_size_bytes": 1149862,
-  "created_at_utc": "2026-10-15T09:07:59.449203+00:00",
+  "dataset_sha256": "c560bdb345ad083f3f8e1d9d8a2d4928d2705bd7787f4e9640567a439040387d",
+  "dataset_configuration": {
+    "scenario_count": 72,
+    "first_scenario_seed": 73000,
+    "sampling_seed": 44117,
+    "horizon_ticks": 6,
+    "observation_ticks": [
+      0,
+      3,
+      6,
+      9,
+      12
+    ]
+  },
+  "dataset_version": "flood-exposure-synthetic-v1",
+  "created_at_utc": "2026-10-16T17:35:58.140270+00:00",
   "scikit_learn_version": "1.9.1",
   "engine_version": "flood-engine-v1",
   "features": [
@@ -133,5 +148,13 @@
       "synthetic-73050",
       "synthetic-73068"
     ]
+  },
+  "split_integrity": {
+    "group_key": "scenario_id",
+    "train_groups": 42,
+    "validation_groups": 15,
+    "test_groups": 15,
+    "overlap_count": 0,
+    "test_used_for_fit_or_model_selection": false
   }
 }

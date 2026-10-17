@@ -106,6 +106,12 @@ def _write_svg(path: Path, test_metrics: dict, importances: list[dict]) -> None:
 
 def train(dataset_path: Path, metadata_path: Path, artifact_dir: Path = ARTIFACT_DIR, seed: int = 92021) -> dict:
     rows = load_rows(dataset_path)
+    dataset_sha256 = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+    dataset_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if dataset_metadata.get("csv_sha256") and dataset_metadata["csv_sha256"] != dataset_sha256:
+        raise ValueError("Dataset CSV checksum does not match its generation metadata.")
+    if dataset_metadata.get("feature_names") != FEATURE_NAMES or dataset_metadata.get("target_name") != TARGET_NAME:
+        raise ValueError("Dataset provenance metadata is incompatible with the training schema.")
     groups = np.asarray([row["scenario_id"] for row in rows])
     unique_groups = np.unique(groups)
     if len(unique_groups) < 20:
@@ -193,6 +199,9 @@ def train(dataset_path: Path, metadata_path: Path, artifact_dir: Path = ARTIFACT
         "artifact_file": model_path.name,
         "artifact_sha256": artifact_hash,
         "artifact_size_bytes": model_path.stat().st_size,
+        "dataset_sha256": dataset_sha256,
+        "dataset_configuration": dataset_metadata.get("configuration", {}),
+        "dataset_version": dataset_metadata.get("dataset_version"),
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "scikit_learn_version": sklearn.__version__,
         "engine_version": ENGINE_VERSION,
@@ -208,6 +217,9 @@ def train(dataset_path: Path, metadata_path: Path, artifact_dir: Path = ARTIFACT
         "scenario_count": len(unique_groups),
         "training_scenarios": len(split_groups["train"]) + len(split_groups["validation"]),
         "split_scenario_ids": split_groups,
+        "split_integrity": {"group_key": "scenario_id", "train_groups": len(split_groups["train"]),
+            "validation_groups": len(split_groups["validation"]), "test_groups": len(split_groups["test"]),
+            "overlap_count": 0, "test_used_for_fit_or_model_selection": False},
     }
     evaluation = {
         "evaluation_version": "future-exposure-eval-v1",

@@ -101,7 +101,7 @@ def test_road_closure_uses_existing_graph_and_changes_route_without_flood_change
     path = tmp_path / "road-closure.sqlite3"
     _, base, repository, runner = _setup(path)
     city_buildings = __import__("app.city_service", fromlist=["generate_city"]).generate_city(base.seed).buildings
-    future = [SimpleNamespace(building_id=building.id, predicted_future_exposed=True, uncalibrated_model_score=0.8)
+    future = [SimpleNamespace(building_id=building.id, predicted_future_exposed=True, uncalibrated_model_score=0.8, distribution_support_status="within_observed_support")
               for building in city_buildings[:8]]
     monkeypatch.setattr("app.experiments.predict_state", lambda _state: SimpleNamespace(predictions=future, model_version="test-local"))
     request = _request(base, ticks=0,

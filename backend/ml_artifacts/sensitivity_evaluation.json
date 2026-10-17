@@ -1,0 +1,1453 @@
+{
+  "version": "simulation-sensitivity-v1",
+  "model_version": "1.0.0",
+  "dataset_engine_version": "flood-engine-v1",
+  "test_scenarios_used": [],
+  "validation_scenarios": [
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "parameters": {
+        "rainfall_mm_h": 148.4301152817092,
+        "river_level_m": 0.24560747887526357,
+        "drainage_effectiveness": 0.7596014439369148,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "parameters": {
+        "rainfall_mm_h": 228.13772005085957,
+        "river_level_m": 1.6310980961614094,
+        "drainage_effectiveness": 0.7240053923110937,
+        "speed": 1.0
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "parameters": {
+        "rainfall_mm_h": 246.21901683118105,
+        "river_level_m": 0.9346531592222578,
+        "drainage_effectiveness": 0.5004513195990037,
+        "speed": 1.0
+      }
+    }
+  ],
+  "ticks": [
+    0,
+    6,
+    12
+  ],
+  "intervention_method": "Change one scenario forcing parameter at a time, rerun the deterministic flood engine from initial depth to the target tick, then recompute model features and 30-minute simulator labels.",
+  "base_parameters_sampled_within_training_synthetic_ranges": true,
+  "interpretation": "Prediction changes measure sensitivity, not error. Stable outputs do not establish accuracy. Results describe a small deterministic synthetic validation probe, not real flood behavior.",
+  "comparisons": [
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 0,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 21,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 43,
+      "f1": 0.625,
+      "calibrated_probability_mean": 0.48683082375664466,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 0,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 148.4301152817092,
+        "after": 153.4301152817092
+      },
+      "prediction_flip_fraction_vs_baseline": 0.3194444444444444,
+      "rank_spearman_vs_baseline": 0.8688340086179176,
+      "predicted_positive_count": 44,
+      "delta_predicted_positive_count": 23,
+      "truth_positive_count": 46,
+      "f1": 0.8444444444444444,
+      "calibrated_probability_mean": 0.6282960619689928,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 0,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 148.4301152817092,
+        "after": 178.4301152817092
+      },
+      "prediction_flip_fraction_vs_baseline": 0.5972222222222222,
+      "rank_spearman_vs_baseline": 0.6841597530387807,
+      "predicted_positive_count": 64,
+      "delta_predicted_positive_count": 43,
+      "truth_positive_count": 63,
+      "f1": 0.9291338582677166,
+      "calibrated_probability_mean": 0.7265003416876962,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 0,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 0.24560747887526357,
+        "after": 0.2756074788752636
+      },
+      "prediction_flip_fraction_vs_baseline": 0.09722222222222222,
+      "rank_spearman_vs_baseline": 0.9884558492507558,
+      "predicted_positive_count": 16,
+      "delta_predicted_positive_count": -5,
+      "truth_positive_count": 43,
+      "f1": 0.4745762711864407,
+      "calibrated_probability_mean": 0.48637976345446826,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 0,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 0.24560747887526357,
+        "after": 0.3956074788752636
+      },
+      "prediction_flip_fraction_vs_baseline": 0.1388888888888889,
+      "rank_spearman_vs_baseline": 0.948324651102965,
+      "predicted_positive_count": 19,
+      "delta_predicted_positive_count": -2,
+      "truth_positive_count": 44,
+      "f1": 0.47619047619047616,
+      "calibrated_probability_mean": 0.5061183158083592,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 0,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.050000000000000044,
+        "before": 0.7596014439369148,
+        "after": 0.7096014439369147
+      },
+      "prediction_flip_fraction_vs_baseline": 0.041666666666666664,
+      "rank_spearman_vs_baseline": 0.9940832207859027,
+      "predicted_positive_count": 22,
+      "delta_predicted_positive_count": 1,
+      "truth_positive_count": 43,
+      "f1": 0.6461538461538462,
+      "calibrated_probability_mean": 0.5050878298071557,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 0,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.19999999999999996,
+        "before": 0.7596014439369148,
+        "after": 0.5596014439369148
+      },
+      "prediction_flip_fraction_vs_baseline": 0.08333333333333333,
+      "rank_spearman_vs_baseline": 0.9832465110296483,
+      "predicted_positive_count": 15,
+      "delta_predicted_positive_count": -6,
+      "truth_positive_count": 45,
+      "f1": 0.5,
+      "calibrated_probability_mean": 0.47850758187860365,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 6,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9993064076151263,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 6,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 148.4301152817092,
+        "after": 153.4301152817092
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.7828757074638256,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9994499913676572,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 6,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 148.4301152817092,
+        "after": 178.4301152817092
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.518125252096645,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999687141568907,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 6,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 0.24560747887526357,
+        "after": 0.2756074788752636
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.9698045854158224,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9993113895162001,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 6,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 0.24560747887526357,
+        "after": 0.3956074788752636
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.8626875463894796,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.999367447785304,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 6,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.050000000000000044,
+        "before": 0.7596014439369148,
+        "after": 0.7096014439369147
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.8404651690983633,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9994212297235161,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 6,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.19999999999999996,
+        "before": 0.7596014439369148,
+        "after": 0.5596014439369148
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.7424266770003561,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9995128145304091,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 12,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 12,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 148.4301152817092,
+        "after": 153.4301152817092
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 12,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 148.4301152817092,
+        "after": 178.4301152817092
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 12,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 0.24560747887526357,
+        "after": 0.2756074788752636
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 12,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 0.24560747887526357,
+        "after": 0.3956074788752636
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 12,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.050000000000000044,
+        "before": 0.7596014439369148,
+        "after": 0.7096014439369147
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73002",
+      "seed": 73002,
+      "tick": 12,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.19999999999999996,
+        "before": 0.7596014439369148,
+        "after": 0.5596014439369148
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 5,
+        "within_observed_support": 67
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 0,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9915508015377077,
+      "support_status_counts": {
+        "edge_of_observed_support": 1,
+        "within_observed_support": 71
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 0,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 228.13772005085957,
+        "after": 233.13772005085957
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9915508015377077,
+      "support_status_counts": {
+        "edge_of_observed_support": 1,
+        "within_observed_support": 71
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 0,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 228.13772005085957,
+        "after": 258.13772005085957
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9915508015377077,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 0,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 1.6310980961614094,
+        "after": 1.6610980961614095
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.943662430759205,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.982005909763902,
+      "support_status_counts": {
+        "edge_of_observed_support": 2,
+        "within_observed_support": 70
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 0,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 1.6310980961614094,
+        "after": 1.7810980961614093
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.8566634082763115,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9509706479513871,
+      "support_status_counts": {
+        "edge_of_observed_support": 10,
+        "outside_observed_support": 1,
+        "within_observed_support": 61
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 0,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.050000000000000044,
+        "before": 0.7240053923110937,
+        "after": 0.6740053923110937
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.9790159661127402,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9909463162434622,
+      "support_status_counts": {
+        "edge_of_observed_support": 1,
+        "within_observed_support": 71
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 0,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.20000000000000007,
+        "before": 0.7240053923110937,
+        "after": 0.5240053923110937
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.9100032583903551,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9901867635545822,
+      "support_status_counts": {
+        "edge_of_observed_support": 1,
+        "within_observed_support": 71
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 6,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 1,
+        "within_observed_support": 71
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 6,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 228.13772005085957,
+        "after": 233.13772005085957
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 1,
+        "within_observed_support": 71
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 6,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 228.13772005085957,
+        "after": 258.13772005085957
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 6,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 1.6310980961614094,
+        "after": 1.6610980961614095
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 2,
+        "within_observed_support": 70
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 6,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 1.6310980961614094,
+        "after": 1.7810980961614093
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999022731866766,
+      "support_status_counts": {
+        "edge_of_observed_support": 10,
+        "outside_observed_support": 1,
+        "within_observed_support": 61
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 6,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.050000000000000044,
+        "before": 0.7240053923110937,
+        "after": 0.6740053923110937
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 1,
+        "within_observed_support": 71
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 6,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.20000000000000007,
+        "before": 0.7240053923110937,
+        "after": 0.5240053923110937
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 1,
+        "within_observed_support": 71
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 12,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 13,
+        "within_observed_support": 59
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 12,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 228.13772005085957,
+        "after": 233.13772005085957
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 13,
+        "within_observed_support": 59
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 12,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 228.13772005085957,
+        "after": 258.13772005085957
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 12,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 1.6310980961614094,
+        "after": 1.6610980961614095
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 14,
+        "outside_observed_support": 1,
+        "within_observed_support": 57
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 12,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 1.6310980961614094,
+        "after": 1.7810980961614093
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999155874874626,
+      "support_status_counts": {
+        "edge_of_observed_support": 16,
+        "outside_observed_support": 2,
+        "within_observed_support": 54
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 12,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.050000000000000044,
+        "before": 0.7240053923110937,
+        "after": 0.6740053923110937
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 13,
+        "within_observed_support": 59
+      }
+    },
+    {
+      "scenario_id": "synthetic-73013",
+      "seed": 73013,
+      "tick": 12,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.20000000000000007,
+        "before": 0.7240053923110937,
+        "after": 0.5240053923110937
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 13,
+        "within_observed_support": 59
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 0,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 71,
+      "f1": 0.993006993006993,
+      "calibrated_probability_mean": 0.9656733758964676,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 0,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 246.21901683118105,
+        "after": 251.21901683118105
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9656733758964676,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 0,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 246.21901683118105,
+        "after": 276.2190168311811
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9656733758964676,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 0,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 0.9346531592222578,
+        "after": 0.9646531592222578
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.9553507690310856,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 71,
+      "f1": 0.993006993006993,
+      "calibrated_probability_mean": 0.9639950473802961,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 0,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 0.9346531592222578,
+        "after": 1.0846531592222577
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.9546693490817054,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 71,
+      "f1": 0.993006993006993,
+      "calibrated_probability_mean": 0.9682351896215037,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 0,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.04999999999999999,
+        "before": 0.5004513195990037,
+        "after": 0.4504513195990037
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.9886105522746447,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9643570607094991,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 0,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.2,
+        "before": 0.5004513195990037,
+        "after": 0.3004513195990037
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 0.9346161334285157,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9599128728456567,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 6,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 6,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 246.21901683118105,
+        "after": 251.21901683118105
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 6,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 246.21901683118105,
+        "after": 276.2190168311811
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 6,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 0.9346531592222578,
+        "after": 0.9646531592222578
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 6,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 0.9346531592222578,
+        "after": 1.0846531592222577
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 6,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.04999999999999999,
+        "before": 0.5004513195990037,
+        "after": 0.4504513195990037
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 6,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.2,
+        "before": 0.5004513195990037,
+        "after": 0.3004513195990037
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 12,
+      "variant": "baseline",
+      "intervention": null,
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": 1.0,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 12,
+      "variant": "rainfall_small_plus_5_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 5.0,
+        "before": 246.21901683118105,
+        "after": 251.21901683118105
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 12,
+      "variant": "rainfall_large_plus_30_mm_h",
+      "intervention": {
+        "parameter": "rainfall_mm_h",
+        "delta": 30.0,
+        "before": 246.21901683118105,
+        "after": 276.2190168311811
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "outside_observed_support": 72
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 12,
+      "variant": "river_small_plus_0.03_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.03,
+        "before": 0.9346531592222578,
+        "after": 0.9646531592222578
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 12,
+      "variant": "river_large_plus_0.15_m",
+      "intervention": {
+        "parameter": "river_level_m",
+        "delta": 0.15,
+        "before": 0.9346531592222578,
+        "after": 1.0846531592222577
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 12,
+      "variant": "drainage_small_minus_0.05",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.04999999999999999,
+        "before": 0.5004513195990037,
+        "after": 0.4504513195990037
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    },
+    {
+      "scenario_id": "synthetic-73021",
+      "seed": 73021,
+      "tick": 12,
+      "variant": "drainage_large_minus_0.20",
+      "intervention": {
+        "parameter": "drainage_effectiveness",
+        "delta": -0.2,
+        "before": 0.5004513195990037,
+        "after": 0.3004513195990037
+      },
+      "prediction_flip_fraction_vs_baseline": 0.0,
+      "rank_spearman_vs_baseline": null,
+      "predicted_positive_count": 72,
+      "delta_predicted_positive_count": 0,
+      "truth_positive_count": 72,
+      "f1": 1.0,
+      "calibrated_probability_mean": 0.9999999996888247,
+      "support_status_counts": {
+        "edge_of_observed_support": 4,
+        "within_observed_support": 68
+      }
+    }
+  ],
+  "summary": {
+    "comparison_count": 63,
+    "mean_nonbaseline_flip_fraction": 0.023662551440329218,
+    "mean_nonbaseline_spearman": 0.904420033276876,
+    "undefined_rank_pairs": 30
+  }
+}

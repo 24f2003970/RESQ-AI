@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -88,6 +89,7 @@ def generate_dataset(config: DatasetConfig, csv_path: str | Path, metadata_path:
                 print(f"Generated scenario {scenario_index}/{config.scenario_count} - {rows_written} observations", flush=True)
 
     negatives = rows_written - positive
+    csv_sha256 = hashlib.sha256(csv_path.read_bytes()).hexdigest()
     metadata = {
         "dataset_version": "flood-exposure-synthetic-v1",
         "engine_version": ENGINE_VERSION,
@@ -107,6 +109,7 @@ def generate_dataset(config: DatasetConfig, csv_path: str | Path, metadata_path:
         "simulation_seeds": seed_records,
         "provenance": "Generated locally from the RESQ-AI synthetic city generator and deterministic Part 3 flood engine; not collected from real incidents or observations.",
         "csv_file": csv_path.name,
+        "csv_sha256": csv_sha256,
     }
     metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     return metadata

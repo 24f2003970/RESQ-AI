@@ -290,7 +290,17 @@ class AgentOrchestrator:
         state=c["state"]; event=c["event"]; pred=c["prediction_set"]
         current={item.entity_id:item for item in state.impacts.buildings}
         current_ids=sorted(i for i,item in current.items() if item.water_reaches_building)
-        predicted_ids=sorted(p.building_id for p in pred.predictions if p.predicted_future_exposed) if pred else []
+        supported_predictions=[p for p in pred.predictions if getattr(p,"distribution_support_status","unavailable") in
+            ("within_observed_support","edge_of_observed_support")] if pred else []
+        predicted_ids=sorted(p.building_id for p in supported_predictions if p.predicted_future_exposed)
+        support_counts={}
+        if pred:
+            for item in pred.predictions:
+                support_counts[item.distribution_support_status]=support_counts.get(item.distribution_support_status,0)+1
+        reliability_warnings=list(getattr(pred,"reliability_warnings",[])) if pred else []
+        out_of_support_count=support_counts.get("outside_observed_support",0)
+        if out_of_support_count:
+            reliability_warnings.append(f"{out_of_support_count} building inputs are outside observed training support; their ML labels were excluded from forecast-based planning eligibility.")
         previous=self._latest_output("hazard_intelligence",state.id,state.epoch)
         previous_current=set(previous.get("current_exposed_building_ids",[]))
         previous_predicted=set(previous.get("predicted_exposed_building_ids",[]))
@@ -302,18 +312,30 @@ class AgentOrchestrator:
         evidence={"maximum_depth_m":state.maximum_depth_m,"affected_buildings":state.affected_buildings,
                   "rainfall_mm_h":state.parameters.rainfall_mm_h,"river_level_m":state.parameters.river_level_m,
                   "newly_threatened_count":len(newly),"depth_escalation_count":len(escalated),
-                  "model_version":pred.model_version if pred else None,"model_status":c["model_status"]}
+                  "model_version":pred.model_version if pred else None,"model_status":c["model_status"],
+                  "reliability_status":getattr(pred,"reliability_status","degraded") if pred else "unavailable",
+                  "calibration_status":getattr(pred,"calibration_status","unavailable") if pred else "unavailable",
+                  "distribution_support_counts":support_counts,"reliability_warnings":reliability_warnings}
         output={"current_exposed_building_ids":current_ids,"predicted_exposed_building_ids":predicted_ids,
                 "newly_threatened_building_ids":newly,"escalating_depth_building_ids":escalated,
                 "building_depth_m":{key:round(item.max_depth_m,4) for key,item in current.items()},
                 "model_status":c["model_status"],"model_version":pred.model_version if pred else None,
-                "model_limitation":"Local model uses synthetic simulator data; its probabilities are not calibrated." if pred else None,
+                "model_limitation":"Synthetic simulator only; calibrated output, when available, is a synthetic-label estimate and not a real-world disaster probability." if pred else None,
+                "reliability_status":getattr(pred,"reliability_status","degraded") if pred else "unavailable",
+                "calibration_status":getattr(pred,"calibration_status","unavailable") if pred else "unavailable",
+                "distribution_support_counts":support_counts,"reliability_warnings":reliability_warnings,
+                "unsupported_prediction_count":out_of_support_count,
                 "changed_parameters":changes,"event_reason":event.event_type}
         if not pred:
             output["_degraded"]=True
             output["_explanation"]=f"Rule-based physical hazard evidence is available; local ML predictions are unavailable ({c['model_error']}). No prediction was fabricated."
         else:
-            output["_explanation"]=f"Physical exposure uses the saved flood impacts; {len(predicted_ids)} buildings are labeled future-exposed by the local {pred.model_version} model."
+            degraded=getattr(pred,"reliability_status","degraded")!="available" or out_of_support_count>0
+            if degraded:
+                output["_degraded"]=True
+                output["_explanation"]=f"Physical flood evidence is authoritative. The local model is {getattr(pred,'reliability_status','degraded')}; {out_of_support_count} out-of-support labels were excluded from planning eligibility. Reliability warnings are attached to this trace."
+            else:
+                output["_explanation"]=f"Physical exposure uses saved flood impacts; supported future labels come from local model {pred.model_version}. They are synthetic-only estimates, not operational certainty."
         output["_evidence"]=evidence
         return output
 
@@ -484,6 +506,10 @@ class AgentOrchestrator:
                   "resource_allocation_duration_ms":outputs.get("resource_allocation",{}).get("solver_duration_ms"),
                   "plan_persistence_duration_ms":commander.get("persistence_duration_ms"),
                   "model_status":context["model_status"],"model_error":context["model_error"],
+                  "model_reliability_status":outputs.get("hazard_intelligence",{}).get("reliability_status","unavailable"),
+                  "model_calibration_status":outputs.get("hazard_intelligence",{}).get("calibration_status","unavailable"),
+                  "distribution_support_counts":outputs.get("hazard_intelligence",{}).get("distribution_support_counts",{}),
+                  "model_reliability_warnings":outputs.get("hazard_intelligence",{}).get("reliability_warnings",[]),
                   "proposal_decision":commander.get("decision"),"plan_id":plan_id,
                   "exposures":outputs.get("hazard_intelligence",{}).get("newly_threatened_building_ids",[]),
                   "road_changes":sorted(set(outputs.get("impact_assessment",{}).get("changed_road_or_bridge_ids",[]))|
