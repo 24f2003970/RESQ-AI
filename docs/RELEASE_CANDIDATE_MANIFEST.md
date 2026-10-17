@@ -22,6 +22,6 @@
 | External runtime dependency | No cloud inference/API key; Python/npm dependencies required locally. No formal OS-level isolation test. |
 | Verification totals | 89 backend; 43 frontend; lint/typecheck/contracts/build pass; Part 10 17/17; Part 14 14/14; see verification file. |
 | Known limitations | Synthetic-only assumptions; boat routing/field safety unsupported; CityScene chunk warning; browser mission progression, Demo B and requested viewport checks pending; render-loop source attribution provisional. |
-| Verification timestamp | Local verification completed 2026-10-17; hosted checks for this correction pending. |
+| Verification timestamp | Local verification completed 2026-10-17; hosted CI run 39032141846 passed on Part 14.1 correction commit. The latest PR-head run is tracked in GitHub. |
 
 This manifest describes an educational simulation prototype. It is not an operational certification, public production release, or emergency-response safety determination.
