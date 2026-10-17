@@ -2,17 +2,17 @@
 
 ## Verified walkthrough
 
-**Browser:** Codex in-app browser, Chromium-backed WebGL 2 context. The helper independently reported `http://127.0.0.1:5173/`; the app and API used the disposable `%TEMP%\resq-part14-browser\operational.sqlite3` database. The browser build string and user-agent were not exposed. Screenshots were reviewed in the browser tool but were not saved as repository evidence.
+**Browser:** Microsoft Edge, URL independently verified as `http://127.0.0.1:5173/`; app/API used a disposable SQLite database under `%TEMP%`. The available client viewport was 807×729 CSS pixels. Browser build/user-agent and requested 1366×768, 1440×900, and 1920×1080 viewport checks were not available in this session. Genuine screenshots were viewed in the helper but its supported interface did not save them as evidence files.
 
-The Command Center rendered the 3D Riverside scene, current simulated flood values (tick 6, 0.16 m maximum, 10 physically exposed buildings), road/bridge legend, local inventory and mission operations. Camera preset, orbit/zoom/reset controls, visible low-graphics mode, and scrollable page layout were inspected. The browser showed four ready missions after commander approval and kept their dispatch as a separate control. One mission was dispatched using the UI and its event appeared in Decision Explorer; route advancement, mid-route closure, revision approval, arrival, completion and return-to-service were verified by the disposable backend acceptance runner, not by the browser walkthrough.
+The Command Center rendered the 3D Riverside scene, current simulated flood values (tick 6, 0.16 m maximum, 10 physically exposed buildings), road/bridge legend, local inventory and mission operations. Camera controls and scroll layout were inspected. The browser showed four ready missions after commander approval and kept dispatch as a separate control. One mission was dispatched through the UI; its persisted dispatch event was visible. Six completed agent records and the 2608 m, three-road route were visible. A browser clock action displayed success feedback, but the selected mission remained at 20 seconds and 76.7 m in the last authoritative UI snapshot. Therefore multi-corner movement, closure/reroute, arrival, completion and return-to-service are **not verified in the browser**; those lifecycle stages pass the disposable backend acceptance workflow only.
 
 The following workspaces were opened and their actual loaded content inspected: Scenario Lab (seeded flood forcing, computed depth, events/replay and isolated A/B controls), Model Intelligence Lab (synthetic grouped evaluation, held-out reliability, calibration status, support warning, current-state prediction inspector), AI Decision Explorer (six completed agent records and persisted mission-dispatch event), Decision Robustness Lab (frozen scenario/version/revision and analytical-only warning), and Judge Mode (read-only live evidence and explicit commander-review cue). Demo A and Demo B detailed end-to-end assertions are from the isolated acceptance runner.
 
-The first in-app sidebar navigation immediately after a page load briefly retained the previous workspace content while the selected navigation changed; a normal reload to the selected route loaded it correctly, and subsequent workspace navigation loaded its selected view. This is a browser observation to review, not claimed as fully resolved by the RC1 optimization. Console output also contained repeated React “Maximum update depth exceeded” errors while the 3D Command Center was active; source attribution was not established in this walkthrough. These observations are listed as outstanding browser review items.
+First-visit navigation showed a route-specific loading screen before the destination workspace loaded. Back and Forward were exercised and displayed the matching route content. Deep-link refresh for all requested paths and requested desktop viewports were not tested. After the Command Center, scenario, selection, dispatch, clock-action and navigation sequence, the visible DevTools console contained the React DevTools info message and two repeated `THREE.Clock` deprecation warnings; no React maximum-update-depth error or other console error was present. The pre-fix first stack was not captured, so source attribution remains provisional; see [React render-loop review](REACT_RENDER_LOOP_REVIEW.md).
 
 ## Display sizes inspected
 
-The live page was inspected at **1366×768**, **1440×900**, and **1920×1080**. At each size the 3D twin remained dominant, the mission/controls column stayed visible, and lower panels remained reachable by scrolling; no clipped primary controls were observed. The browser helper supplied a 1265×720 DOM viewport in its initial state; later viewport resizing was supported and the three target sizes were set directly. The screenshot surface was 1920×1080 on the final capture.
+Requested desktop sizes **1366×768**, **1440×900**, and **1920×1080** remain pending. The captured client surface was 807×729 CSS pixels; the inspected controls at that size were reachable by scrolling.
 
 ## Remaining manual checklist
 
@@ -21,7 +21,7 @@ The live page was inspected at **1366×768**, **1440×900**, and **1920×1080**.
 - [x] Inspect a commander-approved mission and dispatch it through the visible UI; verify the persisted dispatch event.
 - [ ] In the browser, advance a multi-corner mission, observe two corners and bridge elevation, close an ahead road, inspect a blocked stop and approve a genuine replacement route.
 - [ ] In the browser, continue to arrival, explicitly complete the simulation and explicitly restore the unit.
-- [x] Inspect all three requested desktop viewport sizes.
+- [ ] Inspect all three requested desktop viewport sizes.
 - [ ] Browser verification of Demo B's unreachable presentation (automated acceptance passed).
 - [ ] WebGL context-loss/recovery interaction; no context-loss event was induced.
 

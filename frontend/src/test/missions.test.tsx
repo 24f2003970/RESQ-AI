@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useCallback, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import cityFixture from "./fixtures/city.json";
 import scenarioFixture from "./fixtures/scenario.json";
@@ -33,7 +34,12 @@ function setup(records:Mission[]=[mission],offline=false){
   api.fetchMissionUnits.mockResolvedValue([unit]);api.fetchMissionEvents.mockResolvedValue([]);
   api.fetchAgentDashboard.mockResolvedValue({latest_trace:null});
   if(offline)api.fetchMissions.mockRejectedValue(new Error("Local service offline."));
-  return render(<MissionOperations city={city} scenario={scenario} onSnapshot={onSnapshot} onSelectMission={onSelectMission} selectedMissionId={null}/>);
+  function ControlledPanel(){
+    const [selectedMissionId,setSelectedMissionId]=useState<string|null>(null);
+    const select=useCallback((id:string|null)=>{onSelectMission(id);setSelectedMissionId(id);},[]);
+    return <MissionOperations city={city} scenario={scenario} onSnapshot={onSnapshot} onSelectMission={select} selectedMissionId={selectedMissionId}/>;
+  }
+  return render(<ControlledPanel/>);
 }
 
 describe("Mission Operations panel",()=>{
@@ -66,5 +72,29 @@ describe("Mission Operations panel",()=>{
   it("shows a clear error when the local service is unavailable",async()=>{
     setup([],true);
     expect(await screen.findByRole("alert")).toHaveTextContent("Local service offline.");
+  });
+
+  it("clears the old selected mission when switching to an epoch with no missions",async()=>{
+    api.fetchMissions.mockImplementation(async(scenarioId:string)=>scenarioId===scenario.id?[mission]:[]);
+    api.fetchMissionClock.mockResolvedValue(clock);
+    api.fetchMissionUnits.mockResolvedValue([unit]);
+    api.fetchMissionEvents.mockResolvedValue([]);
+    api.fetchAgentDashboard.mockResolvedValue({latest_trace:null});
+    function ScenarioSwitcher(){
+      const [activeScenario,setActiveScenario]=useState(scenario);
+      const [selectedMissionId,setSelectedMissionId]=useState<string|null>(null);
+      const [,setSnapshot]=useState<unknown>(null);
+      const acceptSnapshot=useCallback((value:unknown)=>setSnapshot(value),[]);
+      return <>
+        <button onClick={()=>{setSelectedMissionId(mission.mission_id);setActiveScenario({...scenario,id:"scenario-next-epoch"});}}>Switch scenario with prior selection</button>
+        <output aria-label="Parent mission selection">{selectedMissionId??"none"}</output>
+        <MissionOperations city={city} scenario={activeScenario} onSnapshot={acceptSnapshot} onSelectMission={setSelectedMissionId} selectedMissionId={selectedMissionId}/>
+      </>;
+    }
+    render(<ScenarioSwitcher/>);
+    fireEvent.click(await screen.findByRole("button",{name:"Switch scenario with prior selection"}));
+    await waitFor(()=>expect(screen.getByLabelText("Parent mission selection")).toHaveTextContent("none"));
+    await waitFor(()=>expect(screen.getByText("No approved missions in this epoch")).toBeInTheDocument());
+    expect(screen.queryByRole("button",{name:/mission-test-001/i})).not.toBeInTheDocument();
   });
 });

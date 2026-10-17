@@ -37,15 +37,17 @@ export default function MissionOperations({
   const [missions,setMissions]=useState<Mission[]>([]);
   const [units,setUnits]=useState<MissionUnitResource[]>([]);
   const [clock,setClock]=useState<MissionClock|null>(null);
-  const [selectedId,setSelectedId]=useState<string|null>(null);
   const [events,setEvents]=useState<MissionEvent[]>([]);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
   const [message,setMessage]=useState("");
   const [agentTrace,setAgentTrace]=useState("");
   const sequence=useRef(0);
+  const snapshotIdentity=useRef("");
+  const selectedMissionRef=useRef(selectedMissionId);
+  selectedMissionRef.current=selectedMissionId;
   const activeScenario=scenario?.id;
-  const selected=useMemo(()=>missions.find(item=>item.mission_id===selectedId)??null,[missions,selectedId]);
+  const selected=useMemo(()=>missions.find(item=>item.mission_id===selectedMissionId)??null,[missions,selectedMissionId]);
   const refresh=useCallback(async(signal?:AbortSignal)=>{
     if(!activeScenario)return;
     const id=++sequence.current;
@@ -53,24 +55,36 @@ export default function MissionOperations({
       fetchMissions(activeScenario,signal),fetchMissionClock(activeScenario,signal),fetchMissionUnits(activeScenario,signal),
     ]);
     if(id!==sequence.current||signal?.aborted)return;
-    setMissions(nextMissions);setClock(nextClock);setUnits(nextUnits);
-    onSnapshot({missions:nextMissions,units:nextUnits,clock:nextClock});
-    setSelectedId(current=>current&&nextMissions.some(item=>item.mission_id===current)?current:nextMissions[0]?.mission_id??null);
-  },[activeScenario,onSnapshot]);
+    const identity=JSON.stringify([nextMissions,nextClock,nextUnits]);
+    if(identity!==snapshotIdentity.current){
+      snapshotIdentity.current=identity;
+      setMissions(nextMissions);setClock(nextClock);setUnits(nextUnits);
+      onSnapshot({missions:nextMissions,units:nextUnits,clock:nextClock});
+    }
+    const currentSelection=selectedMissionRef.current;
+    if(!currentSelection||!nextMissions.some(item=>item.mission_id===currentSelection)){
+      const nextSelection=nextMissions[0]?.mission_id??null;
+      if(nextSelection!==currentSelection){selectedMissionRef.current=nextSelection;onSelectMission(nextSelection);}
+    }
+  },[activeScenario,onSnapshot,onSelectMission]);
   useEffect(()=>{
-    if(!activeScenario){setMissions([]);setUnits([]);setClock(null);onSnapshot({missions:[],units:[],clock:null});return;}
+    snapshotIdentity.current="";
+    if(!activeScenario){setMissions([]);setUnits([]);setClock(null);setEvents([]);selectedMissionRef.current=null;onSelectMission(null);onSnapshot({missions:[],units:[],clock:null});return;}
+    setMissions([]);setUnits([]);setClock(null);setEvents([]);
+    selectedMissionRef.current=null;onSelectMission(null);
+    onSnapshot({missions:[],units:[],clock:null});
     const controller=new AbortController();
     refresh(controller.signal).catch(cause=>{if(!controller.signal.aborted)setError(cause instanceof Error?cause.message:"Mission service is unavailable.");});
     const timer=window.setInterval(()=>refresh(controller.signal).catch(cause=>{if(!controller.signal.aborted)setError(cause instanceof Error?cause.message:"Mission service is unavailable.");}),1500);
     return()=>{controller.abort();window.clearInterval(timer);sequence.current+=1;};
-  },[activeScenario,refresh,onSnapshot]);
+  },[activeScenario,refresh,onSnapshot,onSelectMission]);
   useEffect(()=>{
-    if(!selectedId){setEvents([]);return;}
+    if(!selectedMissionId){setEvents([]);return;}
     let live=true;let requestNumber=0;
-    const load=()=>{const n=++requestNumber;fetchMissionEvents(selectedId).then(value=>{if(live&&n===requestNumber)setEvents(value);}).catch(()=>{if(live)setEvents([]);});};
+    const load=()=>{const n=++requestNumber;fetchMissionEvents(selectedMissionId).then(value=>{if(live&&n===requestNumber)setEvents(value);}).catch(()=>{if(live)setEvents([]);});};
     load();const timer=window.setInterval(load,2000);
     return()=>{live=false;window.clearInterval(timer);};
-  },[selectedId]);
+  },[selectedMissionId]);
   useEffect(()=>{
     if(!activeScenario){setAgentTrace("");return;}
     setAgentTrace("");
@@ -81,8 +95,6 @@ export default function MissionOperations({
     load();const timer=window.setInterval(load,4000);
     return()=>{live=false;window.clearInterval(timer);};
   },[activeScenario]);
-  useEffect(()=>{onSelectMission(selectedId);},[selectedId,onSelectMission]);
-  useEffect(()=>{if(selectedMissionId&&selectedMissionId!==selectedId)setSelectedId(selectedMissionId);},[selectedMissionId,selectedId]);
 
   async function run(action:()=>Promise<unknown>,success:string){
     setBusy(true);setError("");setMessage("");
@@ -101,7 +113,7 @@ export default function MissionOperations({
     {error&&!selected&&<p className="mission-feedback error" role="alert"><AlertTriangle size={14}/>{error}</p>}
     {scenario&&missions.length===0&&<div className="mission-empty"><Truck size={20}/><div><b>No approved missions in this epoch</b><span>Approve a rescue plan to create reserved, ready missions. Approval does not dispatch a vehicle.</span></div></div>}
     {missions.length>0&&<div className="mission-list" role="list" aria-label="Scenario missions">
-      {missions.map(mission=><button className={`mission-row ${selectedId===mission.mission_id?"selected":""}`} key={mission.mission_id} onClick={()=>setSelectedId(mission.mission_id)} aria-pressed={selectedId===mission.mission_id}>
+      {missions.map(mission=><button className={`mission-row ${selectedMissionId===mission.mission_id?"selected":""}`} key={mission.mission_id} onClick={()=>onSelectMission(mission.mission_id)} aria-pressed={selectedMissionId===mission.mission_id}>
         <span className={`mission-status-dot ${mission.status}`}/><span className="mission-row-main"><b>{mission.unit_id}<i>→</i>{city.buildings.find(building=>building.id===mission.destination_id)?.name??mission.destination_id}</b><small>{mission.mission_id.slice(0,22)} · {statusLabel[mission.status]}</small></span><Badge tone={statusTone[mission.status]}>{mission.status.replaceAll("_"," ")}</Badge>
       </button>)}
     </div>}

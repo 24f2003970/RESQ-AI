@@ -2,7 +2,7 @@
 
 ## Instrumentation and build profile
 
-The pre-RC1 build measured the primary JavaScript chunk at 761.99 kB minified / 223.60 kB gzip and the already-lazy CityScene chunk at 979.30 kB / 262.11 kB. After route-level lazy loading for secondary workspaces, the initial JavaScript is 636.49 kB / 190.23 kB, saving **125.50 kB minified / 33.36 kB gzip**. CityScene is 980.87 kB / 262.75 kB after adding development-only sampling. The 500 kB warning remains; it was not raised. CityScene remains lazy-loaded until the 3D workspace is selected.
+The pre-RC1 build measured the primary JavaScript chunk at 761.99 kB minified / 223.60 kB gzip and the already-lazy CityScene chunk at 979.30 kB / 262.11 kB. The Part 14.1 production build measured the initial JavaScript at 636.95 kB / 190.40 kB, saving **125.04 kB minified / 33.20 kB gzip**. CityScene is 980.87 kB / 262.75 kB. The 500 kB warning remains; it was not raised. CityScene remains lazy-loaded until the 3D workspace is selected.
 
 The development-only `?perf=1` probe samples React Three Fiber frame deltas and Three.js `renderer.info` in five-second windows. It records sample count, median/p95/p99 frame intervals, derived median-rate estimate, draw calls, triangles, geometry/texture counts, canvas pixel dimensions, device pixel ratio, graphics mode and WebGL vendor/renderer strings where exposed. It does not report GPU utilization, JS heap usage, context-loss recovery, page load, or time-to-twin. Sampling forces continuous frames in a demand-rendered canvas, which perturbs idle behavior; the estimate is not a guaranteed application FPS.
 

@@ -42,6 +42,21 @@ const nav = [
   { path: "/demo", name: "Guided Demo", icon: Siren },
 ];
 
+function RouteLoadingState({ pathname }: { pathname: string }) {
+  const title = pathname === "/judge"
+    ? "Judge Mode"
+    : nav.find((item) => item.path === pathname)?.name ?? "Workspace";
+  return (
+    <div className="loading-layout" role="status" aria-live="polite" aria-busy="true" data-loading-route={pathname}>
+      <span className="eyebrow">LOCAL WORKSPACE</span>
+      <h1>Loading {title}</h1>
+      <p>The selected workspace is loading. Its controls will appear when ready.</p>
+    </div>
+  );
+}
+
+export { RouteLoadingState };
+
 export default function App() {
   const location = useLocation();
   const { city, status, error, retry } = useCity();
@@ -211,8 +226,8 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Suspense fallback={<div className="loading-layout" role="status"><span className="eyebrow">LOCAL WORKSPACE</span><h1>Preparing this view.</h1><p>Loading the selected local workspace…</p></div>}>
-              <Routes>
+              <Suspense fallback={<RouteLoadingState pathname={location.pathname} />}>
+              <Routes key={location.pathname}>
                 <Route path="/judge" element={<JudgeMode city={city} scenario={simulation.scenario} events={simulation.envelope?.events ?? []} status={status} retry={retry} model={risk.model} predictions={risk.predictions} />} />
                 <Route
                   path="/"
