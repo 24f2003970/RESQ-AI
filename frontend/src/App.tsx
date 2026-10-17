@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { motion, useReducedMotion } from "motion/react";
 import {
@@ -22,12 +22,15 @@ import { useScenario } from "./api/useScenario";
 import { Badge } from "./components/ui";
 import CityWorkspace from "./components/CityWorkspace";
 import AgentExplorer from "./components/AgentExplorer";
-import ScenarioLab from "./components/ScenarioLab";
-import DemoMode from "./components/DemoMode";
-import ModelLab from "./components/ModelLab";
 import { useRisk } from "./api/useRisk";
-import JudgeMode from "./components/JudgeMode";
-import RobustnessLab from "./components/RobustnessLab";
+
+// Keep the primary command center eager; analytical and judge workspaces load
+// only when selected so their code is not paid for on the demo's first screen.
+const ScenarioLab = lazy(() => import("./components/ScenarioLab"));
+const DemoMode = lazy(() => import("./components/DemoMode"));
+const ModelLab = lazy(() => import("./components/ModelLab"));
+const JudgeMode = lazy(() => import("./components/JudgeMode"));
+const RobustnessLab = lazy(() => import("./components/RobustnessLab"));
 
 const nav = [
   { path: "/", name: "Command Center", icon: LayoutDashboard },
@@ -168,7 +171,7 @@ export default function App() {
               <RefreshCw size={16} />
             </button>
             <Link className="judge-entry-link" to="/judge"><Presentation size={14}/> Judge Mode</Link>
-            <span className="part-label">PART 13</span>
+            <span className="part-label">PART 14 RC1</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -208,6 +211,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
+              <Suspense fallback={<div className="loading-layout" role="status"><span className="eyebrow">LOCAL WORKSPACE</span><h1>Preparing this view.</h1><p>Loading the selected local workspace…</p></div>}>
               <Routes>
                 <Route path="/judge" element={<JudgeMode city={city} scenario={simulation.scenario} events={simulation.envelope?.events ?? []} status={status} retry={retry} model={risk.model} predictions={risk.predictions} />} />
                 <Route
@@ -263,6 +267,7 @@ export default function App() {
                   }
                 />
               </Routes>
+              </Suspense>
             </motion.div>
           )}
         </div>

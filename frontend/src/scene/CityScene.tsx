@@ -47,6 +47,88 @@ export type Layers = {
 };
 export type HypotheticalRoute = { id: string; points: number[][]; color: string; pointsAreXYZ?:boolean };
 
+type ScenePerformanceSnapshot = {
+  capturedAt: string;
+  graphicsMode: "standard" | "low";
+  sampleCount: number;
+  frameIntervalMs: { median: number; p95: number; p99: number };
+  estimatedFps: number;
+  drawCalls: number;
+  triangles: number;
+  geometries: number;
+  textures: number;
+  canvas: { width: number; height: number; devicePixelRatio: number };
+  webgl: { version: string; vendor: string | null; renderer: string | null };
+};
+
+declare global {
+  interface Window { __RESQ_SCENE_METRICS__?: ScenePerformanceSnapshot }
+}
+
+function ScenePerformanceProbe({ enabled, lowGraphics }: { enabled: boolean; lowGraphics: boolean }) {
+  const { gl } = useThree();
+  const frameIntervals = useRef<number[]>([]);
+  const lastSample = useRef(0);
+  const metricsElement = useRef<HTMLOutputElement | null>(null);
+  const webgl = useMemo(() => {
+    const context = gl.getContext();
+    const extension = context.getExtension("WEBGL_debug_renderer_info") as ({
+      UNMASKED_VENDOR_WEBGL: number;
+      UNMASKED_RENDERER_WEBGL: number;
+    } | null);
+    return {
+      version: context.getParameter(context.VERSION) as string,
+      vendor: extension ? context.getParameter(extension.UNMASKED_VENDOR_WEBGL) as string : null,
+      renderer: extension ? context.getParameter(extension.UNMASKED_RENDERER_WEBGL) as string : null,
+    };
+  }, [gl]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const output = document.createElement("output");
+    output.id = "resq-scene-performance-metrics";
+    output.hidden = true;
+    output.dataset.testid = "resq-scene-performance-metrics";
+    document.body.append(output);
+    metricsElement.current = output;
+    return () => {
+      output.remove();
+      metricsElement.current = null;
+      delete window.__RESQ_SCENE_METRICS__;
+    };
+  }, [enabled]);
+
+  useFrame((_state, delta) => {
+    if (!enabled) return;
+    const now = performance.now();
+    frameIntervals.current.push(delta * 1000);
+    if (lastSample.current === 0) lastSample.current = now;
+    if (now - lastSample.current < 5000) return;
+    const values = frameIntervals.current.slice().sort((a, b) => a - b);
+    const percentile = (fraction: number) => values[Math.min(values.length - 1, Math.ceil(values.length * fraction) - 1)] ?? 0;
+    const median = percentile(0.5);
+    const canvas = gl.domElement;
+    const snapshot: ScenePerformanceSnapshot = {
+      capturedAt: new Date().toISOString(),
+      graphicsMode: lowGraphics ? "low" : "standard",
+      sampleCount: values.length,
+      frameIntervalMs: { median: Number(median.toFixed(2)), p95: Number(percentile(0.95).toFixed(2)), p99: Number(percentile(0.99).toFixed(2)) },
+      estimatedFps: median > 0 ? Number((1000 / median).toFixed(1)) : 0,
+      drawCalls: gl.info.render.calls,
+      triangles: gl.info.render.triangles,
+      geometries: gl.info.memory.geometries,
+      textures: gl.info.memory.textures,
+      canvas: { width: canvas.width, height: canvas.height, devicePixelRatio: window.devicePixelRatio },
+      webgl,
+    };
+    window.__RESQ_SCENE_METRICS__ = snapshot;
+    if (metricsElement.current) metricsElement.current.textContent = JSON.stringify(snapshot);
+    frameIntervals.current = [];
+    lastSample.current = now;
+  });
+  return null;
+}
+
 function routePointToScene(city: CityState, point: number[]): [number,number,number] {
   const [x,y]=point;
   const ix=city.terrain.x_centers_m.reduce((best,value,index)=>Math.abs(value-x)<Math.abs(city.terrain.x_centers_m[best]-x)?index:best,0);
@@ -833,6 +915,7 @@ export default function CityScene({
   const focusedMission=missions.find(item=>item.mission_id===selectedMissionId)??null;
   const focusedResource=focusedMission?missionUnits.find(unit=>unit.unit_id===focusedMission.unit_id):undefined;
   const isMoving=missions.some(item=>item.status==="en_route");
+  const performanceProbe=import.meta.env.DEV&&new URLSearchParams(window.location.search).get("perf")==="1";
   const resourceById=new Map(missionUnits.map(item=>[item.unit_id,item]));
   const latestMissionByUnit=new Map<string,Mission>();
   for(const mission of missions)latestMissionByUnit.set(mission.unit_id,mission);
@@ -889,7 +972,7 @@ export default function CityScene({
           >
             <Canvas
               orthographic
-              frameloop={isMoving?"always":"demand"}
+              frameloop={isMoving||performanceProbe?"always":"demand"}
               camera={{
                 position: [520, 500, 570],
                 zoom: 0.9,
@@ -901,6 +984,7 @@ export default function CityScene({
               gl={{ antialias: true, powerPreference: "high-performance" }}
               onCreated={({gl})=>setRendererCanvas(gl.domElement)}
             >
+              <ScenePerformanceProbe enabled={performanceProbe} lowGraphics={lowGraphics} />
               <color attach="background" args={[lighting==="low-light"?"#121c24":lighting==="overcast"?"#344047":"#243633"]} />
               <ambientLight intensity={lighting==="low-light"?.72:lighting==="overcast"?1.55:1.2} color={lighting==="low-light"?"#9cb2c1":lighting==="overcast"?"#d6e0e4":"#c8e0db"} />
               <directionalLight

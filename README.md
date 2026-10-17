@@ -2,6 +2,20 @@
 
 **Predict. Simulate. Plan. Review. Replan.**
 
+## RC1 local demo
+
+On Windows, install the documented local dependencies once, then start both services with the loopback-only launcher:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\setup-resq-ai.ps1
+.\scripts\start-resq-ai.ps1
+```
+
+Open the frontend URL printed by the launcher (normally `http://127.0.0.1:5173`). Use **Guided Demo** for a reproducible walkthrough. Run `scripts\demo-preflight.ps1` in a second terminal for read-only readiness checks. Press **Ctrl+C** in the launcher window to stop both services. The launcher checks existing SQLite data read-only before startup and does not delete it. For disposable positive and unreachable rescue acceptance, run `backend\.venv\Scripts\python.exe backend\demo_acceptance_rc1.py`; it creates and removes a temporary SQLite database.
+
+Part 14 is Release Candidate 1 readiness work. The deterministic RC1 positive and no-route scenarios, verification evidence, manifest and limits are documented in `docs/PART_14_IMPLEMENTATION.md`, `docs/PART_14_VERIFICATION.md`, `docs/RELEASE_CANDIDATE_MANIFEST.md`, `docs/RC1_ACCEPTANCE_MATRIX.md`, `docs/DEMO_A_POSITIVE_RESCUE.md`, `docs/DEMO_B_UNREACHABLE_ROUTES.md`, `docs/BROWSER_VISUAL_ACCEPTANCE_RC1.md`, `docs/GPU_PERFORMANCE_RC1.md`, `docs/DEMO_LAPTOP_RUNBOOK.md` and `docs/RC1_KNOWN_LIMITATIONS.md`.
+
 Part 12 adds a local ML reliability layer: calibration against held-out synthetic scenarios, feature-support warnings, failure analysis, and flood-simulation sensitivity experiments. See [`docs/PART_12_IMPLEMENTATION.md`](docs/PART_12_IMPLEMENTATION.md) and [`docs/ML_RELIABILITY_MODEL_CARD.md`](docs/ML_RELIABILITY_MODEL_CARD.md). These results are not real-world flood probabilities; current flood state remains the physical simulator output and rescue plans still require commander approval.
 
 Part 13 adds a persisted Decision Robustness Lab for frozen-snapshot environmental, infrastructure, resource, and model-reliability counterfactuals. It checks the saved plan first, then separately reoptimizes with the existing flood, graph, route, and allocation engines. Studies are isolated analytical evidence and cannot modify live operations. See [`docs/PART_13_IMPLEMENTATION.md`](docs/PART_13_IMPLEMENTATION.md), [`docs/DECISION_ROBUSTNESS_CONTRACT.md`](docs/DECISION_ROBUSTNESS_CONTRACT.md), and [`docs/ROBUSTNESS_DEMO_GUIDE.md`](docs/ROBUSTNESS_DEMO_GUIDE.md).
