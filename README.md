@@ -19,7 +19,7 @@ Open **http://127.0.0.1:5173**. The launcher checks local dependencies and model
 
 The application works locally after dependencies are installed. No hosted inference API, external map service, or credentials are needed for the core demo.
 
-## Five-minute product walkthrough
+## Five-Minute product walkthrough
 
 1. Show the 3D Riverside city and step the deterministic flood simulation.
 2. Compare authoritative physical exposure with the locally trained model's future exposure estimate and reliability/support warnings.
