@@ -30,7 +30,7 @@ The application works locally after dependencies are installed. No hosted infere
 
 Use the exact timed script in [Innotech Five-Minute Presentation](docs/INNOTECH_5_MINUTE_PRESENTATION.md). For a presentation rehearsal, follow the disposable setup and recovery guidance in [Demo Fallback and Recovery](docs/DEMO_FALLBACK_AND_RECOVERY.md).
 
-## What is implemented
+## What is implemented here
 
 - Deterministic flood simulation, scenario persistence, checkpoints, and replay.
 - Procedural 3D city and infrastructure rendering with flood and route overlays.
@@ -108,7 +108,7 @@ See the [Part 16 release checklist](docs/FINAL_RELEASE_CHECKLIST.md), [verificat
 
 - Floods, buildings, roads, labels, resources, and outcomes are synthetic. The model is not validated against operational disaster outcomes.
 - The road graph represents modeled connectivity and assumptions, not surveyed roads or field safety. A feasible graph route is not an emergency access guarantee.
-- The optimizer solves its encoded assignment objective and constraints; it cannot guarantee a globally best real-world response.
+- The optimizer solves its encoded assignment objective and constraints; it cannot guarantee a globally best real world response.
 - Human approval is required for plan commitment. Dispatch, travel, arrival, completion, and return-to-service are simulated actions, not contact with real responders.
 - Unsupported routes stay unreachable. In the all-roads-closed condition, zero assignments is the correct modeled outcome.
 - Earthquake simulation, live geospatial feeds, boat routing, real dispatch integrations, and real-world validation are outside the implemented prototype.
