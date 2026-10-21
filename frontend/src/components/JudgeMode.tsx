@@ -102,7 +102,7 @@ export default function JudgeMode({
     <section className="judge-stagebar" aria-label="Live demo stage">
       <div><span className="eyebrow">CURRENT EVENT</span><strong>{currentEvent ? currentEvent.event_type.replaceAll("_", " ") : scenario?.tick ? "Flood simulation state" : "Stable synthetic city"}</strong><small>{currentEvent ? `Event ${currentEvent.event_id} · state v${currentEvent.state_version}` : scenario ? `Scenario ${scenario.name} · tick ${scenario.tick} · v${scenario.state_version}` : "Waiting for the backend scenario snapshot"}</small></div>
       <div className="judge-next"><span className="eyebrow">NEXT REVIEW ACTION</span><strong>{facts.nextAction}</strong><small>Stage status follows the current backend snapshot and saved records.</small></div>
-      {facts.pendingApproval && <Link className="primary-button" to="/"><ShieldCheck size={15}/> Open commander review</Link>}
+      {facts.pendingApproval && <Link className="primary-button" to="/response"><ShieldCheck size={15}/> Open commander review</Link>}
     </section>
     <ol className="judge-stage-rail" aria-label="Evidence stage status">
       {facts.stages.map((stage) => <li className={`judge-stage-${stage.status}`} key={stage.label}><span aria-hidden="true"/>{stage.label}<small>{stage.status === "recorded" ? "Recorded" : stage.status === "unavailable" ? "Unavailable" : "Pending"}</small></li>)}
@@ -149,7 +149,7 @@ export default function JudgeMode({
               {currentPlan.status === "proposed" && <p className="judge-human-review"><ShieldCheck size={14}/> Commander review required. No approval is performed in Judge Mode.</p>}
             </>
           ) : <p>{recommendation ? "The saved proposal belongs to an older scenario state. Refresh it in Command Center before presenting it as current." : "No saved rescue proposal is available for the current scenario."}</p>}
-          <Link className="judge-evidence-link" to="/">Open commander controls <ArrowUpRight size={14}/></Link>
+          <Link className="judge-evidence-link" to="/response">Open commander controls <ArrowUpRight size={14}/></Link>
         </section>
         <section className="judge-card"><div className="judge-card-title"><h2>Mission operations</h2><Badge>{facts.activeMissions} active</Badge></div>
           <p>{facts.completedMissions} explicitly completed simulated missions · {currentMissions.filter((mission) => mission.status === "arrived").length} arrived awaiting completion confirmation.</p>

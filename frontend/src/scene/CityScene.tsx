@@ -27,7 +27,9 @@ import {
   Vector3,
 } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { Compass, Focus, Minus, Plus, RotateCcw, View } from "lucide-react";
+import { Compass } from "lucide-react";
+import SceneControls from "../components/SceneControls";
+import CityInventory from "../components/CityInventory";
 import type { Building, CityState, ScenarioState } from "../api/client";
 import type { ScenarioPredictionSet } from "../api/client";
 import type { Mission, MissionUnitResource } from "../api/client";
@@ -805,7 +807,7 @@ function Camera({
     } else if (action.type === "focus" && target) {
       center = new Vector3(
         target.position.x_m,
-        target.height_m / 2,
+        target.position.elevation_m + target.height_m / 2,
         -target.position.y_m,
       );
       zoom = 2;
@@ -813,7 +815,7 @@ function Camera({
       let maxDepth = -1, row = 0, column = 0;
       scenario?.depth_m.forEach((line, y) => line.forEach((depth, x) => { if (depth > maxDepth) { maxDepth = depth; row = y; column = x; } }));
       if (maxDepth > 0) {
-        const x = -320 + column * 20, north = -240 + row * 20;
+        const x = scenario!.x_centers_m[column], north = scenario!.y_centers_m[row];
         center = new Vector3(x, sampleGrid(scenario?.terrain_m ?? city.terrain.elevation_m, x, north) + maxDepth / 2, -north);
       }
       zoom = 1.65;
@@ -935,32 +937,11 @@ export default function CityScene({
   },[selectedMissionId]);
   const command = (type: string) =>
     setAction((a) => ({ type, key: a.key + 1 }));
-  const fallback = (
-    <div className="map-fallback">
-      <View size={30} />
-      <h3>City inventory view</h3>
-      <p>
-        Choose a building to inspect its backend state. Switch to 3D when WebGL
-        is available.
-      </p>
-      <div className="building-list">
-        {city.buildings.map((b) => (
-          <button
-            key={b.id}
-            onClick={() => onSelect(b.id)}
-            aria-pressed={selected?.id === b.id}
-          >
-            {b.name}
-            <span>
-              {b.floors} floors · {b.use}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+  const fallback = <CityInventory city={city} scenario={scenario} selected={selected} onSelect={onSelect}/>;
   return (
-    <div className="city-scene" data-testid="city-viewport">
+    <div className="scene-explorer">
+      <SceneControls inventory={mapMode} lighting={lighting} hasSelection={Boolean(selected)} hasFlood={Boolean(scenario && scenario.maximum_depth_m > 0)} hasBridge={city.bridges.length > 0} hasMission={Boolean(focusedMission)} onCommand={command} onLighting={setLighting} onInventory={() => setMapMode(!mapMode)}/>
+    <div className={`city-scene ${mapMode ? "inventory-mode" : ""}`} data-testid="city-viewport">
       {mapMode ? (
         fallback
       ) : (
@@ -1058,60 +1039,6 @@ export default function CityScene({
           SEED {city.city.seed} / V{city.scenario.state_version}
         </span>
       </div>
-      <div className="scene-tools" aria-label="Camera controls">
-        <select aria-label="Camera preset" value="" onChange={(event)=>event.target.value&&command(event.target.value)} disabled={mapMode}>
-          <option value="" disabled>Camera preset</option>
-          <option value="reset">City overview</option>
-          <option value="hotspot">Flood hotspot</option>
-          <option value="bridge">Bridge crossing</option>
-          <option value="rescue">Rescue operation</option>
-        </select>
-        <select aria-label="Lighting preset" value={lighting} onChange={(event)=>setLighting(event.target.value as typeof lighting)} disabled={mapMode}>
-          <option value="daylight">Daylight</option>
-          <option value="overcast">Overcast</option>
-          <option value="low-light">Low-light</option>
-        </select>
-        <button
-          title="Reset isometric camera"
-          aria-label="Reset camera"
-          onClick={() => command("reset")}
-          disabled={mapMode}
-        >
-          <RotateCcw size={16} />
-        </button>
-        <button
-          title="Zoom in"
-          aria-label="Zoom in"
-          onClick={() => command("zoom-in")}
-          disabled={mapMode}
-        >
-          <Plus size={17} />
-        </button>
-        <button
-          title="Zoom out"
-          aria-label="Zoom out"
-          onClick={() => command("zoom-out")}
-          disabled={mapMode}
-        >
-          <Minus size={17} />
-        </button>
-        <button
-          title="Focus selected building"
-          aria-label="Focus selected building"
-          onClick={() => command("focus")}
-          disabled={!selected || mapMode}
-        >
-          <Focus size={17} />
-        </button>
-        <button
-          title="Switch between 3D and accessible building inventory"
-          aria-label={mapMode ? "Show 3D city" : "Show building inventory"}
-          aria-pressed={mapMode}
-          onClick={() => setMapMode(!mapMode)}
-        >
-          <View size={17} />
-        </button>
-      </div>
       <div className="map-compass">
         <Compass size={28} />
         <span>N</span>
@@ -1124,6 +1051,6 @@ export default function CityScene({
       <div className="map-scale">
         <i /> 100 m
       </div>
-    </div>
+    </div></div>
   );
 }

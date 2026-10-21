@@ -3,7 +3,7 @@ import { Panel, Badge } from "./ui";
 import { fetchLatestRecommendation, type CityState, type ScenarioState } from "../api/client";
 
 export type Plan = {
-  plan_id:string; scenario_id:string; scenario_version:number; simulation_tick:number; status:string;
+  plan_id:string; scenario_id:string; scenario_epoch?:number; scenario_version:number; simulation_tick:number; status:string;
   priorities:{building_id:string;name:string;priority_score:number;explanation:string}[];
   missions:{unit_id:string;destination_id:string;unit_capacity:number;occupants_targeted:number;route:{distance_m:number;simulated_minutes:number;road_ids:string[];polyline:number[][]}}[];
   available_assignments:{unit_id:string;destination_id:string;unit_capacity:number;occupants_targeted:number;route:{distance_m:number;simulated_minutes:number;road_ids:string[];polyline:number[][]}}[];
