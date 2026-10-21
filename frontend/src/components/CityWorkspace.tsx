@@ -37,6 +37,8 @@ import type { Plan } from "./RescuePlanning";
 import MissionOperations from "./MissionOperations";
 import RobustnessSummary from "./RobustnessSummary";
 import type { Mission, MissionClock, MissionUnitResource } from "../api/client";
+import WorkflowGuide from "./WorkflowGuide";
+import SceneSelection from "./SceneSelection";
 
 const LazyCityScene = lazy(() => import("../scene/CityScene"));
 function CityScene(props: ComponentProps<typeof LazyCityScene>) {
@@ -56,6 +58,7 @@ export default function CityWorkspace({
   scenario,
   events,
   studio,
+  response = false,
   status,
   retry,
   model,
@@ -65,6 +68,7 @@ export default function CityWorkspace({
   scenario: ScenarioState | null;
   events: SimulationEvent[];
   studio: boolean;
+  response?: boolean;
   status: string;
   retry: () => void;
   model: MLModelInfo | null;
@@ -83,6 +87,8 @@ export default function CityWorkspace({
   },[]);
   const selectMission=useCallback((missionId:string|null)=>setSelectedMissionId(missionId),[]);
   const [searchParams]=useSearchParams();
+  const reviewing = response || searchParams.has("review");
+  const missionView = reviewing && searchParams.get("view") === "missions";
   const scenarioId=scenario?.id;
   const missionSnapshotIsCurrent=Boolean(scenario&&missionSnapshot.scenarioId===scenario.id&&missionSnapshot.scenarioEpoch===scenario.epoch);
   const missionRecords=missionSnapshotIsCurrent?missionSnapshot.missions:[];
@@ -91,7 +97,14 @@ export default function CityWorkspace({
   const currentPredictions = scenario && predictions?.scenario_id === scenario.id && predictions.scenario_epoch === scenario.epoch && predictions.scenario_state_version === scenario.state_version && predictions.scenario_tick === scenario.tick && predictions.model_version === model?.model_version ? predictions : null;
   const supportedPredictions = currentPredictions ? { ...currentPredictions, predictions: currentPredictions.predictions.filter((item) => item.distribution_support_status === "within_observed_support" || item.distribution_support_status === "edge_of_observed_support") } : null;
   const [layerOpen, setLayerOpen] = useState(false);
-  const [lowGraphics, setLowGraphics] = useState(false);
+  const [lowGraphics, setLowGraphics] = useState(() => {
+    try { return localStorage.getItem("resq-graphics") === "low"; } catch { return false; }
+  });
+  function toggleGraphics() {
+    const next = !lowGraphics;
+    setLowGraphics(next);
+    try { localStorage.setItem("resq-graphics", next ? "low" : "standard"); } catch { /* The scene remains usable when browser storage is unavailable. */ }
+  }
   const [layers, setLayers] = useState<Layers>({
     buildings: true,
     greenery: true,
@@ -148,31 +161,39 @@ export default function CityWorkspace({
     URL.revokeObjectURL(url);
   }
   return (
-    <main className={`workspace ${studio ? "studio" : ""}`}>
+    <main className={`workspace ${studio ? "studio" : ""} ${reviewing ? "response-workspace" : "overview-workspace"}`}>
       <div className="page-heading">
         <div>
           <div className="breadcrumb">
             WORKSPACE <ChevronRight size={12} />
-            {studio ? "DIGITAL TWIN" : "OVERVIEW"}
+            {studio ? "DIGITAL TWIN" : reviewing ? "RESCUE OPERATIONS" : "OVERVIEW"}
           </div>
           <h1>
-            {studio ? "Digital Twin Studio" : "Situation overview"}
+            {studio ? "Digital Twin Studio" : reviewing ? "Rescue operations" : "Situation overview"}
             <span className="heading-dot" />
           </h1>
           <p>
             {studio
               ? "Explore the city. Inspect the details."
-              : "A clear picture. A prepared response."}
+              : reviewing ? "Review a plan, approve it, then dispatch and track your units." : "See the flood situation, then choose your next step below."}
           </p>
         </div>
         <div className="workspace-actions">
-          <Link className="secondary-button" to="/scenarios">Scenario Lab <ArrowRight size={14}/></Link>
-          <Link className="secondary-button" to="/robustness">Decision Robustness <ArrowRight size={14}/></Link>
+          <Link className="primary-button" to={reviewing ? "/scenarios" : "/response"}>{reviewing ? "Adjust flood simulation" : "Open rescue operations"} <ArrowRight size={14}/></Link>
+          <details className="workspace-more"><summary className="secondary-button">More options</summary><div>
+          <Link className="secondary-button" to="/robustness">Test plan robustness <ArrowRight size={14}/></Link>
           <button className="secondary-button" onClick={downloadSnapshot}>
             <ArrowDownToLine size={15} /> Export snapshot
           </button>
+          </div></details>
         </div>
       </div>
+      {!studio && <WorkflowGuide current={reviewing ? missionView ? 3 : 2 : 0}/>}
+      {reviewing && <nav className="response-switch" aria-label="Rescue operation steps">
+        <Link to="/response" aria-current={!missionView ? "page" : undefined}>1. Plan &amp; approve</Link>
+        <Link to="/response?view=missions" aria-current={missionView ? "page" : undefined}>2. Dispatch &amp; track</Link>
+        <p>{missionView ? "Dispatch is a separate action after approval. Arrival, completion and return-to-service each need your confirmation." : "A recommendation reserves no units until you explicitly approve it. Then open Dispatch & track."}</p>
+      </nav>}
       {status === "offline" && (
         <div className="connection-banner" role="alert">
           <ServerOff size={17} />
@@ -182,7 +203,7 @@ export default function CityWorkspace({
           </button>
         </div>
       )}
-      {!studio && (
+      {!studio && !reviewing && (
         <div className="stats-grid">
           {[
             {
@@ -241,11 +262,11 @@ export default function CityWorkspace({
                 <button
                   className={`secondary-button small ${lowGraphics ? "active" : ""}`}
                   aria-pressed={lowGraphics}
-                  onClick={() => setLowGraphics(!lowGraphics)}
+                  onClick={toggleGraphics}
                   title="Cap pixel ratio and disable shadows for weaker GPUs"
                 >
                   <Settings2 size={14} />
-                  {lowGraphics ? "Low graphics" : "Standard"}
+                  {lowGraphics ? "Low graphics: On" : "Low graphics: Off"}
                 </button>
                 <button
                   className={`secondary-button small ${layerOpen ? "active" : ""}`}
@@ -256,6 +277,7 @@ export default function CityWorkspace({
                 </button>
               </div>
             </div>
+            <p className="graphics-mode-note" role="status">{lowGraphics ? "Lighter rendering: fewer details and no shadows. Flood values, routes and missions stay the same." : "Standard rendering. Turn on low graphics if the city feels slow."}</p>
             <div className="viewport-wrap">
               <CityScene
                 city={city}
@@ -306,6 +328,7 @@ export default function CityWorkspace({
                 )}
               </AnimatePresence>
             </div>
+            <SceneSelection building={selected} scenario={scenario} predictions={supportedPredictions} mission={missionRecords.find((mission) => mission.mission_id === visibleSelectedMissionId) ?? null}/>
             <div className="viewport-footer">
               <span>
                 <i className="legend-block" />
@@ -333,8 +356,14 @@ export default function CityWorkspace({
                 {scenario ? `${scenario.status.toUpperCase()} · T+${String(Math.floor(scenario.simulated_seconds / 3600)).padStart(2, "0")}:${String(Math.floor((scenario.simulated_seconds % 3600) / 60)).padStart(2, "0")} · V${scenario.state_version}` : "LOADING SCENARIO"}
               </span>
             </div>
+            <details className="scene-legend-guide"><summary>Understand the map colours &amp; routes</summary><div>
+              <p><strong>Current water · physical simulation</strong><span>Depth at the current tick. Blue water is separate from future model estimates.</span></p>
+              <ul className="readable-depth-legend"><li><i className="depth-shallow"/>0.05–0.30 m · shallow</li><li><i className="depth-moderate"/>0.30–1.00 m · moderate</li><li><i className="depth-deep"/>1.00–2.00 m · deep</li><li><i className="depth-extreme"/>Over 2.00 m · very deep</li></ul>
+              <p><strong>Future ML exposure · estimate</strong><span>Enable Future ML exposure in Layers to see supported estimates for the next 30 simulated minutes. This does not change the water. {currentPredictions ? "Current prediction response is available." : "A current prediction is unavailable or still loading."}</span></p>
+              <p><strong>Rescue routes · saved road geometry</strong><span>Bright cyan: proposed route. Muted green: ready mission. Green: active route. Red: blocked mission. Selected routes are brighter. Dashed lines in analytical views are hypothetical.</span></p>
+            </div></details>
           </section>
-          <div className="support-grid">
+          <div className="support-grid" hidden={reviewing}>
             <Panel
               title="Infrastructure"
               eyebrow="CITY NETWORK"
@@ -388,7 +417,7 @@ export default function CityWorkspace({
               ))}
             </Panel>
           </div>
-          <Panel
+          <div hidden={reviewing}><Panel
             title="Workspace activity"
             eyebrow="STATE RECORD"
             action={<Badge>Version {scenario?.state_version ?? city.scenario.state_version}</Badge>}
@@ -408,14 +437,16 @@ export default function CityWorkspace({
             <p className="activity-note">
               Local SQLite stores scenario state, checkpoints, and deterministic event history.
             </p>
-          </Panel>
+          </Panel></div>
         </div>
         <aside className="right-column">
-          <MissionOperations scenario={scenario} city={city} onSnapshot={acceptMissions} onSelectMission={selectMission} selectedMissionId={visibleSelectedMissionId}/>
-          <RescuePlanning city={city} scenario={scenario} onPlan={setRescuePlan}/>
-          <RobustnessSummary scenario={scenario}/>
-          <AgentCommandPanel scenarioId={scenario?.id??null}/>
-          <Inspector
+          <div hidden={!missionView}><MissionOperations scenario={scenario} city={city} onSnapshot={acceptMissions} onSelectMission={selectMission} selectedMissionId={visibleSelectedMissionId}/></div>
+          <div hidden={!reviewing || missionView}><RescuePlanning city={city} scenario={scenario} onPlan={setRescuePlan}/>
+            {rescuePlan?.status === "approved" && rescuePlan.scenario_id === scenario?.id && rescuePlan.scenario_epoch === scenario?.epoch && <div className="approved-next-step"><strong>Plan approved. Dispatch is next.</strong><p>Review the current mission list and dispatch ready units explicitly.</p><Link className="primary-button" to="/response?view=missions">Open mission controls <ArrowRight size={14}/></Link></div>}
+          </div>
+          {!reviewing && !studio && <Panel title="Ready to respond?" eyebrow="NEXT STEP"><p className="muted">Review the proposed assignments before committing resources. Mission controls are in Rescue operations.</p><Link className="primary-button" to="/response">Review rescue plan <ArrowRight size={14}/></Link></Panel>}
+          <details className="workspace-evidence"><summary>Decision evidence &amp; advanced analysis</summary><div className="evidence-panels"><RobustnessSummary scenario={scenario}/><AgentCommandPanel scenarioId={scenario?.id??null}/><Link className="secondary-button" to="/decisions">Explore agent decisions <ArrowRight size={14}/></Link></div></details>
+          <div id="building-details"><Inspector
             selected={selected}
             city={city}
             loading={detailLoading}
@@ -423,8 +454,9 @@ export default function CityWorkspace({
             close={() => setSelectedId(null)}
             choose={setSelectedId}
                 predictions={currentPredictions}
-          />
-          <Panel
+            scenario={scenario}
+          /></div>
+          <div hidden={reviewing}><Panel
             title="Critical facilities"
             eyebrow="ESSENTIAL SERVICES"
             action={<Hospital size={17} />}
@@ -481,7 +513,7 @@ export default function CityWorkspace({
               </span>
             </p>
             <Help text="City geometry, occupants, facilities and resource counts are generated deterministically by the Python backend. They do not represent a real city." />
-          </div>
+          </div></div>
         </aside>
       </div>
     </main>

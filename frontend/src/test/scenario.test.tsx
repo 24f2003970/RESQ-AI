@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import React from "react";
+import { MemoryRouter } from "react-router-dom";
 import type { ScenarioEnvelope } from "../api/client";
 import ScenarioLab from "../components/ScenarioLab";
 import fixture from "./fixtures/scenario.json";
@@ -45,7 +46,7 @@ describe("Scenario Lab controls and persisted replay", () => {
       return new Response(JSON.stringify(current), { status: 200, headers: { "Content-Type": "application/json" } });
     });
     vi.stubGlobal("fetch", request);
-    const { unmount } = render(<Harness />);
+    const { unmount } = render(<MemoryRouter><Harness /></MemoryRouter>);
 
     fireEvent.change(screen.getByRole("slider", { name: "Rainfall intensity" }), { target: { value: "60" } });
     fireEvent.click(screen.getByRole("button", { name: "Apply conditions" }));

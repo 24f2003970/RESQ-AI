@@ -15,6 +15,7 @@ import {
 import type { ScenarioEnvelope } from "../api/client";
 import { Badge, Panel } from "./ui";
 import ScenarioComparison from "./ScenarioComparison";
+import WorkflowGuide from "./WorkflowGuide";
 
 const presetText = {
   mild: "Mild rainfall · 8 mm/h",
@@ -90,7 +91,7 @@ export default function ScenarioLab({
     [envelope?.events],
   );
   if (!scenario || !draft) {
-    return <main className="scenario-page"><div className="page-heading"><div><div className="breadcrumb">OPERATIONS / SIMULATION</div><h1>Scenario Lab</h1><p>Connect to the local simulation service to continue.</p></div></div><div className="scenario-error" role="alert"><AlertTriangle size={18}/><span>{parentError || "Loading the current scenario…"}</span><button className="secondary-button small" onClick={onRetry}>Retry connection</button></div></main>;
+    return <main className="scenario-page"><div className="page-heading"><div><div className="breadcrumb">OPERATIONS / SIMULATION</div><h1>Flood simulation</h1><p>Connect to the local simulation service to continue.</p></div></div><div className="scenario-error" role="alert"><AlertTriangle size={18}/><span>{parentError || "Loading the current scenario…"}</span><button className="secondary-button small" onClick={onRetry}>Retry connection</button></div></main>;
   }
 
   const liveState = scenario;
@@ -127,13 +128,14 @@ export default function ScenarioLab({
       <div className="page-heading">
         <div>
           <div className="breadcrumb">OPERATIONS <span>/</span> SIMULATION</div>
-          <h1>Scenario Lab<span className="heading-dot" /></h1>
+          <h1>Flood simulation<span className="heading-dot" /></h1>
           <p>Change the conditions, advance the city, and inspect the computed flood state.</p>
         </div>
         <Badge tone={isReplay ? "amber" : liveState.status === "running" ? "green" : "amber"}>
           {isReplay ? "Replay view" : liveState.status === "running" ? "Simulation running" : "Simulation paused"}
         </Badge>
       </div>
+      <WorkflowGuide current={1}/>
       {(parentError || localError) && <div className="scenario-error" role="alert"><AlertTriangle size={16}/><span>{localError || parentError}</span>{parentError && <button onClick={onRetry}>Retry</button>}</div>}
 
       <div className="scenario-layout">
@@ -216,7 +218,7 @@ export default function ScenarioLab({
           </Panel>
         </section>
       </div>
-      {city ? <ScenarioComparison scenario={scenario} city={city}/> : <p className="scenario-note">Connect to the local city service to load road options for reproducible A/B experiments.</p>}
+      <details className="workspace-evidence"><summary>Compare scenarios · advanced</summary>{city ? <ScenarioComparison scenario={scenario} city={city}/> : <p className="scenario-note">Connect to the local city service to load road options for reproducible A/B experiments.</p>}</details>
       <p className="scenario-disclaimer"><span className="live-dot"/> RESQ-AI FLOOD SIMULATION · EDUCATIONAL FICTIONAL SCENARIO · NOT AN OPERATIONAL WARNING SYSTEM</p>
     </main>
   );

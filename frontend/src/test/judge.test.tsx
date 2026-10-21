@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { configure, act, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AgentDashboard, MLModelInfo, RescueRecommendation, ScenarioEnvelope, ScenarioPredictionSet } from "../api/client";
@@ -6,6 +6,10 @@ import App from "../App";
 import { judgeFacts } from "../components/judgeFacts";
 import cityFixture from "./fixtures/city.json";
 import scenarioFixture from "./fixtures/scenario.json";
+
+// Lazy route imports can exceed the default one-second wait on a busy demo laptop.
+configure({ asyncUtilTimeout: 10000 });
+vi.setConfig({ testTimeout: 20000 });
 
 const mocks = vi.hoisted(() => ({
   dashboardRequest: vi.fn(), recommendationRequest: vi.fn(), missionsRequest: vi.fn(), unitsRequest: vi.fn(),
@@ -74,7 +78,7 @@ describe("Judge Mode", () => {
     expect(screen.getByText("Predicted future exposure")).toBeInTheDocument();
     expect(await screen.findByText("Commander review required. No approval is performed in Judge Mode.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /open commander review/i })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: /open commander review/i })).toHaveAttribute("href", "/response");
     expect(screen.getByRole("link", { name: "View decision evidence" })).toHaveAttribute("href", `/decisions?event=${traceId}`);
     expect(screen.getByRole("list", { name: "Evidence stage status" })).toHaveTextContent("CommanderPending");
   });

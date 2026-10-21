@@ -1,5 +1,5 @@
 import { ArrowRight, Box, Building2, CircleDot, X } from "lucide-react";
-import type { Building, CityState } from "../api/client";
+import type { Building, CityState, ScenarioState } from "../api/client";
 import type { ScenarioPredictionSet } from "../api/client";
 import { Badge, Panel } from "./ui";
 
@@ -11,6 +11,7 @@ export default function Inspector({
   close,
   choose,
   predictions,
+  scenario,
 }: {
   selected: Building | null;
   city: CityState;
@@ -19,6 +20,7 @@ export default function Inspector({
   close: () => void;
   choose: (id: string) => void;
   predictions: ScenarioPredictionSet | null;
+  scenario?: ScenarioState | null;
 }) {
   return (
     <Panel
@@ -88,8 +90,8 @@ export default function Inspector({
               </dd>
             </div>
             <div>
-              <dt>Condition</dt>
-              <dd>Baseline</dd>
+              <dt>Current physical water</dt>
+              <dd>{(() => { const impact = scenario?.impacts.buildings.find((item) => item.entity_id === selected.id); return impact ? `${impact.max_depth_m.toFixed(2)} m · ${impact.water_reaches_building ? "reached" : "not reached"}` : "Unavailable"; })()}</dd>
             </div>
           </dl>
           <p className="inspector-note">

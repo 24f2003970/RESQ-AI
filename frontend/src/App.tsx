@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Siren,
   SlidersHorizontal,
+  Truck,
 } from "lucide-react";
 import { useCity } from "./api/useCity";
 import { useScenario } from "./api/useScenario";
@@ -33,19 +34,23 @@ const JudgeMode = lazy(() => import("./components/JudgeMode"));
 const RobustnessLab = lazy(() => import("./components/RobustnessLab"));
 
 const nav = [
-  { path: "/", name: "Command Center", icon: LayoutDashboard },
+  { path: "/", name: "Overview", icon: LayoutDashboard },
+  { path: "/scenarios", name: "Flood simulation", icon: SlidersHorizontal },
+  { path: "/response", name: "Rescue operations", icon: Truck },
+  { path: "/demo", name: "Guided demo", icon: Siren },
+];
+const advancedNav = [
   { path: "/digital-twin", name: "Digital Twin Studio", icon: Box },
-  { path: "/scenarios", name: "Scenario Lab", icon: SlidersHorizontal },
   { path: "/decisions", name: "AI Decision Explorer", icon: Activity },
   { path: "/model", name: "Model Intelligence Lab", icon: Cpu },
   { path: "/robustness", name: "Decision Robustness", icon: ShieldAlert },
-  { path: "/demo", name: "Guided Demo", icon: Siren },
 ];
+const allNav = [...nav, ...advancedNav];
 
 function RouteLoadingState({ pathname }: { pathname: string }) {
   const title = pathname === "/judge"
     ? "Judge Mode"
-    : nav.find((item) => item.path === pathname)?.name ?? "Workspace";
+    : allNav.find((item) => item.path === pathname)?.name ?? "Workspace";
   return (
     <div className="loading-layout" role="status" aria-live="polite" aria-busy="true" data-loading-route={pathname}>
       <span className="eyebrow">LOCAL WORKSPACE</span>
@@ -70,7 +75,7 @@ export default function App() {
   const judgeMode = location.pathname === "/judge";
   useEffect(() => {
     setMenuOpen(false);
-    document.title = `${location.pathname === "/judge" ? "Judge Mode" : nav.find((n) => n.path === location.pathname)?.name ?? "Page not found"} · RESQ-AI`;
+    document.title = `${location.pathname === "/judge" ? "Judge Mode" : allNav.find((n) => n.path === location.pathname)?.name ?? "Page not found"} · RESQ-AI`;
     document.getElementById("main-content")?.focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }, [location.pathname]);
@@ -109,7 +114,7 @@ export default function App() {
           </div>
           <ChevronRight size={14} />
         </div>
-        <div className="nav-label">OPERATIONS</div>
+        <div className="nav-label">START HERE</div>
         <nav aria-label="Main navigation">
           {nav.map((n) => (
             <NavLink
@@ -121,10 +126,17 @@ export default function App() {
             >
               <n.icon size={18} />
               <span>{n.name}</span>
-              {n.path === "/" && <i />}
+              {location.pathname === n.path && <i />}
             </NavLink>
           ))}
         </nav>
+        <details className="advanced-navigation" key={location.pathname} open={advancedNav.some((item) => item.path === location.pathname)}>
+          <summary>Advanced tools</summary>
+          <p>Explore the city, decisions and model evidence.</p>
+          <nav aria-label="Advanced tools">
+            {advancedNav.map((item) => <NavLink key={item.path} to={item.path} title={item.name}><item.icon size={18}/><span>{item.name}</span></NavLink>)}
+          </nav>
+        </details>
         <div className="sidebar-note">
           <div>
             <Radio size={16} />
@@ -162,7 +174,7 @@ export default function App() {
             <span className="header-icon">
               <Siren size={17} />
             </span>
-            <span>Emergency operations</span>
+            <span>{allNav.find((item) => item.path === location.pathname)?.name ?? "Workspace"}</span>
             <span className="header-divider" />
             <span className="header-scenario">
               {simulation.scenario?.name ?? city?.scenario.name ?? "Riverside / Baseline"}
@@ -186,7 +198,7 @@ export default function App() {
               <RefreshCw size={16} />
             </button>
             <Link className="judge-entry-link" to="/judge"><Presentation size={14}/> Judge Mode</Link>
-            <span className="part-label">PART 14 RC1</span>
+            <span className="part-label">LOCAL SIMULATION</span>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
@@ -243,6 +255,10 @@ export default function App() {
                       predictions={risk.predictions}
                     />
                   }
+                />
+                <Route
+                  path="/response"
+                  element={<CityWorkspace city={city} scenario={simulation.scenario} events={simulation.envelope?.events ?? []} studio={false} response status={status} retry={retry} model={risk.model} predictions={risk.predictions} />}
                 />
                 <Route
                   path="/digital-twin"
